@@ -30,7 +30,9 @@ class ShopifyImportTask extends BuildTask
 
     public function run($request)
     {
-        if (!Director::is_cli()) echo "<pre>";
+        if (!Director::is_cli()) {
+            echo "<pre>";
+        }
 
         try {
             $client = new ShopifyClient();
@@ -49,7 +51,9 @@ class ShopifyImportTask extends BuildTask
         $this->importCollects($client);
         $this->afterImportCollects();
 
-        if (!Director::is_cli()) echo "</pre>";
+        if (!Director::is_cli()) {
+            echo "</pre>";
+        }
         exit('Done');
     }
 
@@ -73,7 +77,8 @@ class ShopifyImportTask extends BuildTask
                 if ($collection = $this->importObject(ProductCollection::class, $shopifyCollection)) {
                     // Create the images
                     if (!empty($shopifyCollection->image)) {
-                        // The collection image does not have an id so set it from the scr to prevent double importing the image
+                        // The collection image does not have an id so set it from the scr to prevent double
+                        // importing the image
                         $image = $shopifyCollection->image;
                         $image->id = $image->src;
                         if ($image = $this->importObject(ProductImage::class, $image)) {
@@ -81,16 +86,25 @@ class ShopifyImportTask extends BuildTask
                             if ($collection->isChanged()) {
                                 $collection->write();
                             } else {
-                                self::log("[{$collection->ID}] Collection {$collection->Title} has no change", self::SUCCESS);
+                                self::log(
+                                    "[{$collection->ID}] Collection {$collection->Title} has no change",
+                                    self::SUCCESS
+                                );
                             }
                         }
                     }
 
                     if (!$collection->isLiveVersion()) {
                         $collection->publishSingle();
-                        self::log("[{$collection->ID}] Published collection {$collection->Title} and it's connections", self::SUCCESS);
+                        self::log(
+                            "[{$collection->ID}] Published collection {$collection->Title} and it's connections",
+                            self::SUCCESS
+                        );
                     } else {
-                        self::log("[{$collection->ID}] Collection {$collection->Title} is alreaddy published", self::SUCCESS);
+                        self::log(
+                            "[{$collection->ID}] Collection {$collection->Title} is alreaddy published",
+                            self::SUCCESS
+                        );
                     }
                     $lastId = $collection->ShopifyID;
                 } else {
@@ -187,7 +201,8 @@ class ShopifyImportTask extends BuildTask
                     }
 
                     // attach the featured image
-                    if (($image = $shopifyProduct->image) && ($imageID = $image->id) && ($image = ProductImage::getByShopifyID($imageID))) {
+                    if (($image = $shopifyProduct->image) && ($imageID = $image->id) &&
+                        ($image = ProductImage::getByShopifyID($imageID))) {
                         try {
                             $product->ImageID = $image->ID;
                         } catch (\Exception $e) {
@@ -210,7 +225,10 @@ class ShopifyImportTask extends BuildTask
                                     $variant->publishSingle();
                                     self::log("[{$variant->ID}] Published Variant {$product->Title}", self::SUCCESS);
                                 } else {
-                                    self::log("[{$variant->ID}] Variant {$variant->Title} is alreaddy published", self::SUCCESS);
+                                    self::log(
+                                        "[{$variant->ID}] Variant {$variant->Title} is alreaddy published",
+                                        self::SUCCESS
+                                    );
                                 }
                             }
                         }
@@ -221,7 +239,10 @@ class ShopifyImportTask extends BuildTask
                             $variantShopifyId = $variant->ShopifyID;
                             $variant->doUnpublish();
                             $variant->delete();
-                            self::log("[{$variantId}][{$variantShopifyId}] Deleted old variant connected to product", self::SUCCESS);
+                            self::log(
+                                "[{$variantId}][{$variantShopifyId}] Deleted old variant connected to product",
+                                self::SUCCESS
+                            );
                         }
                     }
 
@@ -300,8 +321,7 @@ class ShopifyImportTask extends BuildTask
         if (($collects = $collects->getBody()->getContents()) && $collects = json_decode($collects)) {
             $lastId = $sinceId;
             foreach ($collects->collects as $shopifyCollect) {
-                if (
-                    ($collection = ProductCollection::getByShopifyID($shopifyCollect->collection_id))
+                if (($collection = ProductCollection::getByShopifyID($shopifyCollect->collection_id))
                     && ($product = Product::getByShopifyID($shopifyCollect->product_id))
                 ) {
                     $collection->Products()->add($product, [
@@ -317,7 +337,8 @@ class ShopifyImportTask extends BuildTask
                     }
 
                     $lastId = $shopifyCollect->id;
-                    self::log("[{$shopifyCollect->id}] Created collect between Product[{$product->ID}] and Collection[{$collection->ID}]", self::SUCCESS);
+                    self::log("[{$shopifyCollect->id}] Created collect between Product[{$product->ID}] and
+                        Collection[{$collection->ID}]", self::SUCCESS);
                 }
             }
 

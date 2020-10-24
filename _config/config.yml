@@ -1,0 +1,8 @@
+---
+name: silverstripe-shopify-config
+---
+Dynamic\Shopify\Page\Product:
+  extensions:
+    - LittleGiant\CatalogManager\Extensions\CatalogPageExtension
+  parent_classes:
+    - Dynamic\Shopify\Page\ProductCollection

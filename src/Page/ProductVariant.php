@@ -99,5 +99,4 @@ class ProductVariant extends \Page
     {
         return DataObject::get_one(self::class, ['ShopifyID' => $shopifyId]);
     }
-
 }

@@ -1,14 +1,15 @@
 <?php
 
-namespace Dynamic\Shopify\Page;
+namespace Dynamic\Shopify\Model;
 
-use Dynamic\Shopify\Model\ProductImage;
-use Dynamic\Shopify\Task\ShopifyImportTask\ShopifyImportTask;
+use Dynamic\Shopify\Model\ShopifyFile;
+use Dynamic\Shopify\Page\ShopifyProduct;
+use Dynamic\Shopify\Task\ShopifyImportTask;
 use SilverStripe\ORM\DataObject;
 
-class ProductVariant extends \Page
+class ShopifyVariant extends DataObject
 {
-    private static $table_name = 'ShopifyProductVariant';
+    private static $table_name = 'ShopifyVariant';
 
     private static $db = [
         'ShopifyID' => 'Varchar',
@@ -52,8 +53,8 @@ class ProductVariant extends \Page
     ];
 
     private static $has_one = [
-        'Product' => Product::class,
-        'Image' => ProductImage::class
+        'Product' => ShopifyProduct::class,
+        'Image' => ShopifyFile::class
     ];
 
     private static $indexes = [
@@ -84,7 +85,7 @@ class ProductVariant extends \Page
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $variant, $shopifyVariant);
 
-        if ($image = ProductImage::getByShopifyID($shopifyVariant->image_id)) {
+        if ($image = ShopifyFile::getByShopifyID($shopifyVariant->image_id)) {
             $variant->ImageID = $image->ID;
         }
 

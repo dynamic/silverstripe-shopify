@@ -1,12 +1,12 @@
 <?php
 
-namespace Dynamic\Shopify\Task\ShopifyImportTask;
+namespace Dynamic\Shopify\Task;
 
 use Dynamic\Shopify\Client\ShopifyClient;
-use Dynamic\Shopify\Model\ProductImage;
-use Dynamic\Shopify\Page\Product;
-use Dynamic\Shopify\Page\ProductCollection;
-use Dynamic\Shopify\Page\ProductVariant;
+use Dynamic\Shopify\Model\ShopifyFile;
+use Dynamic\Shopify\Page\ShopifyProduct;
+use Dynamic\Shopify\Page\ShopifyCollection;
+use Dynamic\Shopify\Model\ShopifyVariant;
 use GuzzleHttp\Client;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
@@ -25,6 +25,8 @@ class ShopifyImportTask extends BuildTask
     protected $title = 'Import shopify products';
 
     protected $description = 'Import shopify products from the configured store';
+
+    private static $segment = 'ShopifyImportTask';
 
     protected $enabled = true;
 
@@ -74,14 +76,14 @@ class ShopifyImportTask extends BuildTask
             $lastId = $sinceId;
             foreach ($collections->custom_collections as $shopifyCollection) {
                 // Create the collection
-                if ($collection = $this->importObject(ProductCollection::class, $shopifyCollection)) {
+                if ($collection = $this->importObject(ShopifyCollection::class, $shopifyCollection)) {
                     // Create the images
                     if (!empty($shopifyCollection->image)) {
                         // The collection image does not have an id so set it from the scr to prevent double
                         // importing the image
                         $image = $shopifyCollection->image;
                         $image->id = $image->src;
-                        if ($image = $this->importObject(ProductImage::class, $image)) {
+                        if ($image = $this->importObject(ShopifyFile::class, $image)) {
                             $collection->ImageID = $image->ID;
                             if ($collection->isChanged()) {
                                 $collection->write();
@@ -176,12 +178,12 @@ class ShopifyImportTask extends BuildTask
             $lastId = $sinceId;
             foreach ($products->products as $shopifyProduct) {
                 // Create the product
-                if ($product = $this->importObject(Product::class, $shopifyProduct)) {
+                if ($product = $this->importObject(ShopifyProduct::class, $shopifyProduct)) {
                     // Create the images
                     $images = new ArrayList($shopifyProduct->images);
                     if ($images->exists()) {
                         foreach ($shopifyProduct->images as $shopifyImage) {
-                            if ($image = $this->importObject(ProductImage::class, $shopifyImage)) {
+                            if ($image = $this->importObject(ShopifyFile::class, $shopifyImage)) {
                                 $product->Images()->add($image);
                             }
                         }
@@ -191,7 +193,7 @@ class ShopifyImportTask extends BuildTask
                         $new = $images->column('id');
                         $delete = array_diff($current, $new);
                         foreach ($delete as $shopifyId) {
-                            if ($image = ProductImage::getByShopifyID($shopifyId)) {
+                            if ($image = ShopifyFile::getByShopifyID($shopifyId)) {
                                 $image->deleteFile();
                                 $image->doUnpublish();
                                 $image->delete();
@@ -202,7 +204,7 @@ class ShopifyImportTask extends BuildTask
 
                     // attach the featured image
                     if (($image = $shopifyProduct->image) && ($imageID = $image->id) &&
-                        ($image = ProductImage::getByShopifyID($imageID))) {
+                        ($image = ShopifyFile::getByShopifyID($imageID))) {
                         try {
                             $product->ImageID = $image->ID;
                         } catch (\Exception $e) {
@@ -214,27 +216,19 @@ class ShopifyImportTask extends BuildTask
                     if (!empty($shopifyProduct->variants)) {
                         $keepVariants = [];
                         foreach ($shopifyProduct->variants as $shopifyVariant) {
-                            if ($variant = $this->importObject(ProductVariant::class, $shopifyVariant)) {
+                            if ($variant = $this->importObject(ShopifyVariant::class, $shopifyVariant)) {
                                 $variant->ParentID = $product->ID;
                                 if ($variant->isChanged()) {
                                     $variant->write();
+                                    self::log("[{$variant->ID}] Saved Variant {$product->Title}", self::SUCCESS);
                                 }
                                 $keepVariants[] = $variant->ID;
                                 $product->Variants()->add($variant);
-                                if (!$variant->isLiveVersion()) {
-                                    $variant->publishSingle();
-                                    self::log("[{$variant->ID}] Published Variant {$product->Title}", self::SUCCESS);
-                                } else {
-                                    self::log(
-                                        "[{$variant->ID}] Variant {$variant->Title} is alreaddy published",
-                                        self::SUCCESS
-                                    );
-                                }
                             }
                         }
 
                         foreach ($product->Variants()->exclude(['ID' => $keepVariants]) as $variant) {
-                            /** @var ProductVariant $variant */
+                            /** @var ShopifyVariant $variant */
                             $variantId = $variant->ID;
                             $variantShopifyId = $variant->ShopifyID;
                             $variant->doUnpublish();
@@ -268,14 +262,14 @@ class ShopifyImportTask extends BuildTask
 
             // Cleanup old products
             $newProducts = new ArrayList($products->products);
-            $current = Product::get()->column('ShopifyID');
+            $current = ShopifyProduct::get()->column('ShopifyID');
             $new = $newProducts->column('id');
             $delete = array_diff($current, $new);
             foreach ($delete as $shopifyId) {
                 /** @var Product $product */
-                if ($product = Product::getByShopifyID($shopifyId)) {
+                if ($product = ShopifyProduct::getByShopifyID($shopifyId)) {
                     foreach ($product->Images() as $image) {
-                        /** @var ProductImage $image */
+                        /** @var ShopifyFile $image */
                         $imageId = $image->ShopifyID;
                         $image->doUnpublish();
                         $image->deleteFile();
@@ -284,7 +278,7 @@ class ShopifyImportTask extends BuildTask
                     }
 
                     foreach ($product->Variants() as $variant) {
-                        /** @var ProductVariant $variant */
+                        /** @var ShopifyVariant $variant */
                         $variantId = $variant->ShopifyID;
                         $variant->doUnpublish();
                         $variant->delete();
@@ -321,8 +315,8 @@ class ShopifyImportTask extends BuildTask
         if (($collects = $collects->getBody()->getContents()) && $collects = json_decode($collects)) {
             $lastId = $sinceId;
             foreach ($collects->collects as $shopifyCollect) {
-                if (($collection = ProductCollection::getByShopifyID($shopifyCollect->collection_id))
-                    && ($product = Product::getByShopifyID($shopifyCollect->product_id))
+                if (($collection = ShopifyCollection::getByShopifyID($shopifyCollect->collection_id))
+                    && ($product = ShopifyProduct::getByShopifyID($shopifyCollect->product_id))
                 ) {
                     $collection->Products()->add($product, [
                         'ShopifyID' => $shopifyCollect->id,
@@ -354,7 +348,7 @@ class ShopifyImportTask extends BuildTask
     public function beforeImportCollects()
     {
         // Set all imported values to 0
-        $schema = DataObject::getSchema()->manyManyComponent(ProductCollection::class, 'Products');
+        $schema = DataObject::getSchema()->manyManyComponent(ShopifyCollection::class, 'Products');
         if (isset($schema['join']) && $join = $schema['join']) {
             DB::query("UPDATE `$join` SET `Imported` = 0 WHERE 1");
         }
@@ -363,7 +357,7 @@ class ShopifyImportTask extends BuildTask
     public function afterImportCollects()
     {
         // Delete all collects that where not given during importe
-        $schema = DataObject::getSchema()->manyManyComponent(ProductCollection::class, 'Products');
+        $schema = DataObject::getSchema()->manyManyComponent(ShopifyCollection::class, 'Products');
         if (isset($schema['join']) && $join = $schema['join']) {
             DB::query("DELETE FROM `$join` WHERE `Imported` = 0");
         }

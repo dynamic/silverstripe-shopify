@@ -3,18 +3,19 @@
 namespace Dynamic\Shopify\Model;
 
 use Dynamic\Shopify\Client\ShopifyClient;
-use Dynamic\Shopify\Page\Product;
-use Dynamic\Shopify\Page\ProductVariant;
-use Dynamic\Shopify\Task\ShopifyImportTask\ShopifyImportTask;
+use Dynamic\Shopify\Page\ShopifyProduct;
+use Dynamic\Shopify\Page\ShopifyVariant;
+use Dynamic\Shopify\Task\ShopifyImportTask;
 use GuzzleHttp\Client;
+use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Security;
 
-class ProductImage extends Image
+class ShopifyFile extends File
 {
-    private static $table_name = 'ShopifyImage';
+    private static $table_name = 'ShopifyFile';
 
     private static $db = [
         'Sort' => 'Int',
@@ -34,11 +35,11 @@ class ProductImage extends Image
     ];
 
     private static $has_one = [
-        'Product' => Product::class
+        'Product' => ShopifyProduct::class
     ];
 
     private static $has_many = [
-        'Variants' => ProductVariant::class
+        'Variants' => ShopifyVariant::class
     ];
 
     private static $indexes = [

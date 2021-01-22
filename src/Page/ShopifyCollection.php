@@ -2,7 +2,8 @@
 
 namespace Dynamic\Shopify\Page;
 
-use Dynamic\Shopify\Task\ShopifyImportTask\ShopifyImportTask;
+use Dynamic\Shopify\Model\ShopifyFile;
+use Dynamic\Shopify\Task\ShopifyImportTask;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Assets\Image;
 use SilverStripe\Forms\FieldList;
@@ -11,7 +12,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 
-class ProductCollection extends \Page
+class ShopifyCollection extends \Page
 {
     private static $table_name = 'ShopifyCollection';
 
@@ -29,11 +30,11 @@ class ProductCollection extends \Page
     ];
 
     private static $has_one = [
-        'Image' => Image::class
+        'File' => ShopifyFile::class
     ];
 
     private static $many_many = [
-        'Products' => Product::class,
+        'Products' => ShopifyProduct::class,
     ];
 
 
@@ -47,7 +48,7 @@ class ProductCollection extends \Page
     ];
 
     private static $owns = [
-        'Image'
+        'File'
     ];
 
     private static $indexes = [
@@ -55,7 +56,7 @@ class ProductCollection extends \Page
     ];
 
     private static $summary_fields = [
-        'Image.CMSThumbnail' => 'Image',
+        'File.CMSThumbnail' => 'Image',
         'Title',
         'ShopifyID'
     ];

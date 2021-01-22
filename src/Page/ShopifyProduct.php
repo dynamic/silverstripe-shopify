@@ -91,6 +91,7 @@ class ShopifyProduct extends \Page
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
+
         $fields->addFieldsToTab('Root.Main', [
             ReadonlyField::create('Title'),
             ReadonlyField::create('URLSegment'),
@@ -99,18 +100,18 @@ class ShopifyProduct extends \Page
             ReadonlyField::create('Vendor'),
             ReadonlyField::create('ProductType'),
             ReadonlyField::create('Tags'),
-            UploadField::create('Image')->performReadonlyTransformation(),
         ]);
 
         $fields->addFieldsToTab('Root.Variants', [
             GridField::create('Variants', 'Variants', $this->Variants(), GridFieldConfig_RecordViewer::create())
         ]);
 
-        $fields->addFieldsToTab('Root.Images', [
-            GridField::create('Images', 'Images', $this->Files(), GridFieldConfig_RecordViewer::create())
+        $fields->addFieldsToTab('Root.Files', [
+            GridField::create('Files', 'Files', $this->Files(), GridFieldConfig_RecordViewer::create())
         ]);
 
         $fields->removeByName(['LinkTracking','FileTracking']);
+
         return $fields;
     }
 

@@ -53,7 +53,11 @@ class ShopifyVariant extends DataObject
      */
     private static $has_one = [
         'Product' => ShopifyProduct::class,
-        'Image' => ShopifyFile::class
+        'File' => ShopifyFile::class
+    ];
+
+    private static $owns = [
+        'File',
     ];
 
     /**
@@ -67,7 +71,7 @@ class ShopifyVariant extends DataObject
      * @var string[]
      */
     private static $summary_fields = [
-        'Image.CMSThumbnail' => 'Image',
+        'File.CMSThumbnail' => 'Image',
         'Title',
         'Price',
         'SKU',
@@ -82,6 +86,13 @@ class ShopifyVariant extends DataObject
         'Price',
         'SKU',
         'ShopifyID',
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $cascade_deletes = [
+        'File',
     ];
 
     /**
@@ -120,8 +131,8 @@ class ShopifyVariant extends DataObject
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $variant, $shopifyVariant);
 
-        if ($image = ShopifyFile::getByShopifyID($shopifyVariant->image_id)) {
-            $variant->ImageID = $image->ID;
+        if ($file = ShopifyFile::getByShopifyID($shopifyVariant->image_id)) {
+            $variant->FileID = $file->ID;
         }
 
         if ($variant->isChanged()) {

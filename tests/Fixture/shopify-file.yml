@@ -1,3 +1,3 @@
-Dynamic\Shopify\Model\ProductImage:
+Dynamic\Shopify\Model\ShopifyFile:
   one:
     Title: 'Product Image One'

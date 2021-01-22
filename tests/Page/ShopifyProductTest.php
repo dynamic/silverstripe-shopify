@@ -2,27 +2,27 @@
 
 namespace Dynamic\Shopify\Test\Page;
 
-use Dynamic\Shopify\Page\ProductCollection;
+use Dynamic\Shopify\Page\ShopifyProduct;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
 
 /**
- * Class ProductCollectionTest
+ * Class ShopifyProductTest
  * @package Dynamic\Shopify\Test\Page
  */
-class ProductCollectionTest extends SapphireTest
+class ShopifyProductTest extends SapphireTest
 {
     /**
      * @var string
      */
-    protected static $fixture_file = '../Fixture/product-collection.yml';
+    protected static $fixture_file = '../Fixture/shopify-product.yml';
 
     /**
      *
      */
     public function testGetCMSFields()
     {
-        $object = $this->objFromFixture(ProductCollection::class, 'one');
+        $object = $this->objFromFixture(ShopifyProduct::class, 'one');
         $fields = $object->getCMSFields();
         $this->assertInstanceOf(FieldList::class, $fields);
     }

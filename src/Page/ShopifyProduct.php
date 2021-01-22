@@ -2,8 +2,9 @@
 
 namespace Dynamic\Shopify\Page;
 
-use Dynamic\Shopify\Model\ProductImage;
-use Dynamic\Shopify\Task\ShopifyImportTask\ShopifyImportTask;
+use Dynamic\Shopify\Model\ShopifyFile;
+use Dynamic\Shopify\Model\ShopifyVariant;
+use Dynamic\Shopify\Task\ShopifyImportTask;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
@@ -11,7 +12,7 @@ use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBCurrency;
 
-class Product extends \Page
+class ShopifyProduct extends \Page
 {
     private static $table_name = 'ShopifyProduct';
 
@@ -61,23 +62,18 @@ class Product extends \Page
         'tags' => 'Tags',
     ];
 
-    private static $has_one = [
-        'Image' => ProductImage::class
-    ];
-
     private static $has_many = [
-        'Variants' => ProductVariant::class,
-        'Images' => ProductImage::class
+        'Variants' => ShopifyVariant::class,
+        'Files' => ShopifyFile::class
     ];
 
     private static $belongs_many_many = [
-        'Collections' => ProductCollection::class
+        'Collections' => ShopifyCollection::class
     ];
 
     private static $owns = [
         'Variants',
-        'Images',
-        'Image'
+        'Files',
     ];
 
     private static $indexes = [
@@ -95,6 +91,7 @@ class Product extends \Page
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
+
         $fields->addFieldsToTab('Root.Main', [
             ReadonlyField::create('Title'),
             ReadonlyField::create('URLSegment'),
@@ -103,19 +100,29 @@ class Product extends \Page
             ReadonlyField::create('Vendor'),
             ReadonlyField::create('ProductType'),
             ReadonlyField::create('Tags'),
-            UploadField::create('Image')->performReadonlyTransformation(),
         ]);
 
         $fields->addFieldsToTab('Root.Variants', [
             GridField::create('Variants', 'Variants', $this->Variants(), GridFieldConfig_RecordViewer::create())
         ]);
 
-        $fields->addFieldsToTab('Root.Images', [
-            GridField::create('Images', 'Images', $this->Images(), GridFieldConfig_RecordViewer::create())
+        $fields->addFieldsToTab('Root.Files', [
+            GridField::create('Files', 'Files', $this->Files(), GridFieldConfig_RecordViewer::create())
         ]);
 
         $fields->removeByName(['LinkTracking','FileTracking']);
+
         return $fields;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getImage()
+    {
+        if ($this->Files()) {
+            return $this->Files()->first();
+        }
     }
 
     public function getVariantWithLowestPrice()

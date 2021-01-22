@@ -1,0 +1,7 @@
+Dynamic\Shopify\Page\ShopifyCollection:
+  one:
+    Title: 'Category One'
+
+Dynamic\Shopify\Page\ShopifyProduct:
+  one:
+    Title: 'Product One'

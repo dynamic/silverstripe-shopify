@@ -12,14 +12,27 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 
+/**
+ * Class ShopifyCollection
+ * @package Dynamic\Shopify\Page
+ */
 class ShopifyCollection extends \Page
 {
+    /**
+     * @var string
+     */
     private static $table_name = 'ShopifyCollection';
 
+    /**
+     * @var string[]
+     */
     private static $db = [
         'ShopifyID' => 'Varchar',
     ];
 
+    /**
+     * @var string[]
+     */
     private static $data_map = [
         'id' => 'ShopifyID',
         'handle' => 'URLSegment',
@@ -29,15 +42,23 @@ class ShopifyCollection extends \Page
         'created_at' => 'Created',
     ];
 
+    /**
+     * @var string[]
+     */
     private static $has_one = [
         'File' => ShopifyFile::class
     ];
 
+    /**
+     * @var string[]
+     */
     private static $many_many = [
         'Products' => ShopifyProduct::class,
     ];
 
-
+    /**
+     * @var \string[][]
+     */
     private static $many_many_extraFields = [
         'Products' => [
             'SortValue' => 'Varchar',
@@ -47,30 +68,50 @@ class ShopifyCollection extends \Page
         ],
     ];
 
+    /**
+     * @var string[]
+     */
     private static $owns = [
         'File'
     ];
 
+    /**
+     * @var bool[]
+     */
     private static $indexes = [
         'ShopifyID' => true,
     ];
 
+    /**
+     * @var string[]
+     */
     private static $summary_fields = [
         'File.CMSThumbnail' => 'Image',
         'Title',
         'ShopifyID'
     ];
 
+    /**
+     * @return FieldList
+     */
     public function getCMSFields()
     {
         $self =& $this;
         $this->beforeUpdateCMSFields(function (FieldList $fields) use ($self) {
-            $fields->addFieldsToTab('Root.Main', [
-                ReadonlyField::create('Title'),
-                ReadonlyField::create('URLSegment'),
+            $fields->dataFieldByName('Title')
+                ->setReadonly(true);
+
+            $fields->dataFieldByName('URLSegment')
+                ->setReadonly(true);
+
+            $fields->replaceField(
+                'Content',
+                ReadonlyField::create('Content', 'Description')
+            );
+
+            $fields->addFieldsToTab('Root.Details', [
                 ReadonlyField::create('ShopifyID'),
-                ReadonlyField::create('Content'),
-                UploadField::create('Image')->performReadonlyTransformation(),
+                UploadField::create('File')->performReadonlyTransformation(),
             ]);
 
             $fields->addFieldsToTab('Root.Products', [
@@ -107,7 +148,6 @@ class ShopifyCollection extends \Page
 
     /**
      * @param $shopifyId
-     *
      * @return ProductCollection
      */
     public static function getByShopifyID($shopifyId)
@@ -115,6 +155,10 @@ class ShopifyCollection extends \Page
         return DataObject::get_one(self::class, ['ShopifyID' => $shopifyId]);
     }
 
+    /**
+     * @param $urlSegment
+     * @return DataObject|null
+     */
     public static function getByURLSegment($urlSegment)
     {
         return DataObject::get_one(self::class, ['URLSegment' => $urlSegment]);

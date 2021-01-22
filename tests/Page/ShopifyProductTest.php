@@ -22,7 +22,7 @@ class ShopifyProductTest extends SapphireTest
      */
     public function testGetCMSFields()
     {
-        $object = $this->objFromFixture(ShopifyProductTest::class, 'one');
+        $object = $this->objFromFixture(ShopifyProduct::class, 'one');
         $fields = $object->getCMSFields();
         $this->assertInstanceOf(FieldList::class, $fields);
     }

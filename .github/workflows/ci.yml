@@ -62,22 +62,13 @@ jobs:
       - name: "Run tests with phpunit/phpunit"
         env:
           SS_DATABASE_PORT: ${{ job.services.mysql.ports['3306'] }}
-        run: "vendor/bin/phpunit --coverage-html=build/logs/coverage/html --coverage-xml=build/logs/coverage"
+        run: "vendor/bin/phpunit --coverage-clover=coverage.xml"
 
-      #- name: "Archive code coverage results"
-      #   uses: "actions/upload-artifact@v2"
-      #   with:
-      #     name: "coverage"
-      #     path: "build/logs/coverage/html"
+      - name: "Upload coverage results to CodeCov"
+        uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.xml # optional
+          flags: unittests # optional
 
       - name: "Run tests with squizlabs/php_codesniffer"
         run: "vendor/bin/phpcs -s --report=summary --standard=phpcs.xml.dist --extensions=php,inc --ignore=autoload.php --ignore=vendor/ src/ tests/"
-
-      #- name: "Run tests with phpmd/phpmd"
-      #  run: "vendor/bin/phpmd src html codesize,unusedcode,naming --reportfile build/logs/phpmd.html --exclude vendor/ --exclude autoload.php || exit 0"
-
-      #- name: "Archive phpmd results"
-      #  uses: "actions/upload-artifact@v2"
-      #  with:
-      #    name: "phpmd"
-      #    path: "build/logs/phpmd.html"

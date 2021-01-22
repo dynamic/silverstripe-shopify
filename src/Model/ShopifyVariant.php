@@ -5,62 +5,67 @@ namespace Dynamic\Shopify\Model;
 use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Page\ShopifyProduct;
 use Dynamic\Shopify\Task\ShopifyImportTask;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 
+/**
+ * Class ShopifyVariant
+ * @package Dynamic\Shopify\Model
+ */
 class ShopifyVariant extends DataObject
 {
+    /**
+     * @var string
+     */
     private static $table_name = 'ShopifyVariant';
 
+    /**
+     * @var string[]
+     */
     private static $db = [
+        'Title' => 'Varchar(255)',
         'ShopifyID' => 'Varchar',
+        'SKU' => 'Varchar',
         'Price' => 'Currency',
         'CompareAtPrice' => 'Currency',
-        'SKU' => 'Varchar',
-        'Sort' => 'Int',
-        'Option1' => 'Varchar',
-        'Option2' => 'Varchar',
-        'Option3' => 'Varchar',
-        'Taxable' => 'Boolean',
-        'Barcode' => 'Varchar',
+        'SortOrder' => 'Int',
         'Inventory' => 'Int',
-        'Grams' => 'Int',
-        'Weight' => 'Decimal',
-        'WeightUnit' => 'Varchar',
-        'InventoryItemID' => 'Varchar',
-        'RequiresShipping' => 'Boolean'
     ];
 
+    /**
+     * @var string[]
+     */
     private static $data_map = [
-        'id'=> 'ShopifyID',
         'title'=> 'Title',
+        'id'=> 'ShopifyID',
+        'sku'=> 'SKU',
         'price'=> 'Price',
         'compare_at_price'=> 'CompareAtPrice',
-        'sku'=> 'SKU',
-        'position' => 'Sort',
-        'option1' => 'Option1',
-        'option2' => 'Option2',
-        'option3' => 'Option3',
+        'position' => 'SortOrder',
         'created_at' => 'Created',
         'updated_at' => 'LastEdited',
-        'taxable' => 'Taxable',
-        'barcode' => 'Barcode',
-        'grams' => 'Grams',
         'inventory_quantity' => 'Inventory',
-        'weight' => 'Weight',
-        'weight_unit' => 'WeightUnit',
-        'inventory_item_id' => 'InventoryItemID',
-        'requires_shipping' => 'RequiresShipping'
     ];
 
+    /**
+     * @var string[]
+     */
     private static $has_one = [
         'Product' => ShopifyProduct::class,
         'Image' => ShopifyFile::class
     ];
 
+    /**
+     * @var bool[]
+     */
     private static $indexes = [
         'ShopifyID' => true
     ];
 
+    /**
+     * @var string[]
+     */
     private static $summary_fields = [
         'Image.CMSThumbnail' => 'Image',
         'Title',
@@ -68,6 +73,36 @@ class ShopifyVariant extends DataObject
         'SKU',
         'ShopifyID'
     ];
+
+    /**
+     * @var string[]
+     */
+    private static $searchable_fields = [
+        'Title',
+        'Price',
+        'SKU',
+        'ShopifyID',
+    ];
+
+    /**
+     * @return FieldList
+     */
+    public function getCMSFields()
+    {
+        $this->beforeUpdateCMSFields(function (FieldList $fields) {
+            foreach ($fields as $field) {
+                $field->setReadonly(true);
+            }
+
+            $fields->replaceField(
+                'ProductID',
+                ReadonlyField::create('ProductName', 'Product')
+                    ->setValue($this->Product()->Title)
+            );
+        });
+
+        return parent::getCMSFields();
+    }
 
     /**
      * Creates a new Shopify Variant from the given data
@@ -96,6 +131,10 @@ class ShopifyVariant extends DataObject
         return $variant;
     }
 
+    /**
+     * @param $shopifyId
+     * @return DataObject|null
+     */
     public static function getByShopifyID($shopifyId)
     {
         return DataObject::get_one(self::class, ['ShopifyID' => $shopifyId]);

@@ -184,12 +184,12 @@ class ShopifyImportTask extends BuildTask
                     if ($images->exists()) {
                         foreach ($shopifyProduct->images as $shopifyImage) {
                             if ($image = $this->importObject(ShopifyFile::class, $shopifyImage)) {
-                                $product->Images()->add($image);
+                                $product->Files()->add($image);
                             }
                         }
 
                         // Cleanup old images
-                        $current = $product->Images()->column('ShopifyID');
+                        $current = $product->Files()->column('ShopifyID');
                         $new = $images->column('id');
                         $delete = array_diff($current, $new);
                         foreach ($delete as $shopifyId) {
@@ -268,7 +268,7 @@ class ShopifyImportTask extends BuildTask
             foreach ($delete as $shopifyId) {
                 /** @var Product $product */
                 if ($product = ShopifyProduct::getByShopifyID($shopifyId)) {
-                    foreach ($product->Images() as $image) {
+                    foreach ($product->Files() as $image) {
                         /** @var ShopifyFile $image */
                         $imageId = $image->ShopifyID;
                         $image->doUnpublish();

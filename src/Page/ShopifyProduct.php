@@ -6,18 +6,34 @@ use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Model\ShopifyVariant;
 use Dynamic\Shopify\Task\ShopifyImportTask;
 use SilverStripe\AssetAdmin\Forms\UploadField;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBCurrency;
 
+/**
+ * Class ShopifyProduct
+ * @package Dynamic\Shopify\Page
+ */
 class ShopifyProduct extends \Page
 {
+    /**
+     * @var string
+     */
     private static $table_name = 'ShopifyProduct';
 
+    /**
+     * @var string
+     */
     private static $currency = 'USD';
 
+    /**
+     * @var \false[][][]
+     *
+     * Set options for the Buy Button display
+     */
     private static $options = [
         'product' => [
             'contents' => [
@@ -31,15 +47,93 @@ class ShopifyProduct extends \Page
         ]
     ];
 
+    /**
+     * @var string[]
+     */
     private static $db = [
         'ShopifyID' => 'Varchar',
         'Vendor' => 'Varchar',
         'ProductType' => 'Varchar',
-        'Tags' => 'Varchar'
+        'Tags' => 'Varchar',
+        'Status' => 'Varchar',
     ];
 
+    /**
+     * @var string[]
+     *
+     * Field mappings from Shopify
+     */
+    private static $data_map = [
+        'id' => 'ShopifyID',
+        'title' => 'Title',
+        'body_html' => 'Content',
+        'vendor' => 'Vendor',
+        'product_type' => 'ProductType',
+        'created_at' => 'Created',
+        'handle' => 'URLSegment',
+        'status' => 'Status',
+        'updated_at' => 'LastEdited',
+        'tags' => 'Tags',
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $has_many = [
+        'Variants' => ShopifyVariant::class,
+        'Files' => ShopifyFile::class
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $belongs_many_many = [
+        'Collections' => ShopifyCollection::class
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $owns = [
+        'Files',
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $cascade_deletes = [
+        'Variants',
+        'Files',
+    ];
+
+    /**
+     * @var bool[]
+     */
+    private static $indexes = [
+        'ShopifyID' => true,
+        'Vendor' => false,
+        'ProductType' => false,
+    ];
+
+    /**
+     * @var string
+     */
     private static $default_sort = 'Created DESC';
 
+    /**
+     * @var string[]
+     */
+    private static $summary_fields = [
+        'Image.CMSThumbnail' => 'Image',
+        'Title',
+        'Vendor',
+        'ProductType',
+        'ShopifyID'
+    ];
+
+    /**
+     * @var string[]
+     */
     private static $searchable_fields = [
         'Title',
         'URLSegment',
@@ -50,69 +144,46 @@ class ShopifyProduct extends \Page
         'Tags'
     ];
 
-    private static $data_map = [
-        'id' => 'ShopifyID',
-        'title' => 'Title',
-        'body_html' => 'Content',
-        'vendor' => 'Vendor',
-        'product_type' => 'ProductType',
-        'created_at' => 'Created',
-        'handle' => 'URLSegment',
-        'updated_at' => 'LastEdited',
-        'tags' => 'Tags',
-    ];
-
-    private static $has_many = [
-        'Variants' => ShopifyVariant::class,
-        'Files' => ShopifyFile::class
-    ];
-
-    private static $belongs_many_many = [
-        'Collections' => ShopifyCollection::class
-    ];
-
-    private static $owns = [
-        'Variants',
-        'Files',
-    ];
-
-    private static $indexes = [
-        'ShopifyID' => true,
-    ];
-
-    private static $summary_fields = [
-        'Image.CMSThumbnail' => 'Image',
-        'Title',
-        'Vendor',
-        'ProductType',
-        'ShopifyID'
-    ];
-
+    /**
+     * @return FieldList
+     */
     public function getCMSFields()
     {
-        $fields = parent::getCMSFields();
+        $this->beforeUpdateCMSFields(function (FieldList $fields) {
+            $fields->dataFieldByName('Title')
+                ->setReadonly(true);
 
-        $fields->addFieldsToTab('Root.Main', [
-            ReadonlyField::create('Title'),
-            ReadonlyField::create('URLSegment'),
-            ReadonlyField::create('ShopifyID'),
-            ReadonlyField::create('Content'),
-            ReadonlyField::create('Vendor'),
-            ReadonlyField::create('ProductType'),
-            ReadonlyField::create('Tags'),
-        ]);
+            $fields->dataFieldByName('URLSegment')
+                ->setReadonly(true);
 
-        $fields->addFieldsToTab('Root.Variants', [
-            GridField::create('Variants', 'Variants', $this->Variants(), GridFieldConfig_RecordViewer::create())
-        ]);
+            $fields->replaceField(
+                'Content',
+                ReadonlyField::create('Content', 'Description')
+            );
 
-        $fields->addFieldsToTab('Root.Files', [
-            GridField::create('Files', 'Files', $this->Files(), GridFieldConfig_RecordViewer::create())
-        ]);
+            $fields->addFieldsToTab(
+                'Root.Details',
+                [
+                    ReadonlyField::create('ShopifyID'),
+                    ReadonlyField::create('Vendor'),
+                    ReadonlyField::create('ProductType'),
+                    ReadonlyField::create('Tags'),
+                    ReadonlyField::create('Status'),
+                ]
+            );
 
-        $fields->removeByName(['LinkTracking','FileTracking']);
+            $fields->addFieldsToTab('Root.Variants', [
+                GridField::create('Variants', 'Variants', $this->Variants(), GridFieldConfig_RecordViewer::create())
+            ]);
 
-        return $fields;
+            $fields->addFieldsToTab('Root.Media', [
+                GridField::create('Files', 'Files', $this->Files(), GridFieldConfig_RecordViewer::create())
+            ]);
+
+            $fields->removeByName(['LinkTracking','FileTracking']);
+        });
+
+        return parent::getCMSFields();
     }
 
     /**
@@ -125,6 +196,9 @@ class ShopifyProduct extends \Page
         }
     }
 
+    /**
+     * @return DataObject|null
+     */
     public function getVariantWithLowestPrice()
     {
         return DataObject::get_one(ProductVariant::class, ['ProductID' => $this->ID], true, 'Price ASC');
@@ -178,11 +252,19 @@ class ShopifyProduct extends \Page
         return $product;
     }
 
+    /**
+     * @param $shopifyId
+     * @return DataObject|null
+     */
     public static function getByShopifyID($shopifyId)
     {
         return DataObject::get_one(self::class, ['ShopifyID' => $shopifyId]);
     }
 
+    /**
+     * @param $urlSegment
+     * @return DataObject|null
+     */
     public static function getByURLSegment($urlSegment)
     {
         return DataObject::get_one(self::class, ['URLSegment' => $urlSegment]);

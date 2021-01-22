@@ -8,9 +8,9 @@
     ],
     "license": "BSD-3-Clause",
     "require": {
-        "littlegiant/silverstripe-catalogmanager": "^5.2.0",
         "guzzlehttp/guzzle": "^7.2",
-        "silverstripe/recipe-cms": "^4.4"
+        "littlegiant/silverstripe-catalogmanager": "^5.2.0",
+        "silverstripe/recipe-cms": "^4.5"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7",

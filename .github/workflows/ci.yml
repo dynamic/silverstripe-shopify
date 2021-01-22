@@ -71,10 +71,10 @@ jobs:
           path: "build/logs/coverage/html"
 
       - name: "Run tests with squizlabs/php_codesniffer"
-        run: "vendor/bin/phpcs -s --report=summary --standard=phpcs.xml.dist --extensions=php,inc --ignore=autoload.php --ignore=vendor/ app/src/ app/tests/"
+        run: "vendor/bin/phpcs -s --report=summary --standard=phpcs.xml.dist --extensions=php,inc --ignore=autoload.php --ignore=vendor/ src/ tests/"
 
       - name: "Run tests with phpmd/phpmd"
-        run: "vendor/bin/phpmd app/src html codesize,unusedcode,naming --reportfile build/logs/phpmd.html --exclude vendor/ --exclude autoload.php || exit 0"
+        run: "vendor/bin/phpmd src html codesize,unusedcode,naming --reportfile build/logs/phpmd.html --exclude vendor/ --exclude autoload.php || exit 0"
 
       - name: "Archive phpmd results"
         uses: "actions/upload-artifact@v2"

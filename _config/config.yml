@@ -6,3 +6,7 @@ Dynamic\Shopify\Page\Product:
     - LittleGiant\CatalogManager\Extensions\CatalogPageExtension
   parent_classes:
     - Dynamic\Shopify\Page\ProductCollection
+
+SilverStripe\Security\Member:
+  extensions:
+    - Dynamic\Shopify\Extension\ShopifyMember

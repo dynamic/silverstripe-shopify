@@ -15,7 +15,7 @@ class ShopifyMember extends DataExtension
      * @var string[]
      */
     private static $db = [
-        'ShopifyID' => 'Int',
+        'ShopifyID' => 'Varchar(255)',
     ];
 
     /**

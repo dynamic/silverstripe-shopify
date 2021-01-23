@@ -51,7 +51,7 @@ class ShopifyProduct extends \Page
      * @var string[]
      */
     private static $db = [
-        'ShopifyID' => 'Varchar',
+        'ShopifyID' => 'Varchar(255)',
         'Vendor' => 'Varchar',
         'ProductType' => 'Varchar',
         'Tags' => 'Varchar',

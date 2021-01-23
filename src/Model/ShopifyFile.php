@@ -32,7 +32,7 @@ class ShopifyFile extends File
      */
     private static $db = [
         'SortOrder' => 'Int',
-        'ShopifyID' => 'Varchar',
+        'ShopifyID' => 'Varchar(255)',
         'OriginalSrc' => 'Varchar',
         'Width' => 'Int',
         'Height' => 'Int',

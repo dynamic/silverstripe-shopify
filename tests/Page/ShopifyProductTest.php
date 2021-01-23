@@ -2,6 +2,7 @@
 
 namespace Dynamic\Shopify\Test\Page;
 
+use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Model\ShopifyVariant;
 use Dynamic\Shopify\Page\ShopifyProduct;
 use SilverStripe\Dev\SapphireTest;
@@ -31,6 +32,16 @@ class ShopifyProductTest extends SapphireTest
     /**
      *
      */
+    public function testGetImage()
+    {
+        $object = $this->objFromFixture(ShopifyProduct::class, 'one');
+        $image = $object->getImage();
+        $this->assertEquals($image, $object->Files()->first());
+    }
+
+    /**
+     *
+     */
     public function testGetPrice()
     {
         $object = $this->objFromFixture(ShopifyProduct::class, 'one');
@@ -55,6 +66,16 @@ class ShopifyProductTest extends SapphireTest
     {
         $object = $this->objFromFixture(ShopifyProduct::class, 'one');
         $expected = ShopifyProduct::getByShopifyID('12345');
-        $this->assertEquals($object, $expected);
+        $this->assertEquals($expected, $object);
+    }
+
+    /**
+     *
+     */
+    public function testGetByURLSegment()
+    {
+        $object = $this->objFromFixture(ShopifyProduct::class, 'one');
+        $expected = ShopifyProduct::getByURLSegment('product-one');
+        $this->assertEquals($expected, $object);
     }
 }

@@ -27,7 +27,7 @@ class ShopifyCollection extends \Page
      * @var string[]
      */
     private static $db = [
-        'ShopifyID' => 'Varchar',
+        'ShopifyID' => 'Varchar(255)',
     ];
 
     /**

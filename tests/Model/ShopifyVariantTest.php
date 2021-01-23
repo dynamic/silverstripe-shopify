@@ -31,6 +31,6 @@ class ShopifyVariantTest extends SapphireTest
     {
         $object = $this->objFromFixture(ShopifyVariant::class, 'one');
         $expected = ShopifyVariant::getByShopifyID('012345');
-        $this->assertEquals($object->getByShopifyID('012345'), $expected);
+        $this->assertEquals($expected, $object);
     }
 }

@@ -25,7 +25,7 @@ class ShopifyVariant extends DataObject
      */
     private static $db = [
         'Title' => 'Varchar(255)',
-        'ShopifyID' => 'Varchar',
+        'ShopifyID' => 'Varchar(255)',
         'SKU' => 'Varchar',
         'Price' => 'Currency',
         'CompareAtPrice' => 'Currency',

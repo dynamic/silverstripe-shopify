@@ -180,6 +180,15 @@ class ShopifyProduct extends \Page
                 GridField::create('Files', 'Files', $this->Files(), GridFieldConfig_RecordViewer::create())
             ]);
 
+            $fields->addFieldsToTab('Root.Collections', [
+                GridField::create(
+                    'Collections',
+                    'Collections',
+                    $this->Collections(),
+                    GridFieldConfig_RecordViewer::create()
+                )
+            ]);
+
             $fields->removeByName(['LinkTracking','FileTracking']);
         });
 
@@ -201,7 +210,7 @@ class ShopifyProduct extends \Page
      */
     public function getVariantWithLowestPrice()
     {
-        return DataObject::get_one(ProductVariant::class, ['ProductID' => $this->ID], true, 'Price ASC');
+        return DataObject::get_one(ShopifyVariant::class, ['ProductID' => $this->ID], true, 'Price ASC');
     }
 
     /**

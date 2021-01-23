@@ -5,3 +5,26 @@ Dynamic\Shopify\Page\ShopifyCollection:
 Dynamic\Shopify\Page\ShopifyProduct:
   one:
     Title: 'Product One'
+    Parent: =>Dynamic\Shopify\Page\ShopifyCollection.one
+    ShopifyID: '12345'
+    URLSegment: 'product-one'
+
+Dynamic\Shopify\Model\ShopifyVariant:
+  one:
+    Title: 'Variant One'
+    Product: =>Dynamic\Shopify\Page\ShopifyProduct.one
+    Price: 26.5
+    CompareAtPrice: 28.5
+  two:
+    Title: 'Variant Twp'
+    Product: =>Dynamic\Shopify\Page\ShopifyProduct.one
+    Price: 29.9
+    CompareAtPrice: 31.9
+
+Dynamic\Shopify\Model\ShopifyFile:
+  one:
+    Title: 'File One'
+    Product: =>Dynamic\Shopify\Page\ShopifyProduct.one
+  two:
+    Title: 'File Twp'
+    Product: =>Dynamic\Shopify\Page\ShopifyProduct.one

@@ -1,0 +1,4 @@
+Dynamic\Shopify\Model\ShopifyVariant:
+  one:
+    Title: 'Variant One'
+    ShopifyID: '012345'

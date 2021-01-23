@@ -25,5 +25,28 @@ class ShopifyCollectionTest extends SapphireTest
         $object = $this->objFromFixture(ShopifyCollection::class, 'one');
         $fields = $object->getCMSFields();
         $this->assertInstanceOf(FieldList::class, $fields);
+        $this->assertNotNull($fields->dataFieldByName('ShopifyID'));
+        $this->assertNotNull($fields->dataFieldByName('File'));
+        $this->assertNotNull($fields->dataFieldByName('Products'));
+    }
+
+    /**
+     *
+     */
+    public function testGetByShopifyID()
+    {
+        $object = $this->objFromFixture(ShopifyCollection::class, 'one');
+        $expected = ShopifyCollection::getByShopifyID('0012345');
+        $this->assertEquals($expected, $object);
+    }
+
+    /**
+     *
+     */
+    public function testGetByURLSegment()
+    {
+        $object = $this->objFromFixture(ShopifyCollection::class, 'one');
+        $expected = ShopifyCollection::getByURLSegment('collection-one');
+        $this->assertEquals($expected, $object);
     }
 }

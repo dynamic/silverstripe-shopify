@@ -13,6 +13,7 @@ use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\GraphQL\Scaffolding\Scaffolders\CRUD\Read;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Security;
 
@@ -31,11 +32,11 @@ class ShopifyFile extends File
      * @var string[]
      */
     private static $db = [
-        'SortOrder' => 'Int',
         'ShopifyID' => 'Varchar',
         'OriginalSrc' => 'Varchar',
         'Width' => 'Int',
         'Height' => 'Int',
+        'SortOrder' => 'Int',
     ];
 
     /**
@@ -106,8 +107,11 @@ class ShopifyFile extends File
                 $field->setReadonly(true);
             }
 
+            $fields->add(ReadonlyField::create('ShopifyID'));
+            $fields->add(ReadonlyField::create('OrginialSrc'));
             $fields->add(ReadonlyField::create('Width'));
             $fields->add(ReadonlyField::create('Height'));
+            $fields->add(ReadonlyField::create('SortOrder'));
         });
 
         return parent::getCMSFields();

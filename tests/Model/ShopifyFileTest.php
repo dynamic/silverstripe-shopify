@@ -25,5 +25,10 @@ class ShopifyFileTest extends SapphireTest
         $object = $this->objFromFixture(ShopifyFile::class, 'one');
         $fields = $object->getCMSFields();
         $this->assertInstanceOf(FieldList::class, $fields);
+        $this->assertNotNull($fields->dataFieldByName('ShopifyID'));
+        $this->assertNotNull($fields->dataFieldByName('OrginialSrc'));
+        $this->assertNotNull($fields->dataFieldByName('Width'));
+        $this->assertNotNull($fields->dataFieldByName('Height'));
+        $this->assertNotNull($fields->dataFieldByName('SortOrder'));
     }
 }

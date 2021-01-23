@@ -25,6 +25,9 @@ class ShopifyCollectionTest extends SapphireTest
         $object = $this->objFromFixture(ShopifyCollection::class, 'one');
         $fields = $object->getCMSFields();
         $this->assertInstanceOf(FieldList::class, $fields);
+        $this->assertNotNull($fields->dataFieldByName('ShopifyID'));
+        $this->assertNotNull($fields->dataFieldByName('File'));
+        $this->assertNotNull($fields->dataFieldByName('Products'));
     }
 
     /**
@@ -38,7 +41,7 @@ class ShopifyCollectionTest extends SapphireTest
     }
 
     /**
-     * 
+     *
      */
     public function testGetByURLSegment()
     {

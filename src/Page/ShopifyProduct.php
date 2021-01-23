@@ -51,7 +51,7 @@ class ShopifyProduct extends \Page
      * @var string[]
      */
     private static $db = [
-        'ShopifyID' => 'Varchar(255)',
+        'ShopifyID' => 'Varchar',
         'Vendor' => 'Varchar',
         'ProductType' => 'Varchar',
         'Tags' => 'Varchar',
@@ -178,6 +178,15 @@ class ShopifyProduct extends \Page
 
             $fields->addFieldsToTab('Root.Media', [
                 GridField::create('Files', 'Files', $this->Files(), GridFieldConfig_RecordViewer::create())
+            ]);
+
+            $fields->addFieldsToTab('Root.Collections', [
+                GridField::create(
+                    'Collections',
+                    'Collections',
+                    $this->Collections(),
+                    GridFieldConfig_RecordViewer::create()
+                )
             ]);
 
             $fields->removeByName(['LinkTracking','FileTracking']);

@@ -22,6 +22,12 @@ class ShopifyVariantTest extends SapphireTest
         $object = $this->objFromFixture(ShopifyVariant::class, 'one');
         $fields = $object->getCMSFields();
         $this->assertInstanceOf(FieldList::class, $fields);
+        $this->assertNotNull($fields->dataFieldByName('ShopifyID'));
+        $this->assertNotNull($fields->dataFieldByName('SKU'));
+        $this->assertNotNull($fields->dataFieldByName('Price'));
+        $this->assertNotNull($fields->dataFieldByName('CompareAtPrice'));
+        $this->assertNotNull($fields->dataFieldByName('SortOrder'));
+        $this->assertNotNull($fields->dataFieldByName('Inventory'));
     }
 
     /**

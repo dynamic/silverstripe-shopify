@@ -1,0 +1,9 @@
+Dynamic\Shopify\Page\ShopifyProduct:
+  one:
+    Title: 'Product One'
+  two:
+    Title: 'Product Two'
+  three:
+    Title: 'Product Three'
+  four:
+    Title: 'Product Four'

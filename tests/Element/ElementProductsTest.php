@@ -3,6 +3,8 @@
 namespace Dynamic\Shopify\Test\Element;
 
 use Dynamic\Shopify\Element\ElementProducts;
+use Dynamic\Shopify\Page\ShopifyProduct;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
 
@@ -22,7 +24,7 @@ class ElementProductsTest extends SapphireTest
      */
     public function testGetCMSFields()
     {
-        $object = $this->objFromFixture(ElementProducts::class, 'one');
+        $object = singleton(ElementProducts::class);
         $fields = $object->getCMSFields();
         $this->assertInstanceOf(FieldList::class, $fields);
     }
@@ -32,8 +34,16 @@ class ElementProductsTest extends SapphireTest
      */
     public function testGetProductsList()
     {
-        $object = $this->objFromFixture(ElementProducts::class, 'one');
+        $object = singleton(ElementProducts::class);
+        $object->Limit = 3;
+        $product_one = $this->objFromFixture(ShopifyProduct::class, 'one');
+        $product_two = $this->objFromFixture(ShopifyProduct::class, 'two');
+        $object->Products()->add($product_one);
+        $object->Products()->add($product_two);
+        $object->write();
+
         $products = $object->getProductsList();
+        Debug::show($products);
         $this->assertEquals(2, $object->Products()->count());
         $this->assertEquals(3, (int)$products->count());
 

@@ -7,8 +7,3 @@ Dynamic\Shopify\Page\ShopifyProduct:
     Title: 'Product Three'
   four:
     Title: 'Product Four'
-
-Dynamic\Shopify\Element\ElementProducts:
-  one:
-    Title: 'Products Block One'
-    Products: =>Dynamic\Shopify\Page\ShopifyProduct.one, =>Dynamic\Shopify\Page\ShopifyProduct.two

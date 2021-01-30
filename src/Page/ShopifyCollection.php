@@ -92,6 +92,14 @@ class ShopifyCollection extends \Page
     ];
 
     /**
+     * @var string[]
+     */
+    private static $allowed_children = [
+        ShopifyCollection::class,
+        ShopifyProduct::class,
+    ];
+
+    /**
      * @return FieldList
      */
     public function getCMSFields()
@@ -111,7 +119,9 @@ class ShopifyCollection extends \Page
 
             $fields->addFieldsToTab('Root.Details', [
                 ReadonlyField::create('ShopifyID'),
-                UploadField::create('File')->performReadonlyTransformation(),
+                UploadField::create('File')
+                    ->setTitle('Image')
+                    ->performReadonlyTransformation(),
             ]);
 
             $fields->addFieldsToTab('Root.Products', [

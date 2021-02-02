@@ -29,6 +29,8 @@ class ShopifyCollection extends \Page
      */
     private static $db = [
         'ShopifyID' => 'Varchar',
+        'Published' => 'Boolean',
+        'PublishedAt' => 'Datetime',
     ];
 
     /**
@@ -41,6 +43,8 @@ class ShopifyCollection extends \Page
         'body_html' => 'Content',
         'updated_at' => 'LastEdited',
         'created_at' => 'Created',
+        'published' => 'Published',
+        'published_at' => 'PublishedAt',
     ];
 
     /**
@@ -123,6 +127,8 @@ class ShopifyCollection extends \Page
                 UploadField::create('File')
                     ->setTitle('Image')
                     ->performReadonlyTransformation(),
+                ReadonlyField::create('Published'),
+                ReadonlyField::create('PublishedAt'),
             ]);
 
             $fields->addFieldsToTab('Root.Products', [
@@ -150,11 +156,8 @@ class ShopifyCollection extends \Page
     }
 
     /**
-     * Creates a new Shopify Collection from the given data
-     * but does not publish it
-     *
      * @param $shopifyCollection
-     * @return ProductCollection
+     * @return ProductCollection|ShopifyCollection
      * @throws \SilverStripe\ORM\ValidationException
      */
     public static function findOrMakeFromShopifyData($shopifyCollection)
@@ -168,6 +171,9 @@ class ShopifyCollection extends \Page
 
         if ($collection->isChanged()) {
             $collection->write();
+            if ($collection->isPublished()) {
+                $collection->publishRecursive();
+            }
         }
 
         return $collection;

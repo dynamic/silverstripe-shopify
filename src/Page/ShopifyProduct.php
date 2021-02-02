@@ -57,7 +57,7 @@ class ShopifyProduct extends \Page
         'Vendor' => 'Varchar',
         'ProductType' => 'Varchar',
         'Tags' => 'Varchar',
-        'Status' => 'Enum(array("active","archived","draft"))',
+        'Status' => 'Varchar(20)',
     ];
 
     /**

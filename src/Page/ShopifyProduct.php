@@ -41,9 +41,9 @@ class ShopifyProduct extends \Page
             'contents' => [
                 'title' => false,
                 'variantTitle' => false,
-                'price' => false,
+                'price' => true,
                 'description' => false,
-                'quantity' => false,
+                'quantity' => true,
                 'img' => false,
             ]
         ]

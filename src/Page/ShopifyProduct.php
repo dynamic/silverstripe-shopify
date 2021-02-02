@@ -57,7 +57,7 @@ class ShopifyProduct extends \Page
         'Vendor' => 'Varchar',
         'ProductType' => 'Varchar',
         'Tags' => 'Varchar',
-        'Status' => 'Varchar',
+        'Status' => 'Enum(array("active","archived","draft"))',
     ];
 
     /**
@@ -291,11 +291,8 @@ JS
     }
 
     /**
-     * Creates a new Shopify Product from the given data
-     * but does not publish it
-     *
      * @param $shopifyProduct
-     * @return Product
+     * @return ShopifyProduct
      * @throws \SilverStripe\ORM\ValidationException
      */
     public static function findOrMakeFromShopifyData($shopifyProduct)
@@ -309,6 +306,9 @@ JS
 
         if ($product->isChanged()) {
             $product->write();
+            if ($product->isPublished()) {
+                $product->publishRecursive();
+            }
         }
 
         return $product;

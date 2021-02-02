@@ -11,6 +11,7 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\Security;
 
 /**
  * Class ShopifyCollection
@@ -130,6 +131,22 @@ class ShopifyCollection extends \Page
         });
 
         return parent::getCMSFields();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProductList()
+    {
+        $products = $this->Products();
+
+        $this->extend('updateProductList', $products);
+
+        $products = $products->filterByCallback(function ($page) {
+            return $page->canView(Security::getCurrentUser());
+        });
+
+        return $products;
     }
 
     /**

@@ -238,6 +238,18 @@ class ShopifyProduct extends \Page
     }
 
     /**
+     * @return string|null
+     */
+    public function getSKU()
+    {
+        if ($this->Variants()->exists()) {
+            return $this->Variants()->first()->SKU;
+        }
+
+        return null;
+    }
+
+    /**
      * Creates a new Shopify Product from the given data
      * but does not publish it
      *

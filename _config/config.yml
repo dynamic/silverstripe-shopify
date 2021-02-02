@@ -11,3 +11,7 @@ Dynamic\Shopify\Page\ShopifyProduct:
 SilverStripe\Security\Member:
   extensions:
     - Dynamic\Shopify\Extension\ShopifyMember
+
+PageController:
+  extensions:
+    - Dynamic\Shopify\Extension\ShopifyExtension

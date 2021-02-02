@@ -6,12 +6,14 @@ use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Model\ShopifyVariant;
 use Dynamic\Shopify\Task\ShopifyImportTask;
 use SilverStripe\AssetAdmin\Forms\UploadField;
+use SilverStripe\Core\Convert;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBCurrency;
+use SilverStripe\View\Requirements;
 
 /**
  * Class ShopifyProduct
@@ -202,6 +204,45 @@ class ShopifyProduct extends \Page
     {
         if ($this->Files()) {
             return $this->Files()->first();
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getButtonOptions()
+    {
+        return Convert::array2json(array_merge_recursive(self::config()->get('options'), [
+            'product' => [
+                'text' => [
+                    'button' => _t('Shopify.ProductButton', 'Add to cart'),
+                    'outOfStock' => _t('Shopify.ProductOutOfStock', 'Out of stock'),
+                    'unavailable' => _t('Shopify.ProductUnavailable', 'Unavailable'),
+                ]
+            ]
+        ]));
+    }
+
+    /**
+     *
+     */
+    public function getButtonScript()
+    {
+        if ($this->ShopifyID) {
+            $currencySymbol = DBCurrency::config()->get('currency_symbol');
+            Requirements::customScript(<<<JS
+            (function () {
+                if (window.shopifyClient) {
+                    window.shopifyClient.createComponent('product', {
+                        id: {$this->ShopifyID},
+                        node: document.getElementById('product-component-{$this->ShopifyID}'),
+                        moneyFormat: '$currencySymbol{{amount}}',
+                        options: {$this->ButtonOptions}
+                    });
+                }
+            })();
+JS
+            );
         }
     }
 

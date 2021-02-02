@@ -202,16 +202,6 @@ class ShopifyImportTask extends BuildTask
                         }
                     }
 
-                    // attach the featured image
-                    if (($image = $shopifyProduct->image) && ($imageID = $image->id) &&
-                        ($image = ShopifyFile::getByShopifyID($imageID))) {
-                        try {
-                            $product->ImageID = $image->ID;
-                        } catch (\Exception $e) {
-                            self::log($e->getMessage(), self::ERROR);
-                        }
-                    }
-
                     // Create the variants
                     if (!empty($shopifyProduct->variants)) {
                         $keepVariants = [];
@@ -280,7 +270,6 @@ class ShopifyImportTask extends BuildTask
                     foreach ($product->Variants() as $variant) {
                         /** @var ShopifyVariant $variant */
                         $variantId = $variant->ShopifyID;
-                        $variant->doUnpublish();
                         $variant->delete();
                         self::log("[$shopifyId][$variantId] Deleted variant connected to product", self::SUCCESS);
                     }

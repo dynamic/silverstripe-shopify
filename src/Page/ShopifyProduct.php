@@ -32,24 +32,6 @@ class ShopifyProduct extends \Page
     private static $currency = 'USD';
 
     /**
-     * @var \false[][][]
-     *
-     * Set options for the Buy Button display
-     */
-    private static $options = [
-        'product' => [
-            'contents' => [
-                'title' => false,
-                'variantTitle' => false,
-                'price' => true,
-                'description' => false,
-                'quantity' => true,
-                'img' => false,
-            ]
-        ]
-    ];
-
-    /**
      * @var string[]
      */
     private static $db = [
@@ -58,24 +40,6 @@ class ShopifyProduct extends \Page
         'ProductType' => 'Varchar',
         'Tags' => 'Varchar',
         'Status' => 'Varchar(20)',
-    ];
-
-    /**
-     * @var string[]
-     *
-     * Field mappings from Shopify
-     */
-    private static $data_map = [
-        'id' => 'ShopifyID',
-        'title' => 'Title',
-        'body_html' => 'Content',
-        'vendor' => 'Vendor',
-        'product_type' => 'ProductType',
-        'created_at' => 'Created',
-        'handle' => 'URLSegment',
-        'status' => 'Status',
-        'updated_at' => 'LastEdited',
-        'tags' => 'Tags',
     ];
 
     /**
@@ -147,6 +111,42 @@ class ShopifyProduct extends \Page
     ];
 
     /**
+     * @var string[]
+     *
+     * Field mappings from Shopify
+     */
+    private static $data_map = [
+        'id' => 'ShopifyID',
+        'title' => 'Title',
+        'body_html' => 'Content',
+        'vendor' => 'Vendor',
+        'product_type' => 'ProductType',
+        'created_at' => 'Created',
+        'handle' => 'URLSegment',
+        'status' => 'Status',
+        'updated_at' => 'LastEdited',
+        'tags' => 'Tags',
+    ];
+
+    /**
+     * @var \array[][]
+     *
+     * Set options for the Buy Button display
+     */
+    private static $options = [
+        'product' => [
+            'contents' => [
+                'title' => false,
+                'variantTitle' => false,
+                'price' => true,
+                'description' => false,
+                'quantity' => true,
+                'img' => false,
+            ]
+        ]
+    ];
+
+    /**
      * @return FieldList
      */
     public function getCMSFields()
@@ -174,24 +174,41 @@ class ShopifyProduct extends \Page
                 ]
             );
 
-            $fields->addFieldsToTab('Root.Variants', [
-                GridField::create('Variants', 'Variants', $this->Variants(), GridFieldConfig_RecordViewer::create())
-            ]);
+            $fields->addFieldsToTab(
+                'Root.Variants',
+                [
+                    GridField::create(
+                        'Variants',
+                        'Variants',
+                        $this->Variants(),
+                        GridFieldConfig_RecordViewer::create()
+                    )
+                ]
+            );
 
-            $fields->addFieldsToTab('Root.Media', [
-                GridField::create('Files', 'Files', $this->Files(), GridFieldConfig_RecordViewer::create())
-            ]);
+            $fields->addFieldsToTab(
+                'Root.Media',
+                [
+                    GridField::create(
+                        'Files',
+                        'Files',
+                        $this->Files(),
+                        GridFieldConfig_RecordViewer::create()
+                    )
+                ]
+            );
 
-            $fields->addFieldsToTab('Root.Collections', [
-                GridField::create(
-                    'Collections',
-                    'Collections',
-                    $this->Collections(),
-                    GridFieldConfig_RecordViewer::create()
-                )
-            ]);
-
-            $fields->removeByName(['LinkTracking','FileTracking']);
+            $fields->addFieldsToTab(
+                'Root.Collections',
+                [
+                    GridField::create(
+                        'Collections',
+                        'Collections',
+                        $this->Collections(),
+                        GridFieldConfig_RecordViewer::create()
+                    )
+                ]
+            );
         });
 
         return parent::getCMSFields();
@@ -202,7 +219,7 @@ class ShopifyProduct extends \Page
      */
     public function getImage()
     {
-        if ($this->Files()) {
+        if ($this->Files()->exists()) {
             return $this->Files()->first();
         }
     }

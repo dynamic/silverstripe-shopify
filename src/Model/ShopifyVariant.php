@@ -36,21 +36,6 @@ class ShopifyVariant extends DataObject
     /**
      * @var string[]
      */
-    private static $data_map = [
-        'title'=> 'Title',
-        'id'=> 'ShopifyID',
-        'sku'=> 'SKU',
-        'price'=> 'Price',
-        'compare_at_price'=> 'CompareAtPrice',
-        'position' => 'SortOrder',
-        'created_at' => 'Created',
-        'updated_at' => 'LastEdited',
-        'inventory_quantity' => 'Inventory',
-    ];
-
-    /**
-     * @var string[]
-     */
     private static $has_one = [
         'Product' => ShopifyProduct::class,
         'File' => ShopifyFile::class
@@ -61,10 +46,17 @@ class ShopifyVariant extends DataObject
     ];
 
     /**
+     * @var string[]
+     */
+    private static $cascade_deletes = [
+        'File',
+    ];
+
+    /**
      * @var bool[]
      */
     private static $indexes = [
-        'ShopifyID' => true
+        'ShopifyID' => true,
     ];
 
     /**
@@ -73,7 +65,7 @@ class ShopifyVariant extends DataObject
     private static $summary_fields = [
         'File.CMSThumbnail' => 'Image',
         'Title',
-        'Price',
+        'Price.Nice' => 'Price',
         'SKU',
         'ShopifyID'
     ];
@@ -91,8 +83,16 @@ class ShopifyVariant extends DataObject
     /**
      * @var string[]
      */
-    private static $cascade_deletes = [
-        'File',
+    private static $data_map = [
+        'title'=> 'Title',
+        'id'=> 'ShopifyID',
+        'sku'=> 'SKU',
+        'price'=> 'Price',
+        'compare_at_price'=> 'CompareAtPrice',
+        'position' => 'SortOrder',
+        'created_at' => 'Created',
+        'updated_at' => 'LastEdited',
+        'inventory_quantity' => 'Inventory',
     ];
 
     /**

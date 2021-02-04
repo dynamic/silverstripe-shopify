@@ -5,7 +5,6 @@ namespace Dynamic\Shopify\Test\Element;
 use DNADesign\Elemental\Models\BaseElement;
 use Dynamic\Shopify\Element\ElementProducts;
 use Dynamic\Shopify\Page\ShopifyProduct;
-use SilverStripe\Dev\Debug;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
 
@@ -48,7 +47,6 @@ class ElementProductsTest extends SapphireTest
         $object->write();
 
         $products = $object->getProductsList();
-        Debug::show($products);
         $this->assertEquals(2, $object->Products()->count());
         $this->assertEquals(3, (int)$products->count());
 

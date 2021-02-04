@@ -16,7 +16,7 @@ use SilverStripe\View\Requirements;
 class ShopifyExtension extends Extension
 {
     /**
-     * @return mixed
+     * @return string
      */
     public function getCartOptions()
     {
@@ -34,6 +34,9 @@ class ShopifyExtension extends Extension
         ]));
     }
 
+    /**
+     *
+     */
     public function onAfterInit()
     {
         if (ShopifyClient::config()->get('inject_javascript') !== false) {

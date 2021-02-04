@@ -225,7 +225,7 @@ class ShopifyProduct extends \Page
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getButtonOptions()
     {

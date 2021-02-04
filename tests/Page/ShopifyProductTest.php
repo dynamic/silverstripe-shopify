@@ -50,6 +50,16 @@ class ShopifyProductTest extends SapphireTest
     /**
      *
      */
+    public function testGetButtonOptions()
+    {
+        $object = $this->objFromFixture(ShopifyProduct::class, 'one');
+        $script = $object->getButtonOptions();
+        $this->assertInternalType('string', $script);
+    }
+
+    /**
+     *
+     */
     public function testGetPrice()
     {
         $object = $this->objFromFixture(ShopifyProduct::class, 'one');
@@ -65,6 +75,16 @@ class ShopifyProductTest extends SapphireTest
         $object = $this->objFromFixture(ShopifyProduct::class, 'one');
         $variant = $this->objFromFixture(ShopifyVariant::class, 'one');
         $this->assertEquals($object->getCompareAtPrice(), $variant->dbObject('CompareAtPrice'));
+    }
+
+    /**
+     *
+     */
+    public function testGetSKU()
+    {
+        $object = $this->objFromFixture(ShopifyProduct::class, 'one');
+        $sku = $object->getSKU();
+        $this->assertEquals($sku, '12345');
     }
 
     /**

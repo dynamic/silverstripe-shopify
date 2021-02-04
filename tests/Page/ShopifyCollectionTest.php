@@ -5,6 +5,7 @@ namespace Dynamic\Shopify\Test\Page;
 use Dynamic\Shopify\Page\ShopifyCollection;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\ORM\ArrayList;
 
 /**
  * Class ShopifyCollectionTest
@@ -28,6 +29,16 @@ class ShopifyCollectionTest extends SapphireTest
         $this->assertNotNull($fields->dataFieldByName('ShopifyID'));
         $this->assertNotNull($fields->dataFieldByName('File'));
         $this->assertNotNull($fields->dataFieldByName('Products'));
+    }
+
+    /**
+     *
+     */
+    public function testGetProductList()
+    {
+        $object = $this->objFromFixture(ShopifyCollection::class, 'one');
+        $products = $object->getProductList();
+        $this->assertInstanceOf(ArrayList::class, $products);
     }
 
     /**

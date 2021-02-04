@@ -15,11 +15,13 @@ Dynamic\Shopify\Model\ShopifyVariant:
     Product: =>Dynamic\Shopify\Page\ShopifyProduct.one
     Price: 26.5
     CompareAtPrice: 28.5
+    SKU: '12345'
   two:
     Title: 'Variant Twp'
     Product: =>Dynamic\Shopify\Page\ShopifyProduct.one
     Price: 29.9
     CompareAtPrice: 31.9
+    SKU: '12346'
 
 Dynamic\Shopify\Model\ShopifyFile:
   one:

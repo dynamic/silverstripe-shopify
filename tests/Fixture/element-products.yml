@@ -7,3 +7,9 @@ Dynamic\Shopify\Page\ShopifyProduct:
     Title: 'Product Three'
   four:
     Title: 'Product Four'
+
+Dynamic\Shopify\Element\ElementProducts:
+  one:
+    Title: 'Product Block One'
+    Products: =>Dynamic\Shopify\Page\ShopifyProduct.one, =>Dynamic\Shopify\Page\ShopifyProduct.two
+    Limit: 3

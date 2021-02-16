@@ -13,6 +13,10 @@ use SilverStripe\Versioned\GridFieldArchiveAction;
 use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 
+/**
+ * Class RelatedProductsExtension
+ * @package Dynamic\Shopify\Extension
+ */
 class RelatedProductsExtension extends DataExtension
 {
     /**

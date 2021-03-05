@@ -82,6 +82,13 @@ class ShopifyProduct extends \Page
     ];
 
     /**
+     * @var int[]
+     */
+    private static $defaults = [
+        'ShowInMenus' => 0,
+    ];
+
+    /**
      * @var string
      */
     private static $default_sort = 'Created DESC';

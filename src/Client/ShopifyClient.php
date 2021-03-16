@@ -3,12 +3,24 @@
 namespace Dynamic\Shopify\Client;
 
 use Exception;
-use SilverStripe\Control\Controller;
+use GuzzleHttp\Promise\Promise;
+use Osiset\BasicShopifyAPI\BasicShopifyAPI;
+use Osiset\BasicShopifyAPI\Options;
+use Osiset\BasicShopifyAPI\Session;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Dev\Debug;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\View\ArrayData;
 
+/**
+ * Class ShopifyClient
+ * @package Dynamic\Shopify\Client
+ */
 class ShopifyClient
 {
     use Configurable;
+    use Injectable;
 
     const EXCEPTION_NO_API_KEY = 0;
     const EXCEPTION_NO_API_PASSWORD = 1;
@@ -53,28 +65,63 @@ class ShopifyClient
     private static $inject_javascript = true;
 
     /**
-     * @var \GuzzleHttp\Client|null
+     * @var BasicShopifyAPI
      */
     protected $client = null;
 
+    /**
+     * @param array $options
+     * @return array|Promise
+     * @throws Exception
+     */
     public function products(array $options = [])
     {
-        return $this->client->request('GET', 'products.json', $options);
+        return $this->getClient()->graph('
+{
+    shop {
+        products(first: 250) {
+            edges {
+                node {
+                    id
+                    title
+                    bodyHtml
+                    vendor
+                    productType
+                    createdAt
+                    handle
+                    updatedAt
+                    tags
+                }
+            }
+        }
+    }
+}
+');
     }
 
     /**
-     * Get information about a specific product
-     *
-     * @param string $productId
-     *
-     * @return mixed|\Psr\Http\Message\ResponseInterface
-     *
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Exception
+     * @param $productId
+     * @param array $options
+     * @return array|Promise
+     * @throws Exception
      */
     public function product($productId, array $options = [])
     {
-        return $this->client->request('GET', "products/$productId.json", $options);
+        return $this->getClient()->graph("
+{
+    product(id: \"gid://shopify/Product/{$productId}\") {
+        id
+        title
+        bodyHtml
+        vendor
+        productType
+        createdAt
+        handle
+        updatedAt
+        tags
+    }
+}
+");
     }
 
     /**
@@ -82,7 +129,7 @@ class ShopifyClient
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function productListingIds(array  $options = [])
+    public function productListingIds(array $options = [])
     {
         return $this->client->request('GET', "product_listings/product_ids.json", $options);
     }
@@ -116,9 +163,20 @@ class ShopifyClient
      */
     public function __construct()
     {
-        if (!$key = self::config()->get('api_key')) {
+        $this->setClient();
+    }
+
+    /**
+     * @return $this
+     * @throws Exception
+     *
+     * TODO move config fetches to separate methods, supporting ENV values as well
+     */
+    protected function setClient()
+    {
+        /*if (!$key = self::config()->get('api_key')) {
             throw new Exception('No api key is set.', self::EXCEPTION_NO_API_KEY);
-        }
+        }//*/
 
         if (!$password = self::config()->get('api_password')) {
             throw new Exception('No api password is set.', self::EXCEPTION_NO_API_PASSWORD);
@@ -128,14 +186,29 @@ class ShopifyClient
             throw new Exception('No shopify domain is set.', self::EXCEPTION_NO_DOMAIN);
         }
 
-        $version = self::config()->get('api_version');
+        $options = new Options();
+        $options->setVersion('2020-01');//static::config()->get('api_version')
+        $options->setApiPassword($password);
+        $options->setType(true);
 
-        $this->client = new \GuzzleHttp\Client([
-            'base_uri' => Controller::join_links(["https://$domain", 'admin/api', $version, '/']),
-            'headers' => [
-                'Content-Type' => 'application/json; charset=utf-8',
-                'Authorization' => 'Basic ' . base64_encode("$key:$password")
-            ]
-        ]);
+        $client = new BasicShopifyAPI($options);
+        $client->setSession(new Session($domain));
+
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * @return BasicShopifyAPI|null
+     * @throws Exception
+     */
+    protected function getClient()
+    {
+        if (!$this->client) {
+            $this->setClient();
+        }
+
+        return $this->client;
     }
 }

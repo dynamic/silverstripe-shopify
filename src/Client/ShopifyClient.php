@@ -131,7 +131,19 @@ class ShopifyClient
      */
     public function productListingIds(array $options = [])
     {
-        return $this->client->request('GET', "product_listings/product_ids.json", $options);
+        return $this->getClient()->graph('
+{
+  products(first: 250) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+        ');
+
+        //return $this->client->request('GET', "product_listings/product_ids.json", $options);
     }
 
     /**
@@ -142,18 +154,52 @@ class ShopifyClient
      */
     public function collections(array $options = [])
     {
-        return $this->client->request('GET', 'custom_collections.json', $options);
+        return $this->getClient()->graph('
+{
+    shop {
+        collections(first: 250) {
+            edges {
+                node {
+                    id
+                    title
+                    handle
+                    descriptionHtml
+                    productsCount
+                    updatedAt
+                    sortOrder
+                    publishedOnCurrentPublication
+                }
+            }
+        }
+    }
+}
+');
     }
 
     /**
-     * Get the connections between Products and Collections
+     * return products of a given collection by handle
      *
-     * @return mixed|\Psr\Http\Message\ResponseInterface
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param $handle
+     * @param array $options
+     * @return array|Promise
+     * @throws Exception
      */
-    public function collects(array $options = [])
+    public function collectionProducts($handle, array $options = [])
     {
-        return $this->client->request('GET', 'collects.json', $options);
+        return $this->getClient()->graph("
+{
+    collectionByHandle(handle: \"{$handle}\") {
+        products(first: 100) {
+            edges {
+                node {
+                    id
+                    title
+                }
+            }
+        }
+    }
+}
+        ");
     }
 
     /**

@@ -29,8 +29,9 @@ class ShopifyCollection extends \Page
      */
     private static $db = [
         'ShopifyID' => 'Varchar',
+        'ProductsCt' => 'Int',
+        'SortOrder' => 'Varchar(20)',
         'Published' => 'Boolean',
-        'PublishedAt' => 'Datetime',
     ];
 
     /**
@@ -38,13 +39,14 @@ class ShopifyCollection extends \Page
      */
     private static $data_map = [
         'id' => 'ShopifyID',
-        'handle' => 'URLSegment',
         'title' => 'Title',
-        'body_html' => 'Content',
-        'updated_at' => 'LastEdited',
-        'created_at' => 'Created',
-        'published' => 'Published',
-        'published_at' => 'PublishedAt',
+        'handle' => 'URLSegment',
+        'descriptionHtml' => 'Content',
+        'productsCount' => 'ProductsCt',
+        'createdAt' => 'Created',
+        'updatedAt' => 'LastEdited',
+        'sortOrder' => 'SortOrder',
+        'publishedOnCurrentPublication' => 'Published',
     ];
 
     /**

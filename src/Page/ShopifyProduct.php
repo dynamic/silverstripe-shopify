@@ -125,13 +125,13 @@ class ShopifyProduct extends \Page
     private static $data_map = [
         'id' => 'ShopifyID',
         'title' => 'Title',
-        'body_html' => 'Content',
+        'bodyHtml' => 'Content',
         'vendor' => 'Vendor',
-        'product_type' => 'ProductType',
-        'created_at' => 'Created',
+        'productType' => 'ProductType',
+        'createdAt' => 'Created',
         'handle' => 'URLSegment',
         'status' => 'Status',
-        'updated_at' => 'LastEdited',
+        'updatedAt' => 'LastEdited',
         'tags' => 'Tags',
     ];
 

@@ -244,8 +244,8 @@ class ShopifyClient
     }
 }
             ',
-            $options)
-        ;
+            $options
+        );
     }
 
     /**

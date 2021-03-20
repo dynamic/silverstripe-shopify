@@ -143,7 +143,8 @@ class ShopifyClient
      */
     public function products(array $options = [])
     {
-        return $this->getClient()->graph('
+        return $this->getClient()->graph(
+            '
 {
     shop {
         products(first: 250) {
@@ -151,19 +152,20 @@ class ShopifyClient
                 node {
                     id
                     title
-                    bodyHtml
+                    handle
+                    descriptionHtml
                     vendor
                     productType
                     createdAt
-                    handle
                     updatedAt
-                    tags
                 }
             }
         }
     }
 }
-');
+            ',
+            $options
+        );
     }
 
     /**
@@ -221,7 +223,8 @@ class ShopifyClient
      */
     public function collections(array $options = [])
     {
-        return $this->getClient()->graph('
+        return $this->getClient()->graph(
+            '
 {
     shop {
         collections(first: 250) {
@@ -240,7 +243,9 @@ class ShopifyClient
         }
     }
 }
-');
+            ',
+            $options)
+        ;
     }
 
     /**
@@ -253,7 +258,8 @@ class ShopifyClient
      */
     public function collectionProducts($handle, array $options = [])
     {
-        return $this->getClient()->graph("
+        return $this->getClient()->graph(
+            "
 {
     collectionByHandle(handle: \"{$handle}\") {
         products(first: 100) {
@@ -266,6 +272,8 @@ class ShopifyClient
         }
     }
 }
-        ");
+            ",
+            $options
+        );
     }
 }

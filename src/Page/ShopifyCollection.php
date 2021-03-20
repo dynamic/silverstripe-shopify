@@ -95,7 +95,8 @@ class ShopifyCollection extends \Page
     private static $summary_fields = [
         'File.CMSThumbnail' => 'Image',
         'Title',
-        'ShopifyID'
+        'ShopifyID',
+        'ProductsCt' => 'Products',
     ];
 
     /**

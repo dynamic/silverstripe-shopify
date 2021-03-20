@@ -38,8 +38,8 @@ class ShopifyProduct extends \Page
         'ShopifyID' => 'Varchar',
         'Vendor' => 'Varchar',
         'ProductType' => 'Varchar',
-        'Tags' => 'Varchar',
-        'Status' => 'Varchar(20)',
+        //'Tags' => 'Varchar',
+        //'Status' => 'Varchar(20)',
     ];
 
     /**
@@ -125,14 +125,13 @@ class ShopifyProduct extends \Page
     private static $data_map = [
         'id' => 'ShopifyID',
         'title' => 'Title',
-        'bodyHtml' => 'Content',
+        'handle' => 'URLSegment',
+        'descriptionHtml' => 'Content',
         'vendor' => 'Vendor',
         'productType' => 'ProductType',
         'createdAt' => 'Created',
-        'handle' => 'URLSegment',
-        'status' => 'Status',
         'updatedAt' => 'LastEdited',
-        'tags' => 'Tags',
+        //'tags' => 'Tags',
     ];
 
     /**
@@ -176,8 +175,8 @@ class ShopifyProduct extends \Page
                     ReadonlyField::create('ShopifyID'),
                     ReadonlyField::create('Vendor'),
                     ReadonlyField::create('ProductType'),
-                    ReadonlyField::create('Tags'),
-                    ReadonlyField::create('Status'),
+                    //ReadonlyField::create('Tags'),
+                    //ReadonlyField::create('Status'),
                 ]
             );
 

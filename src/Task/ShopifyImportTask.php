@@ -336,8 +336,8 @@ class ShopifyImportTask extends BuildTask
                         }
 
                         $lastId = $product->ShopifyID;
-                        self::log("[{$this->parseShopifyID($shopifyCollect->node->id)}] Created collect between Product[{$product->ID}] and
-                        Collection[{$collection->ID}]", self::SUCCESS);
+                        self::log("[{$this->parseShopifyID($shopifyCollect->node->id)}] Created collect between
+                        Product[{$product->ID}] and Collection[{$collection->ID}]", self::SUCCESS);
                     }
                 }
 

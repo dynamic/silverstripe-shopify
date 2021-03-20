@@ -16,6 +16,8 @@ use SilverStripe\View\ArrayData;
 /**
  * Class ShopifyClient
  * @package Dynamic\Shopify\Client
+ *
+ * @mixin BasicShopifyAPI
  */
 class ShopifyClient
 {
@@ -68,6 +70,71 @@ class ShopifyClient
      * @var BasicShopifyAPI
      */
     protected $client = null;
+
+    /**
+     * Get the configured Guzzle client
+     *
+     * @throws Exception
+     */
+    public function __construct()
+    {
+        $this->setClient();
+    }
+
+    /**
+     * @param string $method
+     * @param array $args
+     */
+    public function __call(string $method, array $args)
+    {
+        return call_user_func_array([$this->getClient(), $method], $args);
+    }
+
+    /**
+     * @return $this
+     * @throws Exception
+     *
+     * TODO move config fetches to separate methods, supporting ENV values as well
+     */
+    protected function setClient()
+    {
+        /*if (!$key = self::config()->get('api_key')) {
+            throw new Exception('No api key is set.', self::EXCEPTION_NO_API_KEY);
+        }//*/
+
+        if (!$password = self::config()->get('api_password')) {
+            throw new Exception('No api password is set.', self::EXCEPTION_NO_API_PASSWORD);
+        }
+
+        if (!$domain = self::config()->get('shopify_domain')) {
+            throw new Exception('No shopify domain is set.', self::EXCEPTION_NO_DOMAIN);
+        }
+
+        $options = new Options();
+        $options->setVersion('2020-01');//static::config()->get('api_version')
+        $options->setApiPassword($password);
+        $options->setType(true);
+
+        $client = new BasicShopifyAPI($options);
+        $client->setSession(new Session($domain));
+
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * @return BasicShopifyAPI|null
+     * @throws Exception
+     */
+    protected function getClient()
+    {
+        if (!$this->client) {
+            $this->setClient();
+        }
+
+        return $this->client;
+    }
 
     /**
      * @param array $options
@@ -200,61 +267,5 @@ class ShopifyClient
     }
 }
         ");
-    }
-
-    /**
-     * Get the configured Guzzle client
-     *
-     * @throws Exception
-     */
-    public function __construct()
-    {
-        $this->setClient();
-    }
-
-    /**
-     * @return $this
-     * @throws Exception
-     *
-     * TODO move config fetches to separate methods, supporting ENV values as well
-     */
-    protected function setClient()
-    {
-        /*if (!$key = self::config()->get('api_key')) {
-            throw new Exception('No api key is set.', self::EXCEPTION_NO_API_KEY);
-        }//*/
-
-        if (!$password = self::config()->get('api_password')) {
-            throw new Exception('No api password is set.', self::EXCEPTION_NO_API_PASSWORD);
-        }
-
-        if (!$domain = self::config()->get('shopify_domain')) {
-            throw new Exception('No shopify domain is set.', self::EXCEPTION_NO_DOMAIN);
-        }
-
-        $options = new Options();
-        $options->setVersion('2020-01');//static::config()->get('api_version')
-        $options->setApiPassword($password);
-        $options->setType(true);
-
-        $client = new BasicShopifyAPI($options);
-        $client->setSession(new Session($domain));
-
-        $this->client = $client;
-
-        return $this;
-    }
-
-    /**
-     * @return BasicShopifyAPI|null
-     * @throws Exception
-     */
-    protected function getClient()
-    {
-        if (!$this->client) {
-            $this->setClient();
-        }
-
-        return $this->client;
     }
 }

@@ -33,7 +33,7 @@ class ShopifyFile extends File
      */
     private static $db = [
         'ShopifyID' => 'Varchar',
-        'OriginalSrc' => 'Varchar',
+        'OriginalSrc' => 'Varchar(255)',
         'Width' => 'Int',
         'Height' => 'Int',
         'SortOrder' => 'Int',
@@ -44,11 +44,11 @@ class ShopifyFile extends File
      */
     private static $data_map = [
         'id' => 'ShopifyID',
-        'alt' => 'Title',
-        'position' => 'SortOrder',
-        'src' => 'OriginalSrc',
-        'created_at' => 'Created',
-        'updated_at' => 'LastEdited',
+        'altText' => 'Title',
+        //'position' => 'SortOrder',
+        'originalSrc' => 'OriginalSrc',
+        //'created_at' => 'Created',
+        //'updated_at' => 'LastEdited',
         'width' => 'Width',
         'height' => 'Height',
     ];
@@ -130,13 +130,12 @@ class ShopifyFile extends File
         if (!$image = self::getByShopifyID($shopifyImage->id)) {
             $image = self::create();
         }
-
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $image, $shopifyImage);
 
         // import the image if the source has changed
         if ($image->isChanged('OriginalSrc', DataObject::CHANGE_VALUE)) {
-            $folder = isset($shopifyImage->product_id) ? $shopifyImage->product_id : 'collection';
+            $folder = isset($image->ProductID) ? $image->ProductID : 'collection';
             $image->downloadImage($image->OriginalSrc, "shopify/$folder");
         }
 

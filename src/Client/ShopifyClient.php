@@ -147,7 +147,7 @@ class ShopifyClient
             '
 {
     shop {
-        products(first: 250) {
+        products(first: 50) {
             edges {
                 node {
                     id
@@ -158,6 +158,15 @@ class ShopifyClient
                     productType
                     createdAt
                     updatedAt
+                    images(first: 10) {
+                        edges {
+                            node {
+                                id
+                                altText
+                                originalSrc
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -188,6 +197,15 @@ class ShopifyClient
         handle
         updatedAt
         tags
+        images(first: 10) {
+            edges {
+                node {
+                    id
+                    altText
+                    originalSrc
+                }
+            }
+        }
     }
 }
 ");
@@ -238,6 +256,11 @@ class ShopifyClient
                     updatedAt
                     sortOrder
                     publishedOnCurrentPublication
+                    image {
+                        id
+                        altText
+                        originalSrc
+                    }
                 }
             }
         }

@@ -83,9 +83,9 @@ class ShopifyImportTask extends BuildTask
                         // The collection image does not have an id so set it from the scr to prevent double
                         // importing the image
                         $image = $shopifyCollection->image;
-                        $image->id = $image->src;
+                        $image->id = $image->originalSrc;
                         if ($image = $this->importObject(ShopifyFile::class, $image)) {
-                            $collection->ImageID = $image->ID;
+                            $collection->FileID = $image->ID;
                             if ($collection->isChanged()) {
                                 $collection->write();
                             } else {
@@ -113,6 +113,7 @@ class ShopifyImportTask extends BuildTask
                 } else {
                     self::log("[{$shopifyCollection->id}] Could not create collection", self::ERROR);
                 }
+
             }
 
             if ($lastId !== $sinceId) {
@@ -187,16 +188,18 @@ class ShopifyImportTask extends BuildTask
                 // Create the product
                 if ($product = $this->importObject(ShopifyProduct::class, $shopifyProduct)) {
                     // Create the images
-                    $images = ArrayList::create(); // todo - determine how to query images via graphql
-                    //$images = new ArrayList($shopifyProduct->images);
+                    $images = new ArrayList((array)$shopifyProduct->images->edges);
                     if ($images->exists()) {
-                        foreach ($shopifyProduct->images as $shopifyImage) {
+                        foreach ($shopifyProduct->images->edges as $shopifyImage) {
+                            $shopifyImage = $shopifyImage->node;
                             if ($image = $this->importObject(ShopifyFile::class, $shopifyImage)) {
                                 $product->Files()->add($image);
                             }
                         }
 
                         // Cleanup old images
+                        // to do - get this working
+                        /*
                         $current = $product->Files()->column('ShopifyID');
                         $new = $images->column('id');
                         $delete = array_diff($current, $new);
@@ -208,8 +211,8 @@ class ShopifyImportTask extends BuildTask
                                 self::log("[$shopifyId] Deleted image", self::SUCCESS);
                             }
                         }
+                        */
                     }
-
                     // Create the variants
                     if (!empty($shopifyProduct->variants)) {
                         $keepVariants = [];

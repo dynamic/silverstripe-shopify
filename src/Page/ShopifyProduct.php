@@ -114,7 +114,7 @@ class ShopifyProduct extends \Page
         'Content',
         'Vendor',
         'ProductType',
-        'Tags'
+        //'Tags'
     ];
 
     /**

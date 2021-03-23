@@ -141,14 +141,15 @@ class ShopifyClient
      * @return array|Promise
      * @throws Exception
      */
-    public function products(array $options = [])
+    public function products(int $limit = 10, string $cursor = null)
     {
-        return $this->getClient()->graph(
-            '
+        $after = ($cursor) ? ", after: \"{$cursor}\"" : ' ';
+        return $this->getClient()->graph("
 {
     shop {
-        products(first: 50) {
+        products(first: {$limit} {$after}) {
             edges {
+                cursor
                 node {
                     id
                     title
@@ -167,14 +168,33 @@ class ShopifyClient
                             }
                         }
                     }
+                    variants(first: 10) {
+                        edges {
+                            node {
+                                id
+                                title
+                                sku
+                                price
+                                compareAtPrice
+                                position
+                                inventoryQuantity
+                                image {
+                                    id
+                                    altText
+                                    originalSrc
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+            pageInfo {
+              hasNextPage
             }
         }
     }
 }
-            ',
-            $options
-        );
+        ");
     }
 
     /**
@@ -239,14 +259,15 @@ class ShopifyClient
      * @return mixed|\Psr\Http\Message\ResponseInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function collections(array $options = [])
+    public function collections(int $limit = 25, string $cursor = null)
     {
-        return $this->getClient()->graph(
-            '
+        $after = ($cursor) ? ", after: \"{$cursor}\"" : ' ';
+        $query = "
 {
     shop {
-        collections(first: 250) {
+        collections(first: {$limit} {$after}) {
             edges {
+                cursor
                 node {
                     id
                     title
@@ -263,12 +284,15 @@ class ShopifyClient
                     }
                 }
             }
+            pageInfo {
+              hasNextPage
+            }
         }
     }
 }
-            ',
-            $options
-        );
+        ";
+
+        return $this->getClient()->graph($query);
     }
 
     /**

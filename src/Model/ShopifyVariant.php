@@ -88,11 +88,11 @@ class ShopifyVariant extends DataObject
         'id'=> 'ShopifyID',
         'sku'=> 'SKU',
         'price'=> 'Price',
-        'compare_at_price'=> 'CompareAtPrice',
+        'compareAtPrice'=> 'CompareAtPrice',
         'position' => 'SortOrder',
-        'created_at' => 'Created',
-        'updated_at' => 'LastEdited',
-        'inventory_quantity' => 'Inventory',
+        'createdAt' => 'Created',
+        'updatedAt' => 'LastEdited',
+        'inventoryQuantity' => 'Inventory',
     ];
 
     /**
@@ -131,9 +131,18 @@ class ShopifyVariant extends DataObject
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $variant, $shopifyVariant);
 
-        if ($file = ShopifyFile::getByShopifyID($shopifyVariant->image_id)) {
-            $variant->FileID = $file->ID;
+        if (isset($shopifyVariant->image)) {
+            $exploded = explode('/', $shopifyVariant->image->id);
+            $imageID = end($exploded);
+
+            if ($file = ShopifyFile::getByShopifyID($imageID)) {
+                $variant->FileID = $file->ID;
+            } else {
+                $file = ShopifyFile::findOrMakeFromShopifyData($shopifyVariant->image);
+                $variant->FileID = $file->ID;
+            }
         }
+
 
         if ($variant->isChanged()) {
             $variant->write();

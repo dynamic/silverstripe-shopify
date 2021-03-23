@@ -11,6 +11,7 @@ use GuzzleHttp\Client;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\Dev\Debug;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -47,8 +48,8 @@ class ShopifyImportTask extends BuildTask
         $this->importCollections($client);
         // Import products listed to our app or import all products
         // Import listings need a special authentication so fallback to everything
-        $importedListingIds = $this->getProductListingIds($client);
-        $this->importProducts($client, $importedListingIds);
+        //$importedListingIds = $this->getProductListingIds($client);
+        $this->importProducts($client);
         $this->beforeImportCollects();
         $this->importCollects($client);
         $this->afterImportCollects();
@@ -62,12 +63,10 @@ class ShopifyImportTask extends BuildTask
     public function importCollections(ShopifyClient $client, $sinceId = 0)
     {
         try {
-            $collections = $client->collections([
-                'query' => [
-                    'limit' => 250,
-                    'since_id' => $sinceId
-                ]
-            ]);
+            $collections = $client->collections(
+                3,
+                $sinceId
+            );
         } catch (\GuzzleHttp\Exception\GuzzleException $e) {
             exit($e->getMessage());
         }
@@ -75,14 +74,13 @@ class ShopifyImportTask extends BuildTask
         if (($collections = $collections['body'])) {
             $lastId = $sinceId;
             foreach ($collections->data->shop->collections->edges as $shopifyCollection) {
-                $shopifyCollection = $shopifyCollection->node;
                 // Create the collection
-                if ($collection = $this->importObject(ShopifyCollection::class, $shopifyCollection)) {
-                    // Create the images
-                    if (!empty($shopifyCollection->image)) {
+                if ($collection = $this->importObject(ShopifyCollection::class, $shopifyCollection->node)) {
+                    // Create the image
+                    if (!empty($shopifyCollection->node->image)) {
                         // The collection image does not have an id so set it from the scr to prevent double
                         // importing the image
-                        $image = $shopifyCollection->image;
+                        $image = $shopifyCollection->node->image;
                         $image->id = $image->originalSrc;
                         if ($image = $this->importObject(ShopifyFile::class, $image)) {
                             $collection->FileID = $image->ID;
@@ -109,15 +107,16 @@ class ShopifyImportTask extends BuildTask
                             self::SUCCESS
                         );
                     }
-                    $lastId = $collection->ShopifyID;
-                } else {
-                    self::log("[{$shopifyCollection->id}] Could not create collection", self::ERROR);
-                }
 
+                    $lastId = $shopifyCollection->cursor;
+
+                } else {
+                    self::log("[{$shopifyCollection->node->id}] Could not create collection", self::ERROR);
+                }
             }
 
             if ($lastId !== $sinceId) {
-                self::log("[{$sinceId}] Try to import the next page of collections since last id", self::SUCCESS);
+                self::log("[{$sinceId}] Try to import the next page of collections since last cursor", self::SUCCESS);
                 $this->importCollections($client, $lastId);
             }
         }
@@ -160,23 +159,10 @@ class ShopifyImportTask extends BuildTask
      *
      * @throws \Exception
      */
-    public function importProducts(ShopifyClient $client, array $ids = [], $sinceId = 0)
+    public function importProducts(ShopifyClient $client, $sinceId = 0)
     {
-        $query = [
-            'limit' => 250,
-            'published_scope' => 'global',
-            'since_id' => $sinceId
-        ];
-
-        // if we have a list of id's use it as a filter
-        if (count($ids)) {
-            $query['ids'] = implode(',', $ids);
-        }
-
         try {
-            $products = $client->products([
-                'query' => $query
-            ]);
+            $products = $client->products($limit = 10, $sinceId);
         } catch (\GuzzleHttp\Exception\GuzzleException $e) {
             exit($e->getMessage());
         }
@@ -184,15 +170,13 @@ class ShopifyImportTask extends BuildTask
         if (($products = $products['body'])) {
             $lastId = $sinceId;
             foreach ($products->data->shop->products->edges as $shopifyProduct) {
-                $shopifyProduct = $shopifyProduct->node;
                 // Create the product
-                if ($product = $this->importObject(ShopifyProduct::class, $shopifyProduct)) {
+                if ($product = $this->importObject(ShopifyProduct::class, $shopifyProduct->node)) {
                     // Create the images
-                    $images = new ArrayList((array)$shopifyProduct->images->edges);
+                    $images = new ArrayList((array)$shopifyProduct->node->images->edges);
                     if ($images->exists()) {
-                        foreach ($shopifyProduct->images->edges as $shopifyImage) {
-                            $shopifyImage = $shopifyImage->node;
-                            if ($image = $this->importObject(ShopifyFile::class, $shopifyImage)) {
+                        foreach ($shopifyProduct->node->images->edges as $shopifyImage) {
+                            if ($image = $this->importObject(ShopifyFile::class, $shopifyImage->node)) {
                                 $product->Files()->add($image);
                             }
                         }
@@ -214,9 +198,11 @@ class ShopifyImportTask extends BuildTask
                         */
                     }
                     // Create the variants
-                    if (!empty($shopifyProduct->variants)) {
+                    $variants = new ArrayList((array)$shopifyProduct->node->variants->edges);
+                    if ($variants->exists()) {
                         $keepVariants = [];
-                        foreach ($shopifyProduct->variants as $shopifyVariant) {
+                        foreach ($shopifyProduct->node->variants->edges as $shopifyVariant) {
+                            $shopifyVariant = $shopifyVariant->node;
                             if ($variant = $this->importObject(ShopifyVariant::class, $shopifyVariant)) {
                                 $variant->ParentID = $product->ID;
                                 if ($variant->isChanged()) {
@@ -228,8 +214,9 @@ class ShopifyImportTask extends BuildTask
                             }
                         }
 
+                        /*
+                        // todo - get this working
                         foreach ($product->Variants()->exclude(['ID' => $keepVariants]) as $variant) {
-                            /** @var ShopifyVariant $variant */
                             $variantId = $variant->ID;
                             $variantShopifyId = $variant->ShopifyID;
                             $variant->doUnpublish();
@@ -239,6 +226,7 @@ class ShopifyImportTask extends BuildTask
                                 self::SUCCESS
                             );
                         }
+                        */
                     }
 
                     if ($product->isChanged()) {
@@ -255,13 +243,16 @@ class ShopifyImportTask extends BuildTask
                     } else {
                         self::log("[{$product->ID}] Product {$product->Title} is alreaddy published", self::SUCCESS);
                     }
-                    $lastId = $product->ShopifyID;
+                    //Debug::show($shopifyProduct);
+                    //die();
+                    $lastId = $shopifyProduct->cursor;
                 } else {
-                    self::log("[{$shopifyProduct->id}] Could not create product", self::ERROR);
+                    self::log("[{$lastId}] Could not create product", self::ERROR);
                 }
             }
 
             // Cleanup old products
+            // todo - get this working
             /*
             $newProducts = new ArrayList($products->data->shop->products->edges->toArray());
             $current = ShopifyProduct::get()->column('ShopifyID');
@@ -289,6 +280,11 @@ class ShopifyImportTask extends BuildTask
                 }
             }
             */
+
+            if ($lastId !== $sinceId) {
+                self::log("[{$sinceId}] Try to import the next page of products since last id", self::SUCCESS);
+                $this->importProducts($client, $lastId);
+            }
         }
     }
 
@@ -324,10 +320,10 @@ class ShopifyImportTask extends BuildTask
             if (($collects = $collects['body'])) {
                 $lastId = $sinceId;
                 foreach ($collects->data->collectionByHandle->products->edges as $shopifyCollect) {
-                    if ($product = ShopifyProduct::getByShopifyID($this->parseShopifyID($shopifyCollect->node->id))
+                    if ($product = ShopifyProduct::getByShopifyID(self::parseShopifyID($shopifyCollect->node->id))
                     ) {
                         $collection->Products()->add($product, [
-                            //'ShopifyID' => $this->parseShopifyID($shopifyCollect->node->id),
+                            //'ShopifyID' => self::parseShopifyID($shopifyCollect->node->id),
                             //'SortValue' => $shopifyCollect->sort_value,
                             //'Position' => $shopifyCollect->position,
                             'Imported' => true
@@ -339,7 +335,7 @@ class ShopifyImportTask extends BuildTask
                         }
 
                         $lastId = $product->ShopifyID;
-                        self::log("[{$this->parseShopifyID($shopifyCollect->node->id)}] Created collect between
+                        self::log("[" . self::parseShopifyID($shopifyCollect->node->id) . "] Created collect between
                         Product[{$product->ID}] and Collection[{$collection->ID}]", self::SUCCESS);
                     }
                 }
@@ -411,7 +407,7 @@ class ShopifyImportTask extends BuildTask
      * @param $shopifyID
      * @return mixed|string
      */
-    public function parseShopifyID($shopifyID)
+    public static function parseShopifyID($shopifyID)
     {
         $exploded = explode('/', $shopifyID);
         return end($exploded);

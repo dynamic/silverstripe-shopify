@@ -11,6 +11,7 @@ use GuzzleHttp\Client;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\GraphQL\Scaffolding\Scaffolders\CRUD\Read;

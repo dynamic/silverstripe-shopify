@@ -169,7 +169,12 @@ class ShopifyImportTask extends BuildTask
                             }
 
                             // remove unused images
-                            foreach ($product->Files()->exclude(['ID' => $keepImages]) as $image) {
+                            if (empty($keepImages)) {
+                                $files = $product->Files();
+                            } else {
+                                $files = $product->Files()->exclude(['ID' => $keepImages]);
+                            }
+                            foreach ($files as $image) {
                                 $imageId = $image->ID;
                                 $imageShopifyId = $image->ShopifyID;
                                 $image->doUnpublish();

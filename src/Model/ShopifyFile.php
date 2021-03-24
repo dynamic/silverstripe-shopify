@@ -163,6 +163,8 @@ class ShopifyFile extends File
     /**
      * Download the image from the shopify CDN
      *
+     * todo - create method in ShopifyClient for $request, update function for graphql
+     *
      * @param $src
      * @param $folder
      * @throws \GuzzleHttp\Exception\GuzzleException

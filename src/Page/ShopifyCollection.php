@@ -31,7 +31,7 @@ class ShopifyCollection extends \Page
         'ShopifyID' => 'Varchar',
         'ProductsCt' => 'Int',
         'SortOrder' => 'Varchar(20)',
-        'Published' => 'Boolean',
+        'CollectionActive' => 'Boolean',
     ];
 
     /**
@@ -46,7 +46,7 @@ class ShopifyCollection extends \Page
         'createdAt' => 'Created',
         'updatedAt' => 'LastEdited',
         'sortOrder' => 'SortOrder',
-        'publishedOnCurrentPublication' => 'Published',
+        'publishedOnCurrentPublication' => 'CollectionActive',
     ];
 
     /**
@@ -130,7 +130,7 @@ class ShopifyCollection extends \Page
                 UploadField::create('File')
                     ->setTitle('Image')
                     ->performReadonlyTransformation(),
-                ReadonlyField::create('Published'),
+                ReadonlyField::create('CollectionActive'),
                 ReadonlyField::create('PublishedAt'),
             ]);
 

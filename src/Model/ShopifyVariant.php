@@ -65,6 +65,7 @@ class ShopifyVariant extends DataObject
     private static $summary_fields = [
         'File.CMSThumbnail' => 'Image',
         'Title',
+        'Product.Title' => 'Title',
         'Price.Nice' => 'Price',
         'SKU',
         'ShopifyID'
@@ -132,8 +133,7 @@ class ShopifyVariant extends DataObject
         ShopifyImportTask::loop_map($map, $variant, $shopifyVariant);
 
         if (isset($shopifyVariant->image)) {
-            $exploded = explode('/', $shopifyVariant->image->id);
-            $imageID = end($exploded);
+            $imageID = ShopifyImportTask::parseShopifyID($shopifyVariant->image->id);
 
             if ($file = ShopifyFile::getByShopifyID($imageID)) {
                 $variant->FileID = $file->ID;

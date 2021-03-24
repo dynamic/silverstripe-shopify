@@ -39,7 +39,7 @@ class ShopifyProduct extends \Page
         'Vendor' => 'Varchar',
         'ProductType' => 'Varchar',
         //'Tags' => 'Varchar',
-        //'Status' => 'Varchar(20)',
+        'ProductActive' => 'Boolean',
     ];
 
     /**
@@ -132,6 +132,7 @@ class ShopifyProduct extends \Page
         'createdAt' => 'Created',
         'updatedAt' => 'LastEdited',
         //'tags' => 'Tags',
+        'publishedOnCurrentPublication' => 'ProductActive'
     ];
 
     /**
@@ -176,7 +177,7 @@ class ShopifyProduct extends \Page
                     ReadonlyField::create('Vendor'),
                     ReadonlyField::create('ProductType'),
                     //ReadonlyField::create('Tags'),
-                    //ReadonlyField::create('Status'),
+                    ReadonlyField::create('ProductActive'),
                 ]
             );
 

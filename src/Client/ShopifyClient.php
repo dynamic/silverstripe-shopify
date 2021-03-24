@@ -159,6 +159,7 @@ class ShopifyClient
                     productType
                     createdAt
                     updatedAt
+                    publishedOnCurrentPublication
                     images(first: 10) {
                         edges {
                             node {
@@ -168,7 +169,7 @@ class ShopifyClient
                             }
                         }
                     }
-                    variants(first: 10) {
+                    variants(first: 25) {
                         edges {
                             node {
                                 id
@@ -229,28 +230,6 @@ class ShopifyClient
     }
 }
 ");
-    }
-
-    /**
-     * Get available product listing ids
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    public function productListingIds(array $options = [])
-    {
-        return $this->getClient()->graph('
-{
-  products(first: 250) {
-    edges {
-      node {
-        id
-      }
-    }
-  }
-}
-        ');
-
-        //return $this->client->request('GET', "product_listings/product_ids.json", $options);
     }
 
     /**

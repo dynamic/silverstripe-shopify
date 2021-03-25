@@ -5,6 +5,7 @@ namespace Dynamic\Shopify\Controller;
 use Dynamic\Shopify\Client\ShopifyClient;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\FieldType\DBCurrency;
 use SilverStripe\Security\Security;
 use SilverStripe\View\ArrayData;
 
@@ -45,6 +46,7 @@ class ShopifyOrderHistoryController extends \PageController
         shippingAddress {
           formatted(withName: true)
         }
+        totalWeight
         shippingLine {
           title
           discountedPriceSet {
@@ -59,39 +61,9 @@ class ShopifyOrderHistoryController extends \PageController
         }
         taxLines {
           title
-          rate
-        }
-        discountApplications(first: 5) {
-          edges {
-            node {
-              __typename
-              ... on DiscountCodeApplication {
-                code
-              }
-              ... on AutomaticDiscountApplication {
-                title
-              }
-              ... on ManualDiscountApplication {
-                title
-                description
-              }
-              ... on ScriptDiscountApplication {
-                title
-              }
-              allocationMethod
-              targetSelection
-              targetType
-              value {
-                __typename
-                ... on MoneyV2 {
-                  amount
-                  currencyCode
-                }
-                ... on PricingPercentageValue {
-                  percentage
-                }
-              }
-            }
+          ratePercentage
+          priceSet {
+            ...presentmentMoney
           }
         }
         totalDiscountsSet {
@@ -109,6 +81,26 @@ class ShopifyOrderHistoryController extends \PageController
               variantTitle
               title
               quantity
+              discountAllocations {
+                discountApplication {
+                  __typename
+                  ... on DiscountCodeApplication {
+                    code
+                  }
+                  ... on AutomaticDiscountApplication {
+                    title
+                  }
+                  ... on ManualDiscountApplication {
+                    title
+                  }
+                  ... on ScriptDiscountApplication {
+                    title
+                  }
+                }
+                allocatedAmountSet {
+                  ...presentmentMoney
+                }
+              }
               originalTotalSet {
                 ...presentmentMoney
               }
@@ -136,14 +128,21 @@ fragment presentmentMoney on MoneyBag {
   }
 }
 ');
-        echo '<style>pre {overflow: auto;margin: 10px 0;padding: 12px;background-color: #e9f0f4;border: 1px solid #d9dee2;color: #4f5861;font-size: 14px;}</style>';
-        $body = $response['body'];
-        $ordersData = (array)$body->data->orders->edges->container;
-        $orders = $this->parseOrders($ordersData);
-        echo '<pre>' . print_r($orders, true) . '</pre>';
 
-        $orders = new ArrayList((array)$body->data->orders->edges);
-        return '<pre>' . print_r($orders, true) . '</pre>';
+        $body = $response['body'];
+
+        return $this->customise([
+            'Orders' => $this->parseOrders($body->data->orders->edges->container),
+        ]);
+    }
+
+    /**
+     * @param double $value
+     * @return DBCurrency
+     */
+    private function toCurrency($value)
+    {
+        return DBCurrency::create()->setValue($value);
     }
 
     /**
@@ -154,14 +153,22 @@ fragment presentmentMoney on MoneyBag {
     {
         $orders = new ArrayList();
         foreach ($ordersData as $orderData) {
-            $order = new ArrayData((array) $orderData['node']);
+            $order = new ArrayData((array)$orderData['node']);
             $orders->push(
                 new ArrayData([
                     'ID' => $order->id,
                     'Email' => $order->email,
                     'CreatedAt' => $order->createdAt,
                     'LineItems' => $this->parseLineItems($order->lineItems),
+                    'SubTotal' => $this->toCurrency($order->subtotalPriceSet->presentmentMoney->amount),
+                    'Shipping' => ArrayData::create([
+                        'Title' => $order->shippingLine->title,
+                        'Amount' => $this->toCurrency($order->shippingLine->originalPriceSet->presentmentMoney->amount),
+                        'Weight' => $order->totalWeight,
+                    ]),
+                    'TotalDiscount' => $this->toCurrency($order->totalDiscountsSet->presentmentMoney->amount),
                     'Taxes' => $this->parseTaxes($order->taxLines),
+                    'Total' => $this->toCurrency($order->totalPriceSet->presentmentMoney->amount),
                 ])
             );
         }
@@ -177,22 +184,69 @@ fragment presentmentMoney on MoneyBag {
     {
         $items = new ArrayList();
         foreach ($lineItems->edges as $lineItem) {
-            $item = new ArrayData((array) $lineItem['node']);
+            $item = new ArrayData((array)$lineItem['node']);
+            $singlePrice = $this->toCurrency($item->originalUnitPriceSet->presentmentMoney->amount);
+            $totalPrice = $this->toCurrency($item->originalTotalSet->presentmentMoney->amount);
+            $discountTotal = $this->getTotalDiscount($item->discountAllocations);
+            $discountSingle = $this->toCurrency($discountTotal->getValue() / $item->quantity);
+            $discountSinglePrice = $this->toCurrency($discountSingle->getValue() / $item->quantity);
             $items->push(
                 new ArrayData([
                     'ID' => $item->id,
                     'ProductID' => $item->product->id,
                     'Sku' => $item->sku,
                     'Name' => $item->name,
+                    'Title' => $item->title,
+                    'VariantTitle' => $item->variantTitle,
                     'ImageSrc' => $item->product->featuredImage->originalSrc,
                     'Quantity' => $item->quantity,
-                    'OriginalPriceSingle' => $item->originalUnitPriceSet->presentmentMoney->amount,
-                    'OriginalPriceTotal' => $item->originalTotalSet->presentmentMoney->amount,
+                    'OriginalPriceSingle' => $singlePrice,
+                    'OriginalPriceTotal' => $totalPrice,
+                    'Discounts' => $this->parseDiscounts($item->discountAllocations),
+                    'DiscountSingle' => $discountSingle,
+                    'TotalDiscount' => $discountTotal,
+                    'DiscountedPriceSingle' => $this->toCurrency($singlePrice->getValue() - $discountSingle->getValue()),
+                    'DiscountedPrice' => $this->toCurrency($totalPrice->getValue() - $discountTotal->getValue()),
                 ])
             );
         }
 
         return $items;
+    }
+
+    /**
+     * @param array $discountAllocations
+     * @return DBCurrency
+     */
+    private function getTotalDiscount($discountAllocations)
+    {
+        $discountTotal = 0;
+        foreach ($discountAllocations as $discountAllocation) {
+            $discount = new ArrayData($discountAllocation);
+            $discountTotal += $discount->allocatedAmountSet->presentmentMoney->amount;
+        }
+
+        return $this->toCurrency($discountTotal);
+    }
+
+    /**
+     * @param array $discountAllocations
+     * @return ArrayList
+     */
+    private function parseDiscounts($discountAllocations)
+    {
+        $discounts = ArrayList::create();
+        foreach ($discountAllocations as $discountAllocation) {
+            $discount = new ArrayData($discountAllocation);
+            $isCodeField = $discount->__typename === 'DiscountCodeApplication';
+            $discounts->push(
+                ArrayData::create([
+                    'Code' => $isCodeField ? $discount->code : $discount->title,
+                    'Amount' => $this->toCurrency($discount->allocatedAmountSet->presentmentMoney->amount),
+                ])
+            );
+        }
+        return $discounts;
     }
 
     /**
@@ -203,11 +257,12 @@ fragment presentmentMoney on MoneyBag {
     {
         $taxes = new ArrayList();
         foreach ($taxLines as $taxLine) {
-            $tax = (object) $taxLine;
+            $tax = $item = new ArrayData($taxLine);
             $taxes->push(
                 new ArrayData([
                     'Title' => $tax->title,
-                    'Rate' => $tax->rate,
+                    'Rate' => $tax->ratePercentage,
+                    'Amount' => $this->toCurrency($tax->priceSet->presentmentMoney->amount),
                 ])
             );
         }

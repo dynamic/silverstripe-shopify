@@ -6,6 +6,8 @@ use Dynamic\Shopify\Client\ShopifyClient;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\FieldType\DBCurrency;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\Security\Security;
 use SilverStripe\View\ArrayData;
 
@@ -41,7 +43,9 @@ class ShopifyOrderHistoryController extends \PageController
     edges {
       node {
         id
+        name
         email
+        note
         createdAt
         shippingAddress {
           formatted(withName: true)
@@ -157,10 +161,13 @@ fragment presentmentMoney on MoneyBag {
             $orders->push(
                 new ArrayData([
                     'ID' => $order->id,
+                    'Name' => $order->name,
                     'Email' => $order->email,
-                    'CreatedAt' => $order->createdAt,
+                    'Note' => $order->note,
+                    'CreatedAt' => DBDatetime::create()->setValue($order->createdAt),
                     'LineItems' => $this->parseLineItems($order->lineItems),
                     'SubTotal' => $this->toCurrency($order->subtotalPriceSet->presentmentMoney->amount),
+                    'ShippingAddress' => $this->parseShippingAddress($order->shippingAddress->formatted),
                     'Shipping' => ArrayData::create([
                         'Title' => $order->shippingLine->title,
                         'Amount' => $this->toCurrency($order->shippingLine->originalPriceSet->presentmentMoney->amount),
@@ -174,6 +181,19 @@ fragment presentmentMoney on MoneyBag {
         }
 
         return $orders;
+    }
+
+    /**
+     * @param $address
+     */
+    private function parseShippingAddress($address)
+    {
+        $addr = ArrayList::create();
+        foreach ($address as $line) {
+            $addr->push(ArrayData::create(['Line' => $line]));
+        }
+        print_r($addr);
+        return $addr;
     }
 
     /**

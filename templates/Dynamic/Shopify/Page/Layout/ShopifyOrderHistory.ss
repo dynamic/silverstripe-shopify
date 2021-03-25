@@ -1,12 +1,15 @@
 <% loop $Orders %>
     <div class="order container">
         <% loop $LineItems %>
-        <div class="line-item row">
-            <div class="col-2"><img src="$ImageSrc" width="100px" height="100px"/></div>
-            <div class="col-2">$Name</div>
-            <div class="col-auto"></div>
-            <div class="col"><% if $TotalDiscount %><s><% end_if %>$OriginalPriceSingle.Nice<% if $TotalDiscount %></s> $DiscountedPriceSingle.Nice<% end_if %> X $Quantity</div>
-            <div class="col"><% if $TotalDiscount %><s><% end_if %>$OriginalPriceTotal.Nice<% if $TotalDiscount %></s> $DiscountedPrice.Nice<% end_if %></div>
+        <div class="line-item">
+            <div class="media">
+                <img class="mr-3" src="$ImageSrc" width="64" height="64"/>
+                <div class="media-body row">
+                    <div class="col">$Name</div>
+                    <div class="col"><% if $TotalDiscount %><s><% end_if %>$OriginalPriceSingle.Nice<% if $TotalDiscount %></s> $DiscountedPriceSingle.Nice<% end_if %> X $Quantity</div>
+                    <div class="col"><% if $TotalDiscount %><s><% end_if %>$OriginalPriceTotal.Nice<% if $TotalDiscount %></s> $DiscountedPrice.Nice<% end_if %></div>
+                </div>
+            </div>
         </div>
         <% end_loop %>
         <div class="row">

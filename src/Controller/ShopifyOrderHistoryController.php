@@ -37,9 +37,14 @@ class ShopifyOrderHistoryController extends \PageController
         }
 
         $email = $user->Email;
+        $cursor = $this->getRequest()->getVar('cursor');
+        $limit = $this->getRequest()->getVar('limit') ?: 5;
+        if ($limit > 5) {
+            $limit = 5;
+        }
 
-        $response = $this->getClient()->graph('{
-  orders(first: 5) {
+        $response = $this->getClient()->graph('query ($limit: Int!, $cursor: String, $query: String) {
+  orders(first: $limit, after: $cursor, sortKey: CREATED_AT, reverse: true, query: $query) {
     edges {
       node {
         id
@@ -131,7 +136,12 @@ fragment presentmentMoney on MoneyBag {
     currencyCode
   }
 }
-');
+',
+            [
+                "query" => "email:'$email'",
+                "limit" => $limit,
+                "cursor" => $cursor,
+            ]);
 
         $body = $response['body'];
 
@@ -192,7 +202,6 @@ fragment presentmentMoney on MoneyBag {
         foreach ($address as $line) {
             $addr->push(ArrayData::create(['Line' => $line]));
         }
-        print_r($addr);
         return $addr;
     }
 

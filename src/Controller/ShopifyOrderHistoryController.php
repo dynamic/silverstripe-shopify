@@ -3,6 +3,7 @@
 namespace Dynamic\Shopify\Controller;
 
 use Dynamic\Shopify\Client\ShopifyClient;
+use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\FieldType\DBCurrency;
@@ -37,14 +38,25 @@ class ShopifyOrderHistoryController extends \PageController
         }
 
         $email = $user->Email;
-        $cursor = $this->getRequest()->getVar('cursor');
-        $limit = (int) $this->getRequest()->getVar('limit') ?: 5;
+        $cursor = $request->getVar('cursor');
+        $limit = (int) $request->getVar('limit') ?: 5;
         if ($limit > 5) {
             $limit = 5;
         }
 
+        $firstLast = 'first';
+        $beforeAfter = 'after';
+        if ($request->getVar('direction') === "previous") {
+            $firstLast = 'last';
+            $beforeAfter = 'before';
+        }
+
+        if (!Director::isLive() && $request->getVar('email')) {
+            $email = $request->getVar('email');
+        }
+
         $response = $this->getClient()->graph('query ($limit: Int!, $cursor: String, $query: String) {
-  orders(first: $limit, after: $cursor, sortKey: CREATED_AT, reverse: true, query: $query) {
+  orders(' . $firstLast . ': $limit, ' . $beforeAfter . ': $cursor, sortKey: CREATED_AT, reverse: true, query: $query) {
     edges {
       node {
         id

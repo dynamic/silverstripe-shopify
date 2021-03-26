@@ -109,7 +109,6 @@ class ShopifyImportTask extends BuildTask
                     }
 
                     $lastId = $shopifyCollection->cursor;
-
                 } else {
                     self::log("[{$shopifyCollection->node->id}] Could not create collection", self::ERROR);
                 }

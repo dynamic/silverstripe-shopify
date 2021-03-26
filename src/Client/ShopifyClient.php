@@ -143,8 +143,8 @@ class ShopifyClient
      */
     public function products(int $limit = 10, string $cursor = null)
     {
-        return $this->getClient()->graph('
-        query ($limit: Int!, $cursor: String) {
+        return $this->getClient()->graph(
+            'query ($limit: Int!, $cursor: String) {
   products(first: $limit, after: $cursor) {
     edges {
       cursor
@@ -196,7 +196,8 @@ class ShopifyClient
             [
                 'limit' => (int)$limit,
                 'cursor' => $cursor
-            ]);
+            ]
+        );
     }
 
     /**
@@ -207,8 +208,8 @@ class ShopifyClient
      */
     public function product($productId, array $options = [])
     {
-        return $this->getClient()->graph('
-query ($id: String!){
+        return $this->getClient()->graph(
+            'query ($id: String!){
     product(id: $id) {
         id
         title
@@ -233,7 +234,8 @@ query ($id: String!){
 ',
             [
                 'id' => "gid://shopify/Product/{$productId}",
-            ]);
+            ]
+        );
     }
 
     /**

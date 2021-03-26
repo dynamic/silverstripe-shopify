@@ -38,7 +38,7 @@ class ShopifyOrderHistoryController extends \PageController
 
         $email = $user->Email;
         $cursor = $this->getRequest()->getVar('cursor');
-        $limit = $this->getRequest()->getVar('limit') ?: 5;
+        $limit = (int) $this->getRequest()->getVar('limit') ?: 5;
         if ($limit > 5) {
             $limit = 5;
         }
@@ -126,6 +126,11 @@ class ShopifyOrderHistoryController extends \PageController
           }
         }
       }
+      cursor
+    }
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
     }
   }
 }
@@ -138,15 +143,16 @@ fragment presentmentMoney on MoneyBag {
 }
 ',
             [
-                "query" => "email:'$email'",
+                "query" => isset($email) && $email ? "email:'$email'" : null,
                 "limit" => $limit,
                 "cursor" => $cursor,
             ]);
 
         $body = $response['body'];
-
         return $this->customise([
             'Orders' => $this->parseOrders($body->data->orders->edges->container),
+            'HasPreviousPage' => $body->data->orders->pageInfo->hasPreviousPage,
+            'HasNextPage' => $body->data->orders->pageInfo->hasNextPage,
         ]);
     }
 
@@ -186,6 +192,7 @@ fragment presentmentMoney on MoneyBag {
                     'TotalDiscount' => $this->toCurrency($order->totalDiscountsSet->presentmentMoney->amount),
                     'Taxes' => $this->parseTaxes($order->taxLines),
                     'Total' => $this->toCurrency($order->totalPriceSet->presentmentMoney->amount),
+                    'Cursor' => $orderData['cursor'],
                 ])
             );
         }

@@ -3,12 +3,26 @@
 namespace Dynamic\Shopify\Client;
 
 use Exception;
-use SilverStripe\Control\Controller;
+use GuzzleHttp\Promise\Promise;
+use Osiset\BasicShopifyAPI\BasicShopifyAPI;
+use Osiset\BasicShopifyAPI\Options;
+use Osiset\BasicShopifyAPI\Session;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Dev\Debug;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\View\ArrayData;
 
+/**
+ * Class ShopifyClient
+ * @package Dynamic\Shopify\Client
+ *
+ * @mixin BasicShopifyAPI
+ */
 class ShopifyClient
 {
     use Configurable;
+    use Injectable;
 
     const EXCEPTION_NO_API_KEY = 0;
     const EXCEPTION_NO_API_PASSWORD = 1;
@@ -53,61 +67,9 @@ class ShopifyClient
     private static $inject_javascript = true;
 
     /**
-     * @var \GuzzleHttp\Client|null
+     * @var BasicShopifyAPI
      */
     protected $client = null;
-
-    public function products(array $options = [])
-    {
-        return $this->client->request('GET', 'products.json', $options);
-    }
-
-    /**
-     * Get information about a specific product
-     *
-     * @param string $productId
-     *
-     * @return mixed|\Psr\Http\Message\ResponseInterface
-     *
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Exception
-     */
-    public function product($productId, array $options = [])
-    {
-        return $this->client->request('GET', "products/$productId.json", $options);
-    }
-
-    /**
-     * Get available product listing ids
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    public function productListingIds(array  $options = [])
-    {
-        return $this->client->request('GET', "product_listings/product_ids.json", $options);
-    }
-
-    /**
-     * Get the available Collections
-     *
-     * @return mixed|\Psr\Http\Message\ResponseInterface
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function collections(array $options = [])
-    {
-        return $this->client->request('GET', 'custom_collections.json', $options);
-    }
-
-    /**
-     * Get the connections between Products and Collections
-     *
-     * @return mixed|\Psr\Http\Message\ResponseInterface
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function collects(array $options = [])
-    {
-        return $this->client->request('GET', 'collects.json', $options);
-    }
 
     /**
      * Get the configured Guzzle client
@@ -116,9 +78,29 @@ class ShopifyClient
      */
     public function __construct()
     {
-        if (!$key = self::config()->get('api_key')) {
+        $this->setClient();
+    }
+
+    /**
+     * @param string $method
+     * @param array $args
+     */
+    public function __call(string $method, array $args)
+    {
+        return call_user_func_array([$this->getClient(), $method], $args);
+    }
+
+    /**
+     * @return $this
+     * @throws Exception
+     *
+     * TODO move config fetches to separate methods, supporting ENV values as well
+     */
+    protected function setClient()
+    {
+        /*if (!$key = self::config()->get('api_key')) {
             throw new Exception('No api key is set.', self::EXCEPTION_NO_API_KEY);
-        }
+        }//*/
 
         if (!$password = self::config()->get('api_password')) {
             throw new Exception('No api password is set.', self::EXCEPTION_NO_API_PASSWORD);
@@ -128,14 +110,198 @@ class ShopifyClient
             throw new Exception('No shopify domain is set.', self::EXCEPTION_NO_DOMAIN);
         }
 
-        $version = self::config()->get('api_version');
+        $options = new Options();
+        $options->setVersion('2020-01');//static::config()->get('api_version')
+        $options->setApiPassword($password);
+        $options->setType(true);
 
-        $this->client = new \GuzzleHttp\Client([
-            'base_uri' => Controller::join_links(["https://$domain", 'admin/api', $version, '/']),
-            'headers' => [
-                'Content-Type' => 'application/json; charset=utf-8',
-                'Authorization' => 'Basic ' . base64_encode("$key:$password")
+        $client = new BasicShopifyAPI($options);
+        $client->setSession(new Session($domain));
+
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * @return BasicShopifyAPI|null
+     * @throws Exception
+     */
+    protected function getClient()
+    {
+        if (!$this->client) {
+            $this->setClient();
+        }
+
+        return $this->client;
+    }
+
+    /**
+     * @param array $options
+     * @return array|Promise
+     * @throws Exception
+     */
+    public function products(int $limit = 10, string $cursor = null)
+    {
+        return $this->getClient()->graph(
+            'query ($limit: Int!, $cursor: String) {
+  products(first: $limit, after: $cursor) {
+    edges {
+      cursor
+      node {
+        id
+        title
+        handle
+        descriptionHtml
+        vendor
+        productType
+        createdAt
+        updatedAt
+        publishedOnCurrentPublication
+        images(first: 10) {
+          edges {
+            node {
+              id
+              altText
+              originalSrc
+            }
+          }
+        }
+        variants(first: 25) {
+          edges {
+            node {
+              id
+              title
+              sku
+              price
+              compareAtPrice
+              position
+              inventoryQuantity
+              image {
+                id
+                altText
+                originalSrc
+              }
+            }
+          }
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+    }
+  }
+}
+',
+            [
+                'limit' => (int)$limit,
+                'cursor' => $cursor
             ]
+        );
+    }
+
+    /**
+     * @param $productId
+     * @param array $options
+     * @return array|Promise
+     * @throws Exception
+     */
+    public function product($productId, array $options = [])
+    {
+        return $this->getClient()->graph(
+            'query ($id: String!){
+    product(id: $id) {
+        id
+        title
+        bodyHtml
+        vendor
+        productType
+        createdAt
+        handle
+        updatedAt
+        tags
+        images(first: 10) {
+            edges {
+                node {
+                    id
+                    altText
+                    originalSrc
+                }
+            }
+        }
+    }
+}
+',
+            [
+                'id' => "gid://shopify/Product/{$productId}",
+            ]
+        );
+    }
+
+    /**
+     * Get the available Collections
+     *
+     * @return mixed|\Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function collections(int $limit = 25, string $cursor = null)
+    {
+        return $this->getClient()->graph('
+query ($limit: Int!, $cursor: String){
+    collections(first: $limit, after: $cursor) {
+        edges {
+            cursor
+            node {
+                id
+                title
+                handle
+                descriptionHtml
+                productsCount
+                updatedAt
+                sortOrder
+                publishedOnCurrentPublication
+                image {
+                    id
+                    altText
+                    originalSrc
+                }
+            }
+        }
+        pageInfo {
+          hasNextPage
+        }
+    }
+}
+        ', [
+            'limit' => (int)$limit,
+            'cursor' => $cursor,
         ]);
+    }
+
+    /**
+     * return products of a given collection by handle
+     *
+     * @param $handle
+     * @param array $options
+     * @return array|Promise
+     * @throws Exception
+     */
+    public function collectionProducts($handle)
+    {
+        return $this->getClient()->graph(
+            'query ($handle: String!){
+    collectionByHandle(handle: $handle) {
+        products(first: 100) {
+            edges {
+                node {
+                    id
+                    title
+                }
+            }
+        }
+    }
+}',
+            ["handle" => $handle]
+        );
     }
 }

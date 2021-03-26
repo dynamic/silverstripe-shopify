@@ -29,8 +29,9 @@ class ShopifyCollection extends \Page
      */
     private static $db = [
         'ShopifyID' => 'Varchar',
-        'Published' => 'Boolean',
-        'PublishedAt' => 'Datetime',
+        'ProductsCt' => 'Int',
+        'SortOrder' => 'Varchar(20)',
+        'CollectionActive' => 'Boolean',
     ];
 
     /**
@@ -38,13 +39,14 @@ class ShopifyCollection extends \Page
      */
     private static $data_map = [
         'id' => 'ShopifyID',
-        'handle' => 'URLSegment',
         'title' => 'Title',
-        'body_html' => 'Content',
-        'updated_at' => 'LastEdited',
-        'created_at' => 'Created',
-        'published' => 'Published',
-        'published_at' => 'PublishedAt',
+        'handle' => 'URLSegment',
+        'descriptionHtml' => 'Content',
+        'productsCount' => 'ProductsCt',
+        'createdAt' => 'Created',
+        'updatedAt' => 'LastEdited',
+        'sortOrder' => 'SortOrder',
+        'publishedOnCurrentPublication' => 'CollectionActive',
     ];
 
     /**
@@ -93,7 +95,8 @@ class ShopifyCollection extends \Page
     private static $summary_fields = [
         'File.CMSThumbnail' => 'Image',
         'Title',
-        'ShopifyID'
+        'ShopifyID',
+        'ProductsCt' => 'Products',
     ];
 
     /**
@@ -127,7 +130,7 @@ class ShopifyCollection extends \Page
                 UploadField::create('File')
                     ->setTitle('Image')
                     ->performReadonlyTransformation(),
-                ReadonlyField::create('Published'),
+                ReadonlyField::create('CollectionActive'),
                 ReadonlyField::create('PublishedAt'),
             ]);
 

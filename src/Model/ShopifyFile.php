@@ -11,6 +11,7 @@ use GuzzleHttp\Client;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\GraphQL\Scaffolding\Scaffolders\CRUD\Read;
@@ -33,7 +34,7 @@ class ShopifyFile extends File
      */
     private static $db = [
         'ShopifyID' => 'Varchar',
-        'OriginalSrc' => 'Varchar',
+        'OriginalSrc' => 'Varchar(255)',
         'Width' => 'Int',
         'Height' => 'Int',
         'SortOrder' => 'Int',
@@ -44,11 +45,11 @@ class ShopifyFile extends File
      */
     private static $data_map = [
         'id' => 'ShopifyID',
-        'alt' => 'Title',
-        'position' => 'SortOrder',
-        'src' => 'OriginalSrc',
-        'created_at' => 'Created',
-        'updated_at' => 'LastEdited',
+        'altText' => 'Title',
+        //'position' => 'SortOrder',
+        'originalSrc' => 'OriginalSrc',
+        //'created_at' => 'Created',
+        //'updated_at' => 'LastEdited',
         'width' => 'Width',
         'height' => 'Height',
     ];
@@ -130,13 +131,12 @@ class ShopifyFile extends File
         if (!$image = self::getByShopifyID($shopifyImage->id)) {
             $image = self::create();
         }
-
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $image, $shopifyImage);
 
         // import the image if the source has changed
         if ($image->isChanged('OriginalSrc', DataObject::CHANGE_VALUE)) {
-            $folder = isset($shopifyImage->product_id) ? $shopifyImage->product_id : 'collection';
+            $folder = isset($image->ProductID) ? $image->ProductID : 'collection';
             $image->downloadImage($image->OriginalSrc, "shopify/$folder");
         }
 
@@ -162,6 +162,8 @@ class ShopifyFile extends File
 
     /**
      * Download the image from the shopify CDN
+     *
+     * todo - create method in ShopifyClient for $request, update function for graphql
      *
      * @param $src
      * @param $folder

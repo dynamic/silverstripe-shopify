@@ -57,7 +57,7 @@ class ShopifyImportTask extends BuildTask
         exit('Done');
     }
 
-    public function importCollections(ShopifyClient $client, $sinceId = 0, $keepCollections = [])
+    public function importCollections(ShopifyClient $client, $sinceId = null, $keepCollections = [])
     {
         try {
             $collections = $client->collections(
@@ -70,7 +70,7 @@ class ShopifyImportTask extends BuildTask
 
         if (($collections = $collections['body'])) {
             $lastId = $sinceId;
-            foreach ($collections->data->shop->collections->edges as $shopifyCollection) {
+            foreach ($collections->data->collections->edges as $shopifyCollection) {
                 // Create the collection
                 if ($collection = $this->importObject(ShopifyCollection::class, $shopifyCollection->node)) {
                     $keepCollections[] = $collection->ID;
@@ -140,7 +140,7 @@ class ShopifyImportTask extends BuildTask
      *
      * @throws \Exception
      */
-    public function importProducts(ShopifyClient $client, $sinceId = 0, $keepProducts = [])
+    public function importProducts(ShopifyClient $client, $sinceId = null, $keepProducts = [])
     {
         try {
             $products = $client->products($limit = 10, $sinceId);
@@ -150,9 +150,9 @@ class ShopifyImportTask extends BuildTask
 
         if (($products = $products['body'])) {
             $lastId = $sinceId;
-            $shopifyProducts = new ArrayList((array)$products->data->shop->products->edges);
+            $shopifyProducts = new ArrayList((array)$products->data->products->edges);
             if ($shopifyProducts->exists()) {
-                foreach ($products->data->shop->products->edges as $shopifyProduct) {
+                foreach ($products->data->products->edges as $shopifyProduct) {
                     // Create the product
                     if ($product = $this->importObject(ShopifyProduct::class, $shopifyProduct->node)) {
                         $keepProducts[] = $product->ID;

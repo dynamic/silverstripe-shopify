@@ -143,59 +143,60 @@ class ShopifyClient
      */
     public function products(int $limit = 10, string $cursor = null)
     {
-        $after = ($cursor) ? ", after: \"{$cursor}\"" : ' ';
-        return $this->getClient()->graph("
-{
-    shop {
-        products(first: {$limit} {$after}) {
-            edges {
-                cursor
-                node {
-                    id
-                    title
-                    handle
-                    descriptionHtml
-                    vendor
-                    productType
-                    createdAt
-                    updatedAt
-                    publishedOnCurrentPublication
-                    images(first: 10) {
-                        edges {
-                            node {
-                                id
-                                altText
-                                originalSrc
-                            }
-                        }
-                    }
-                    variants(first: 25) {
-                        edges {
-                            node {
-                                id
-                                title
-                                sku
-                                price
-                                compareAtPrice
-                                position
-                                inventoryQuantity
-                                image {
-                                    id
-                                    altText
-                                    originalSrc
-                                }
-                            }
-                        }
-                    }
-                }
+        return $this->getClient()->graph('
+        query ($limit: Int!, $cursor: String) {
+  products(first: $limit, after: $cursor) {
+    edges {
+      cursor
+      node {
+        id
+        title
+        handle
+        descriptionHtml
+        vendor
+        productType
+        createdAt
+        updatedAt
+        publishedOnCurrentPublication
+        images(first: 10) {
+          edges {
+            node {
+              id
+              altText
+              originalSrc
             }
-            pageInfo {
-              hasNextPage
-            }
+          }
         }
+        variants(first: 25) {
+          edges {
+            node {
+              id
+              title
+              sku
+              price
+              compareAtPrice
+              position
+              inventoryQuantity
+              image {
+                id
+                altText
+                originalSrc
+              }
+            }
+          }
+        }
+      }
     }
+    pageInfo {
+      hasNextPage
+    }
+  }
 }
-        ");
+',
+            [
+                'limit' => (int)$limit,
+                'cursor' => $cursor
+            ]);
     }
 
     /**
@@ -206,9 +207,9 @@ class ShopifyClient
      */
     public function product($productId, array $options = [])
     {
-        return $this->getClient()->graph("
-{
-    product(id: \"gid://shopify/Product/{$productId}\") {
+        return $this->getClient()->graph('
+query ($id: String!){
+    product(id: $id) {
         id
         title
         bodyHtml
@@ -229,7 +230,10 @@ class ShopifyClient
         }
     }
 }
-");
+',
+            [
+                'id' => "gid://shopify/Product/{$productId}",
+            ]);
     }
 
     /**
@@ -240,38 +244,36 @@ class ShopifyClient
      */
     public function collections(int $limit = 25, string $cursor = null)
     {
-        $after = ($cursor) ? ", after: \"{$cursor}\"" : ' ';
-        $query = "
-{
-    shop {
-        collections(first: {$limit} {$after}) {
-            edges {
-                cursor
-                node {
+        return $this->getClient()->graph('
+query ($limit: Int!, $cursor: String){
+    collections(first: $limit, after: $cursor) {
+        edges {
+            cursor
+            node {
+                id
+                title
+                handle
+                descriptionHtml
+                productsCount
+                updatedAt
+                sortOrder
+                publishedOnCurrentPublication
+                image {
                     id
-                    title
-                    handle
-                    descriptionHtml
-                    productsCount
-                    updatedAt
-                    sortOrder
-                    publishedOnCurrentPublication
-                    image {
-                        id
-                        altText
-                        originalSrc
-                    }
+                    altText
+                    originalSrc
                 }
             }
-            pageInfo {
-              hasNextPage
-            }
+        }
+        pageInfo {
+          hasNextPage
         }
     }
 }
-        ";
-
-        return $this->getClient()->graph($query);
+        ', [
+            'limit' => (int)$limit,
+            'cursor' => $cursor,
+        ]);
     }
 
     /**
@@ -282,12 +284,11 @@ class ShopifyClient
      * @return array|Promise
      * @throws Exception
      */
-    public function collectionProducts($handle, array $options = [])
+    public function collectionProducts($handle)
     {
         return $this->getClient()->graph(
-            "
-{
-    collectionByHandle(handle: \"{$handle}\") {
+            'query ($handle: String!){
+    collectionByHandle(handle: $handle) {
         products(first: 100) {
             edges {
                 node {
@@ -297,9 +298,8 @@ class ShopifyClient
             }
         }
     }
-}
-            ",
-            $options
+}',
+            ["handle" => $handle]
         );
     }
 }

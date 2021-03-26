@@ -100,22 +100,37 @@ class ShopifyImportTask extends BuildTask
                     // Set current publish status for collection
                     if ($collection->CollectionActive && !$collection->isLiveVersion()) {
                         $collection->publishSingle();
-                        self::log("[{$collection->ShopifyID}] Published collection {$collection->Title}", self::SUCCESS);
+                        self::log(
+                            "[{$collection->ShopifyID}] Published collection {$collection->Title}",
+                            self::SUCCESS
+                        );
                     } elseif (!$collection->CollectionActive && $collection->IsPublished()) {
                         $collection->doUnpublish();
-                        self::log("[{$collection->ShopifyID}] Collection not active on Shopify, unpublished", self::SUCCESS);
+                        self::log(
+                            "[{$collection->ShopifyID}] Collection not active on Shopify, unpublished",
+                            self::SUCCESS
+                        );
                     } else {
-                        self::log("[{$collection->ShopifyID}] Collection {$collection->Title} is already published", self::SUCCESS);
+                        self::log(
+                            "[{$collection->ShopifyID}] Collection {$collection->Title} is already published",
+                            self::SUCCESS
+                        );
                     }
 
                     $lastId = $shopifyCollection->cursor;
                 } else {
-                    self::log("[{$shopifyCollection->node->id}] Could not create collection", self::ERROR);
+                    self::log(
+                        "[{$shopifyCollection->node->id}] Could not create collection",
+                        self::ERROR
+                    );
                 }
             }
 
             if ($lastId !== $sinceId) {
-                self::log("[{$sinceId}] Try to import the next page of collections since last cursor", self::SUCCESS);
+                self::log(
+                    "[{$sinceId}] Try to import the next page of collections since last cursor",
+                    self::SUCCESS
+                );
                 $this->importCollections($client, $lastId, $keepCollections);
             } else {
                 // Cleanup old collections
@@ -179,6 +194,7 @@ class ShopifyImportTask extends BuildTask
                                 $image->doUnpublish();
                                 $image->delete();
                                 self::log(
+                                    // phpcs:ignore Generic.Files.LineLength.TooLong
                                     "[{$imageId}][{$imageShopifyId}] Deleted old image {$image->Title} connected to product",
                                     self::SUCCESS
                                 );
@@ -194,7 +210,10 @@ class ShopifyImportTask extends BuildTask
                                     $variant->ProductID = $product->ID;
                                     if ($variant->isChanged()) {
                                         $variant->write();
-                                        self::log("[{$variant->ShopifyID}] Saved Variant {$variant->Title}", self::SUCCESS);
+                                        self::log(
+                                            "[{$variant->ShopifyID}] Saved Variant {$variant->Title}",
+                                            self::SUCCESS
+                                        );
                                     }
                                     $keepVariants[] = $variant->ID;
                                     $product->Variants()->add($variant);
@@ -207,6 +226,7 @@ class ShopifyImportTask extends BuildTask
                                 $variantShopifyId = $variant->ShopifyID;
                                 $variant->delete();
                                 self::log(
+                                    // phpcs:ignore Generic.Files.LineLength.TooLong
                                     "[{$variantId}][{$variantShopifyId}] Deleted old variant {$variant->Title} connected to product",
                                     self::SUCCESS
                                 );
@@ -216,20 +236,35 @@ class ShopifyImportTask extends BuildTask
                         // Write the product record if changed
                         if ($product->isChanged()) {
                             $product->write();
-                            self::log("[{$product->ShopifyID}] Saved changes in product {$product->Title}", self::SUCCESS);
+                            self::log(
+                                "[{$product->ShopifyID}] Saved changes in product {$product->Title}",
+                                self::SUCCESS
+                            );
                         } else {
-                            self::log("[{$product->ShopifyID}] Product {$product->Title} has no changes", self::SUCCESS);
+                            self::log(
+                                "[{$product->ShopifyID}] Product {$product->Title} has no changes",
+                                self::SUCCESS
+                            );
                         }
 
                         // Set current publish status for product
                         if ($product->ProductActive && !$product->isLiveVersion()) {
                             $product->publishSingle();
-                            self::log("[{$product->ShopifyID}] Published product {$product->Title}", self::SUCCESS);
+                            self::log(
+                                "[{$product->ShopifyID}] Published product {$product->Title}",
+                                self::SUCCESS
+                            );
                         } elseif (!$product->ProductActive && $product->IsPublished()) {
                             $product->doUnpublish();
-                            self::log("[{$product->ShopifyID}] Product not active on Shopify, unpublished", self::SUCCESS);
+                            self::log(
+                                "[{$product->ShopifyID}] Product not active on Shopify, unpublished",
+                                self::SUCCESS
+                            );
                         } else {
-                            self::log("[{$product->ShopifyID}] Product {$product->Title} is already published", self::SUCCESS);
+                            self::log(
+                                "[{$product->ShopifyID}] Product {$product->Title} is already published",
+                                self::SUCCESS
+                            );
                         }
                         $lastId = $shopifyProduct->cursor;
                     } else {

@@ -6,9 +6,12 @@ use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Task\ShopifyImportTask;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Assets\Image;
+use SilverStripe\CMS\Model\VirtualPage;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
+use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Security;
@@ -32,6 +35,7 @@ class ShopifyCollection extends \Page
         'ProductsCt' => 'Int',
         'SortOrder' => 'Varchar(20)',
         'CollectionActive' => 'Boolean',
+        'ProductsPerPage' => 'Int',
     ];
 
     /**
@@ -90,6 +94,13 @@ class ShopifyCollection extends \Page
     ];
 
     /**
+     * @var array
+     */
+    private static $defaults = [
+        'ProductsPerPage' => 12,
+    ];
+
+    /**
      * @var string[]
      */
     private static $summary_fields = [
@@ -105,6 +116,7 @@ class ShopifyCollection extends \Page
     private static $allowed_children = [
         ShopifyCollection::class,
         ShopifyProduct::class,
+        VirtualPage::class,
     ];
 
     /**
@@ -135,7 +147,9 @@ class ShopifyCollection extends \Page
             ]);
 
             $fields->addFieldsToTab('Root.Products', [
-                GridField::create('Products', 'Products', $this->Products(), GridFieldConfig_RecordViewer::create())
+                GridField::create('Products', 'Products', $this->Products(), GridFieldConfig_RecordViewer::create()),
+                NumericField::create('ProductsPerPage')
+                    ->setTitle(_t(__CLASS__ . '.ProductsPerPage', 'Products Per Page')),
             ]);
         });
 

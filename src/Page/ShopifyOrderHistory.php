@@ -20,5 +20,4 @@ class ShopifyOrderHistory extends \Page
      * @var string
      */
     private static $controller_name = ShopifyOrderHistoryController::class;
-
 }

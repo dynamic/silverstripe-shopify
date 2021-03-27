@@ -55,7 +55,8 @@ class ShopifyOrderHistoryController extends \PageController
             $email = $request->getVar('email');
         }
 
-        $response = $this->getClient()->graph('query ($limit: Int!, $cursor: String, $query: String) {
+        $response = $this->getClient()->graph(
+            'query ($limit: Int!, $cursor: String, $query: String) {
   orders(' . $firstLast . ': $limit, ' . $beforeAfter . ': $cursor, sortKey: CREATED_AT, reverse: true, query: $query) {
     edges {
       node {
@@ -158,7 +159,8 @@ fragment presentmentMoney on MoneyBag {
                 "query" => isset($email) && $email ? "email:'$email'" : null,
                 "limit" => $limit,
                 "cursor" => $cursor,
-            ]);
+            ]
+        );
 
         $body = $response['body'];
         return $this->customise([

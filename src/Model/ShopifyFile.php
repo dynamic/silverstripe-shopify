@@ -60,6 +60,7 @@ class ShopifyFile extends File
     private static $has_one = [
         'Product' => ShopifyProduct::class,
         'Collection' => ShopifyCollection::class,
+        'Variant' => ShopifyVariant::class,
     ];
 
     /**
@@ -172,7 +173,7 @@ class ShopifyFile extends File
     private function downloadImage($src, $folder)
     {
         $client = new Client(['http_errors' => false]);
-        $request = $client->request('GET', $src);
+        $request = $client->request('GET', $src, ['stream' => true]);
         $folder = Folder::find_or_make($folder);
         $sourcePath = pathinfo($src);
         $fileName = explode('?', $sourcePath['basename'])[0];

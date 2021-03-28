@@ -53,13 +53,6 @@ class ShopifyProduct extends \Page
     /**
      * @var string[]
      */
-    private static $belongs_many_many = [
-        'Collections' => ShopifyCollection::class
-    ];
-
-    /**
-     * @var string[]
-     */
     private static $owns = [
         'Files',
     ];
@@ -331,7 +324,7 @@ JS
         if ($product->isChanged()) {
             $product->write();
             if ($product->isPublished()) {
-                $product->publishRecursive();
+                $product->publishSingle();
             }
         }
 

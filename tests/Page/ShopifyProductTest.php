@@ -34,7 +34,6 @@ class ShopifyProductTest extends SapphireTest
         //$this->assertNotNull($fields->dataFieldByName('Status'));
         $this->assertNotNull($fields->dataFieldByName('Variants'));
         $this->assertNotNull($fields->dataFieldByName('Files'));
-        $this->assertNotNull($fields->dataFieldByName('Collections'));
     }
 
     /**

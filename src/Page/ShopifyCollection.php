@@ -131,11 +131,14 @@ class ShopifyCollection extends \Page
                 ReadonlyField::create('PublishedAt'),
             ]);
 
-            $fields->addFieldsToTab('Root.Products', [
-                GridField::create('Products', 'Products', $this->Products(), GridFieldConfig_RecordViewer::create()),
-                NumericField::create('ProductsPerPage')
-                    ->setTitle(_t(__CLASS__ . '.ProductsPerPage', 'Products Per Page')),
-            ]);
+            $fields->addFieldsToTab(
+                'Root.Display',
+                [
+                    NumericField::create('ProductsPerPage')
+                        ->setTitle(_t(__CLASS__ . '.ProductsPerPage', 'Products Per Page')),
+                ],
+                'Content'
+            );
         });
 
         return parent::getCMSFields();

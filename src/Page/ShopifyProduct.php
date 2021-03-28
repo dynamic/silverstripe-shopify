@@ -197,18 +197,6 @@ class ShopifyProduct extends \Page
                     )
                 ]
             );
-
-            $fields->addFieldsToTab(
-                'Root.Collections',
-                [
-                    GridField::create(
-                        'Collections',
-                        'Collections',
-                        $this->Collections(),
-                        GridFieldConfig_RecordViewer::create()
-                    )
-                ]
-            );
         });
 
         return parent::getCMSFields();

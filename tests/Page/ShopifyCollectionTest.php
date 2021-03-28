@@ -28,7 +28,6 @@ class ShopifyCollectionTest extends SapphireTest
         $this->assertInstanceOf(FieldList::class, $fields);
         $this->assertNotNull($fields->dataFieldByName('ShopifyID'));
         $this->assertNotNull($fields->dataFieldByName('File'));
-        $this->assertNotNull($fields->dataFieldByName('Products'));
     }
 
     /**

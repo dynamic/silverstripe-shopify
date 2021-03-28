@@ -198,7 +198,7 @@ class ShopifyImportTask extends BuildTask
                                 $image->delete();
                                 self::log(
                                     // phpcs:ignore Generic.Files.LineLength.TooLong
-                                    "[{$imageId}][{$imageShopifyId}] Deleted old image {$image->Title} connected to product",
+                                    "[{$imageShopifyId}] Deleted old image {$image->Title}",
                                     self::SUCCESS
                                 );
                             }
@@ -230,7 +230,7 @@ class ShopifyImportTask extends BuildTask
                                 $variant->delete();
                                 self::log(
                                     // phpcs:ignore Generic.Files.LineLength.TooLong
-                                    "[{$variantId}][{$variantShopifyId}] Deleted old variant {$variant->Title} connected to product",
+                                    "[{$variantShopifyId}] Deleted old variant {$variant->Title} connected to product",
                                     self::SUCCESS
                                 );
                             }
@@ -276,7 +276,10 @@ class ShopifyImportTask extends BuildTask
                 }
 
                 if ($products['body']->data->products->pageInfo->hasNextPage) {
-                    self::log("[{$sinceId}] Try to import the next page of products since last cursor", self::SUCCESS);
+                    self::log(
+                        "[{$sinceId}] Try to import the next page of products since last cursor",
+                        self::SUCCESS
+                    );
                     $this->importProducts($client, $lastId, $keepProducts);
                 } else {
                     // Cleanup old products
@@ -346,8 +349,10 @@ class ShopifyImportTask extends BuildTask
                                 $virtual = VirtualPage::create();
                                 $virtual->CopyContentFromID = $product->ID;
                                 $virtual->ParentID = $collection->ID;
+                                $ShopifyID = $product->ShopifyID;
+                                $CollectionID = $collection->ShopifyID;
                                 self::log(
-                                    "Product [$product->ShopifyID] created as a virtual page under Collection [$collection->ShopifyID]",
+                                    "Virtual Product [$ShopifyID] created under Collection [$CollectionID]",
                                     self::SUCCESS
                                 );
                             }
@@ -435,7 +440,10 @@ class ShopifyImportTask extends BuildTask
                 }
 
                 if ($lastId !== $sinceId) {
-                    self::log("[{$sinceId}] Try to import the next page of collects since last id", self::SUCCESS);
+                    self::log(
+                        "[{$sinceId}] Try to import the next page of collects since last id",
+                        self::SUCCESS
+                    );
                     //$this->importCollects($client, $lastId);
                 }
             }

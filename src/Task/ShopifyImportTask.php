@@ -85,19 +85,27 @@ class ShopifyImportTask extends BuildTask
                     if (!empty($shopifyCollection->node->image)) {
                         if ($image = $this->importObject(ShopifyFile::class, $shopifyCollection->node->image)) {
                             $collection->FileID = $image->ID;
-                            if ($collection->isChanged()) {
-                                $collection->write();
-                                self::log(
-                                    "[{$collection->ShopifyID}] Collection {$collection->Title} saved",
-                                    self::SUCCESS
-                                );
-                            } else {
-                                self::log(
-                                    "[{$collection->ShopifyID}] Collection {$collection->Title} has no changes",
-                                    self::SUCCESS
-                                );
-                            }
                         }
+                    } else {
+                        if ($collection->FileID) {
+                            $file = ShopifyFile::get()->byID($collection->FileID);
+                            $file->doUnpublish();
+                            $file->delete();
+                            $collection->FileID = 0;
+                        }
+                    }
+
+                    if ($collection->isChanged()) {
+                        $collection->write();
+                        self::log(
+                            "[{$collection->ShopifyID}] Collection {$collection->Title} saved",
+                            self::SUCCESS
+                        );
+                    } else {
+                        self::log(
+                            "[{$collection->ShopifyID}] Collection {$collection->Title} has no changes",
+                            self::SUCCESS
+                        );
                     }
 
                     // Set current publish status for collection

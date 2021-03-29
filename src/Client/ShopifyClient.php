@@ -304,4 +304,88 @@ query ($limit: Int!, $cursor: String){
             ["handle" => $handle]
         );
     }
+
+    /**
+     * @param $productId
+     * @param int $limit
+     * @param null $cursor
+     * @return array|Promise
+     * @throws Exception
+     */
+    public function productMedia($productId, int $limit = 25, $cursor = null)
+    {
+        return $this->getClient()->graph(
+            'query ($id: ID!, $limit: Int!, $cursor: String){
+    product(id: $id) {
+        id
+        media(first: $limit, after: $cursor) {
+            edges {
+                node {
+                    ... fieldsForMediaTypes
+                }
+            }
+        }
+    }
+}
+
+fragment fieldsForMediaTypes on Media {
+    alt
+    mediaContentType
+    preview {
+        image {
+            id
+            altText
+            originalSrc
+        }
+    }
+    status
+    ... on Video {
+        id
+        sources {
+            format
+            height
+            mimeType
+            url
+            width
+        }
+        originalSource {
+            format
+            height
+            mimeType
+            url
+            width
+        }
+    }
+    ... on ExternalVideo {
+        id
+        embeddedUrl
+    }
+    ... on Model3d {
+        sources {
+            format
+            mimeType
+            url
+        }
+        originalSource {
+            format
+            mimeType
+            url
+        }
+    }
+    ... on MediaImage {
+        id
+        image {
+            altText
+            originalSrc
+        }
+    }
+}
+',
+            [
+                'id' => "gid://shopify/Product/{$productId}",
+                'limit' => (int)$limit,
+                'cursor' => $cursor,
+            ]
+        );
+    }
 }

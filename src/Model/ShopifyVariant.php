@@ -132,18 +132,6 @@ class ShopifyVariant extends DataObject
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $variant, $shopifyVariant);
 
-        if (isset($shopifyVariant->image)) {
-            $imageID = ShopifyImportTask::parseShopifyID($shopifyVariant->image->id);
-
-            if ($file = ShopifyFile::getByShopifyID($imageID)) {
-                $variant->FileID = $file->ID;
-            } else {
-                $file = ShopifyFile::findOrMakeFromShopifyData($shopifyVariant->image);
-                $variant->FileID = $file->ID;
-            }
-        }
-
-
         if ($variant->isChanged()) {
             $variant->write();
         }

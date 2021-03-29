@@ -53,13 +53,6 @@ class ShopifyProduct extends \Page
     /**
      * @var string[]
      */
-    private static $belongs_many_many = [
-        'Collections' => ShopifyCollection::class
-    ];
-
-    /**
-     * @var string[]
-     */
     private static $owns = [
         'Files',
     ];
@@ -204,18 +197,6 @@ class ShopifyProduct extends \Page
                     )
                 ]
             );
-
-            $fields->addFieldsToTab(
-                'Root.Collections',
-                [
-                    GridField::create(
-                        'Collections',
-                        'Collections',
-                        $this->Collections(),
-                        GridFieldConfig_RecordViewer::create()
-                    )
-                ]
-            );
         });
 
         return parent::getCMSFields();
@@ -331,7 +312,7 @@ JS
         if ($product->isChanged()) {
             $product->write();
             if ($product->isPublished()) {
-                $product->publishRecursive();
+                $product->publishSingle();
             }
         }
 

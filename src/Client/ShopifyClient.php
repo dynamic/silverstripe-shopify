@@ -279,6 +279,41 @@ query ($limit: Int!, $cursor: String){
     }
 
     /**
+     * @param $productID
+     * @param int $limit
+     * @param string|null $cursor
+     * @return array|Promise
+     * @throws Exception
+     */
+    public function productCollections($productId, int $limit = 25, string $cursor = null)
+    {
+        return $this->getClient()->graph(
+            'query ($id: ID!, $limit: Int!, $cursor: String){
+    product(id: $id) {
+        collections(first: $limit, after: $cursor) {
+            edges {
+                cursor
+                node {
+                    id
+                    title
+                }
+            }
+            pageInfo {
+              hasNextPage
+            }
+        }
+    }
+}
+        ',
+            [
+            'id' => "gid://shopify/Product/{$productId}",
+            "limit" => (int)$limit,
+            "cursor" => $cursor,
+            ]
+        );
+    }
+
+    /**
      * return products of a given collection by handle
      *
      * @param $handle

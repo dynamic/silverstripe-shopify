@@ -6,7 +6,10 @@ use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Task\ShopifyImportTask;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Assets\Image;
+use SilverStripe\CMS\Model\RedirectorPage;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\CMS\Model\VirtualPage;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
@@ -63,25 +66,6 @@ class ShopifyCollection extends \Page
     /**
      * @var string[]
      */
-    private static $many_many = [
-        'Products' => ShopifyProduct::class,
-    ];
-
-    /**
-     * @var \string[][]
-     */
-    private static $many_many_extraFields = [
-        'Products' => [
-            'SortValue' => 'Varchar',
-            'Position' => 'Int',
-            'Featured' => 'Boolean',
-            'Imported' => 'Boolean'
-        ],
-    ];
-
-    /**
-     * @var string[]
-     */
     private static $owns = [
         'File'
     ];
@@ -117,6 +101,7 @@ class ShopifyCollection extends \Page
         ShopifyCollection::class,
         ShopifyProduct::class,
         VirtualPage::class,
+        RedirectorPage::class,
     ];
 
     /**
@@ -146,11 +131,14 @@ class ShopifyCollection extends \Page
                 ReadonlyField::create('PublishedAt'),
             ]);
 
-            $fields->addFieldsToTab('Root.Products', [
-                GridField::create('Products', 'Products', $this->Products(), GridFieldConfig_RecordViewer::create()),
-                NumericField::create('ProductsPerPage')
-                    ->setTitle(_t(__CLASS__ . '.ProductsPerPage', 'Products Per Page')),
-            ]);
+            $fields->addFieldsToTab(
+                'Root.Display',
+                [
+                    NumericField::create('ProductsPerPage')
+                        ->setTitle(_t(__CLASS__ . '.ProductsPerPage', 'Products Per Page')),
+                ],
+                'Content'
+            );
         });
 
         return parent::getCMSFields();
@@ -161,9 +149,25 @@ class ShopifyCollection extends \Page
      */
     public function getProductList()
     {
-        $products = $this->Products();
+        $categories = ShopifyCollection::get()->filter('ParentID', $this->data()->ID)->column('ID');
+        $categories[] = $this->data()->ID;
 
-        $this->extend('updateProductList', $products);
+        $classes = [
+            VirtualPage::class,
+            RedirectorPage::class,
+        ];
+
+        foreach (ClassInfo::subclassesFor(ShopifyProduct::class) as $class) {
+            $classes[] = $class;
+        }
+
+        $products = SiteTree::get()
+            ->filter('ClassName', $classes)
+            ->filterAny([
+                'ParentID' => $categories,
+            ]);
+
+        $this->extend('updateProductList', $products, $categories);
 
         $products = $products->filterByCallback(function ($page) {
             return $page->canView(Security::getCurrentUser());

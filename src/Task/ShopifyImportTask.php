@@ -219,6 +219,21 @@ class ShopifyImportTask extends BuildTask
                             foreach ($shopifyProduct->node->variants->edges as $shopifyVariant) {
                                 if ($variant = $this->importObject(ShopifyVariant::class, $shopifyVariant->node)) {
                                     $variant->ProductID = $product->ID;
+
+                                    // Create the image
+                                    if (!empty($shopifyVariant->node->image)) {
+                                        if ($image = $this->importObject(ShopifyFile::class, $shopifyVariant->node->image)) {
+                                            $variant->FileID = $image->ID;
+                                        }
+                                    } else {
+                                        if ($variant->FileID) {
+                                            $file = ShopifyFile::get()->byID($variant->FileID);
+                                            $file->doUnpublish();
+                                            $file->delete();
+                                            $variant->FileID = 0;
+                                        }
+                                    }
+
                                     if ($variant->isChanged()) {
                                         $variant->write();
                                         self::log(

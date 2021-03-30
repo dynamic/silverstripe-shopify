@@ -49,16 +49,6 @@ class ShopifyProductTest extends SapphireTest
     /**
      *
      */
-    public function testGetButtonOptions()
-    {
-        $object = $this->objFromFixture(ShopifyProduct::class, 'one');
-        $script = $object->getButtonOptions();
-        $this->assertInternalType('string', $script);
-    }
-
-    /**
-     *
-     */
     public function testGetPrice()
     {
         $object = $this->objFromFixture(ShopifyProduct::class, 'one');

@@ -156,11 +156,14 @@ class ShopifyProduct extends \Page
             'iframe' => false,
             'buttonDestination' => 'modal',
             'contents' => [
+                'img' => false,
                 'title' => false,
                 'variantTitle' => false,
                 'price' => true,
+                'unitPrice' => false,
+                'options' => false,
+                'quantityInput' => false,
                 'description' => false,
-                'img' => false,
             ]
         ],
         'modalProduct' => [

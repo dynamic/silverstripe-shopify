@@ -245,7 +245,7 @@ class ShopifyProduct extends \Page
     }
 
     /**
-     * @return string
+     *
      */
     public function getButtonScript()
     {
@@ -263,7 +263,7 @@ class ShopifyProduct extends \Page
     }
 
     /**
-     * @return string
+     *
      */
     public function getOverlayScript()
     {

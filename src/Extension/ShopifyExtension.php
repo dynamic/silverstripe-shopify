@@ -17,10 +17,12 @@ class ShopifyExtension extends Extension
 {
     /**
      * @return string
+     *
+     * todo - create private static $cart_options on ShopifyProduct to isolate cart options from button options
      */
     public function getCartOptions()
     {
-        return Convert::array2json(array_merge_recursive(ShopifyProduct::config()->get('options'), [
+        return Convert::array2json(array_merge_recursive(ShopifyProduct::config()->get('button_options'), [
             'cart' => [
                 'text' => [
                     'title' => _t('Shopify.CartTitle', 'Cart'),

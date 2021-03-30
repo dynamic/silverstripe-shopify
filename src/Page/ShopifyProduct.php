@@ -132,9 +132,11 @@ class ShopifyProduct extends \Page
      * @var \array[][]
      *
      * Set options for the Buy Button display
+     * https://github.com/Shopify/buy-button-js/blob/master/src/defaults/components.js
      */
-    private static $options = [
+    private static $button_options = [
         'product' => [
+            'iframe' => false,
             'contents' => [
                 'title' => false,
                 'variantTitle' => false,
@@ -142,6 +144,36 @@ class ShopifyProduct extends \Page
                 'description' => false,
                 'quantity' => true,
                 'img' => false,
+            ]
+        ]
+    ];
+
+    /**
+     * @var \array[][]
+     */
+    private static $ovevrlay_options = [
+        'product' => [
+            'iframe' => false,
+            'buttonDestination' => 'modal',
+            'contents' => [
+                'title' => false,
+                'variantTitle' => false,
+                'price' => true,
+                'description' => false,
+                'img' => false,
+            ]
+        ],
+        'modalProduct' => [
+            'contents' => [
+                'title' => true,
+                'variantTitle' => false,
+                'price' => true,
+                'description' => true,
+                'img' => false,
+                'imgWithCarousel' => true,
+                'buttonWithQuantity' => true,
+                'button' => false,
+                'quantity' => false,
             ]
         ]
     ];
@@ -217,7 +249,7 @@ class ShopifyProduct extends \Page
      */
     public function getButtonOptions()
     {
-        return Convert::array2json(array_merge_recursive(self::config()->get('options'), [
+        return Convert::array2json(array_merge_recursive(self::config()->get('button_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
@@ -243,6 +275,43 @@ class ShopifyProduct extends \Page
                         node: document.getElementById('product-component-{$this->ShopifyID}'),
                         moneyFormat: '$currencySymbol{{amount}}',
                         options: {$this->ButtonOptions}
+                    });
+                }
+            })();
+JS
+            );
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getOverlayOptions()
+    {
+        return Convert::array2json(array_merge_recursive(self::config()->get('ovevrlay_options'), [
+            'product' => [
+                'text' => [
+                    'button' => _t('Shopify.ProductButton', 'Add to cart'),
+                ]
+            ]
+        ]));
+    }
+
+    /**
+     *
+     */
+    public function getOverlayScript()
+    {
+        if ($this->ShopifyID) {
+            $currencySymbol = DBCurrency::config()->get('currency_symbol');
+            Requirements::customScript(<<<JS
+            (function () {
+                if (window.shopifyClient) {
+                    window.shopifyClient.createComponent('product', {
+                        id: {$this->ShopifyID},
+                        node: document.getElementById('product-component-{$this->ShopifyID}'),
+                        moneyFormat: '$currencySymbol{{amount}}',
+                        options: {$this->OverlayOptions}
                     });
                 }
             })();

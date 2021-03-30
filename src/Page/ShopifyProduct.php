@@ -247,9 +247,9 @@ class ShopifyProduct extends \Page
     /**
      * @return string
      */
-    public function getButtonOptions()
+    public function getButtonScript()
     {
-        return Convert::array2json(array_merge_recursive(self::config()->get('button_options'), [
+        $options = Convert::array2json(array_merge_recursive(self::config()->get('button_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
@@ -258,49 +258,30 @@ class ShopifyProduct extends \Page
                 ]
             ]
         ]));
-    }
 
-    /**
-     *
-     */
-    public function getButtonScript()
-    {
-        if ($this->ShopifyID) {
-            $currencySymbol = DBCurrency::config()->get('currency_symbol');
-            Requirements::customScript(<<<JS
-            (function () {
-                if (window.shopifyClient) {
-                    window.shopifyClient.createComponent('product', {
-                        id: {$this->ShopifyID},
-                        node: document.getElementById('product-component-{$this->ShopifyID}'),
-                        moneyFormat: '$currencySymbol{{amount}}',
-                        options: {$this->ButtonOptions}
-                    });
-                }
-            })();
-JS
-            );
-        }
+        return $this->getBuyButtonScript($options);
     }
 
     /**
      * @return string
      */
-    public function getOverlayOptions()
+    public function getOverlayScript()
     {
-        return Convert::array2json(array_merge_recursive(self::config()->get('ovevrlay_options'), [
+        $options = Convert::array2json(array_merge_recursive(self::config()->get('ovevrlay_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
                 ]
             ]
         ]));
+
+        return $this->getBuyButtonScript($options);
     }
 
     /**
      *
      */
-    public function getOverlayScript()
+    public function getBuyButtonScript($options)
     {
         if ($this->ShopifyID) {
             $currencySymbol = DBCurrency::config()->get('currency_symbol');
@@ -311,7 +292,7 @@ JS
                         id: {$this->ShopifyID},
                         node: document.getElementById('product-component-{$this->ShopifyID}'),
                         moneyFormat: '$currencySymbol{{amount}}',
-                        options: {$this->OverlayOptions}
+                        options: {$options}
                     });
                 }
             })();

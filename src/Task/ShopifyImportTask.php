@@ -12,7 +12,6 @@ use SilverStripe\CMS\Model\VirtualPage;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\Dev\Debug;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -334,77 +333,110 @@ class ShopifyImportTask extends BuildTask
         }
 
         foreach ($products as $product) {
-            $collections = null;
+            $this->generateVirtuals($client, $product);
+        }
+    }
 
-            try {
-                $collections = $client->productCollections($product->ShopifyID, 25, $sinceId);
-            } catch (\GuzzleHttp\Exception\GuzzleException $e) {
-                exit($e->getMessage());
-            }
+    /**
+     * @param $client
+     * @param $product
+     * @param null $sinceId
+     * @param array $keepVirtuals
+     * @throws \SilverStripe\ORM\ValidationException
+     */
+    public function generateVirtuals($client, $product, $sinceId = null, $keepVirtuals = [])
+    {
+        $collections = null;
 
-            if ($collections && $collections['body']) {
-                $lastId = $sinceId;
-                foreach ($collections['body']->data->product->collections->edges as $index => $shopifyCollection) {
-                    if ($collection = ShopifyCollection::getByShopifyID(self::parseShopifyID($shopifyCollection->node->id))
-                    ) {
-                        if ($index < 1) {
-                            $product->ParentID = $collection->ID;
-                            if ($product->isChanged('ParentID', DataObject::CHANGE_VALUE)) {
-                                $product->write();
-                                if ($product->isPublished()) {
-                                    $product->publishSingle();
-                                }
+        try {
+            $collections = $client->productCollections($product->ShopifyID, 25, $sinceId);
+        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+            exit($e->getMessage());
+        }
+
+        if ($collections && $collections['body']) {
+            $lastId = $sinceId;
+            foreach ($collections['body']->data->product->collections->edges as $index => $shopifyCollection) {
+                if ($collection = ShopifyCollection::getByShopifyID(self::parseShopifyID($shopifyCollection->node->id))
+                ) {
+                    if ($index < 1) {
+                        $product->ParentID = $collection->ID;
+                        if ($product->isChanged('ParentID', DataObject::CHANGE_VALUE)) {
+                            $product->write();
+                            if ($product->isPublished()) {
+                                $product->publishSingle();
+                            }
+                            self::log(
+                                "Collection [$collection->ShopifyID] now parent of Product [$product->ShopifyID] ",
+                                self::SUCCESS
+                            );
+                        } else {
+                            self::log(
+                                "Product [{$product->ShopifyID}] has no changes",
+                                self::SUCCESS
+                            );
+                        }
+                    } else {
+                        if (!$virtual = VirtualPage::get()->filter([
+                            'CopyContentFromID' => $product->ID,
+                            'ParentID' => $collection->ID,
+                        ])->first()) {
+                            $virtual = VirtualPage::create();
+                            $virtual->CopyContentFromID = $product->ID;
+                            $virtual->ParentID = $collection->ID;
+                            $virtual->write();
+                            $ShopifyID = $product->ShopifyID;
+                            $CollectionID = $collection->ShopifyID;
+                            self::log(
+                                "Virtual Product [$ShopifyID] created under Collection [$CollectionID]",
+                                self::SUCCESS
+                            );
+                        }
+                        $keepVirtuals[] = $virtual->ID;
+                        if ($virtual->isChanged()) {
+                            $virtual->write();
+                            if ($product->isPublished()) {
+                                $virtual->publishSingle();
                                 self::log(
-                                    "Collection [$collection->ShopifyID] now parent of Product [$product->ShopifyID] ",
-                                    self::SUCCESS
-                                );
-                            } else {
-                                self::log(
-                                    "Product [{$product->ShopifyID}] has no changes",
+                                    "Virtual Product [{$product->ShopifyID}] published",
                                     self::SUCCESS
                                 );
                             }
                         } else {
-                            if (!$virtual = VirtualPage::get()->filter([
-                                'CopyContentFromID' => $product->ID,
-                                'ParentID' => $collection->ID,
-                            ])->first()) {
-                                $virtual = VirtualPage::create();
-                                $virtual->CopyContentFromID = $product->ID;
-                                $virtual->ParentID = $collection->ID;
-                                $ShopifyID = $product->ShopifyID;
-                                $CollectionID = $collection->ShopifyID;
-                                self::log(
-                                    "Virtual Product [$ShopifyID] created under Collection [$CollectionID]",
-                                    self::SUCCESS
-                                );
-                            }
-                            if ($virtual->isChanged()) {
-                                $virtual->write();
-                                if ($product->isPublished()) {
-                                    $virtual->publishSingle();
-                                    self::log(
-                                        "Virtual Product [{$product->ShopifyID}] published",
-                                        self::SUCCESS
-                                    );
-                                }
-                            } else {
-                                self::log(
-                                    "Virtual Product [{$product->ShopifyID}] has no changes",
-                                    self::SUCCESS
-                                );
-                            }
+                            self::log(
+                                "Virtual Product [{$product->ShopifyID}] has no changes",
+                                self::SUCCESS
+                            );
                         }
-                        $lastId = $shopifyCollection->cursor;
                     }
+                    $lastId = $shopifyCollection->cursor;
                 }
+            }
 
-                if ($collections['body']->data->product->collections->pageInfo->hasNextPage) {
-                    self::log(
-                        "[{$sinceId}] Try to import the next page of collections since last cursor",
-                        self::SUCCESS
-                    );
-                    $this->arrangeSiteMap($client, $lastId);
+            if ($collections['body']->data->product->collections->pageInfo->hasNextPage) {
+                self::log(
+                    "[{$sinceId}] Try to import the next page of collections since last cursor",
+                    self::SUCCESS
+                );
+                $this->generateVirtuals($client, $productId, $lastId, $keepVirtuals);
+            } else {
+                // Cleanup old virtuals
+                $virtuals = VirtualPage::get()
+                    ->filter('CopyContentFromID', $product->ID);
+                if ($keepVirtuals) {
+                    $virtuals = $virtuals->exclude(['ID' => $keepVirtuals]);
+                }
+                if ($virtuals) {
+                    foreach ($virtuals as $oldVirtual) {
+                        $virtualShopifyId = $product->ShopifyID;
+                        $virtualTitle = $product->Title;
+                        $oldVirtual->doUnpublish();
+                        $oldVirtual->delete();
+                        self::log(
+                            "[{$virtualShopifyId}] Deleted old virtual {$virtualTitle}",
+                            self::SUCCESS
+                        );
+                    }
                 }
             }
         }

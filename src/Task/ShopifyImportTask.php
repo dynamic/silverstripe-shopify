@@ -48,9 +48,6 @@ class ShopifyImportTask extends BuildTask
         $this->importCollections($client);
         $this->importProducts($client);
         $this->arrangeSiteMap($client);
-        //$this->beforeImportCollects();
-        //$this->importCollects($client);
-        //$this->afterImportCollects();
 
         if (!Director::is_cli()) {
             echo "</pre>";
@@ -439,89 +436,6 @@ class ShopifyImportTask extends BuildTask
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Import the Shopify Collects
-     * @param Client $client
-     *
-     * @throws \SilverStripe\ORM\ValidationException
-     */
-    public function importCollects(ShopifyClient $client, $sinceId = 0)
-    {
-        $collections = ShopifyCollection::get();
-        if (!$collections->count()) {
-            self::log("[collection] No collections to parse");
-            return;
-        }
-
-        foreach ($collections as $collection) {
-            /** @var ShopifyCollection $collection */
-            $collects = null;
-
-            try {
-                $collects = $client->collectionProducts($collection->URLSegment, [
-                    'query' => [
-                        'limit' => 250,
-                        'since_id' => $sinceId
-                    ]
-                ]);
-            } catch (\GuzzleHttp\Exception\GuzzleException $e) {
-                exit($e->getMessage());
-            }
-
-            if (($collects = $collects['body'])) {
-                $lastId = $sinceId;
-                foreach ($collects->data->collectionByHandle->products->edges as $shopifyCollect) {
-                    if ($product = ShopifyProduct::getByShopifyID(self::parseShopifyID($shopifyCollect->node->id))
-                    ) {
-                        $collection->Products()->add($product, [
-                            //'ShopifyID' => self::parseShopifyID($shopifyCollect->node->id),
-                            //'SortValue' => $shopifyCollect->sort_value,
-                            //'Position' => $shopifyCollect->position,
-                            'Imported' => true
-                        ]);
-
-                        $product->ParentID = $collection->ID;
-                        if ($product->isChanged()) {
-                            $product->write();
-                        }
-
-                        $lastId = $product->ShopifyID;
-                        self::log("[" . self::parseShopifyID($shopifyCollect->node->id) . "] Created collect between
-                        Product[{$product->ID}] and Collection[{$collection->ID}]", self::SUCCESS);
-                    }
-                }
-
-                if ($lastId !== $sinceId) {
-                    self::log(
-                        "[{$sinceId}] Try to import the next page of collects since last id",
-                        self::SUCCESS
-                    );
-                    //$this->importCollects($client, $lastId);
-                }
-            }
-        }
-    }
-
-    // todo make this flexible so it's also usable for Products, Variants, Images, Collections.
-    // if made flexible should also handle versions.
-    public function beforeImportCollects()
-    {
-        // Set all imported values to 0
-        $schema = DataObject::getSchema()->manyManyComponent(ShopifyCollection::class, 'Products');
-        if (isset($schema['join']) && $join = $schema['join']) {
-            DB::query("UPDATE `$join` SET `Imported` = 0 WHERE 1");
-        }
-    }
-
-    public function afterImportCollects()
-    {
-        // Delete all collects that where not given during importe
-        $schema = DataObject::getSchema()->manyManyComponent(ShopifyCollection::class, 'Products');
-        if (isset($schema['join']) && $join = $schema['join']) {
-            DB::query("DELETE FROM `$join` WHERE `Imported` = 0");
         }
     }
 

@@ -16,6 +16,10 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 
+/**
+ * Class ShopifyImportTask
+ * @package Dynamic\Shopify\Task
+ */
 class ShopifyImportTask extends BuildTask
 {
     const NOTICE = 0;
@@ -23,14 +27,30 @@ class ShopifyImportTask extends BuildTask
     const WARN = 2;
     const ERROR = 3;
 
-    protected $title = 'Import shopify products';
+    /**
+     * @var string
+     */
+    protected $title = 'Shopify - import products';
 
+    /**
+     * @var string
+     */
     protected $description = 'Import shopify products from the configured store';
 
+    /**
+     * @var string
+     */
     private static $segment = 'ShopifyImportTask';
 
+    /**
+     * @var bool
+     */
     protected $enabled = true;
 
+    /**
+     * @param \SilverStripe\Control\HTTPRequest $request
+     * @throws \SilverStripe\ORM\ValidationException
+     */
     public function run($request)
     {
         if (!Director::is_cli()) {
@@ -45,8 +65,13 @@ class ShopifyImportTask extends BuildTask
             exit($e->getMessage());
         }
 
+        self::log("IMPORT COLLECTIONS", self::NOTICE);
         $this->importCollections($client);
+
+        self::log("IMPORT PRODUCTS", self::NOTICE);
         $this->importProducts($client);
+
+        self::log("ARRANGE SITEMAP", self::NOTICE);
         $this->arrangeSiteMap($client);
 
         if (!Director::is_cli()) {
@@ -77,29 +102,41 @@ class ShopifyImportTask extends BuildTask
                 // Create the collection
                 if ($collection = $this->importObject(ShopifyCollection::class, $shopifyCollection->node)) {
                     $keepCollections[] = $collection->ID;
+
                     // Create the image
                     if (!empty($shopifyCollection->node->image)) {
                         if ($image = $this->importObject(ShopifyFile::class, $shopifyCollection->node->image)) {
                             $collection->FileID = $image->ID;
+                        } else {
+                            self::log(
+                                "[{$shopifyCollection->node->image->id}] Could not create file",
+                                self::ERROR
+                            );
                         }
                     } else {
                         if ($collection->FileID) {
                             $file = ShopifyFile::get()->byID($collection->FileID);
+                            $fileTitle = $file->Title;
+                            $fileShopifyID = $file->ShopifyID;
                             $file->doUnpublish();
                             $file->delete();
                             $collection->FileID = 0;
+                            self::log(
+                                "[{$fileShopifyID}] Deleted file {$fileTitle}",
+                                self::SUCCESS
+                            );
                         }
                     }
 
                     if ($collection->isChanged()) {
                         $collection->write();
                         self::log(
-                            "[{$collection->ShopifyID}] Collection {$collection->Title} saved",
+                            "[{$collection->ShopifyID}] Saved collection {$collection->Title}",
                             self::SUCCESS
                         );
                     } else {
                         self::log(
-                            "[{$collection->ShopifyID}] Collection {$collection->Title} has no changes",
+                            "[{$collection->ShopifyID}] Collection {$collection->Title} is unchanged",
                             self::SUCCESS
                         );
                     }
@@ -114,12 +151,7 @@ class ShopifyImportTask extends BuildTask
                     } elseif (!$collection->CollectionActive && $collection->IsPublished()) {
                         $collection->doUnpublish();
                         self::log(
-                            "[{$collection->ShopifyID}] Collection not active on Shopify, unpublished",
-                            self::SUCCESS
-                        );
-                    } else {
-                        self::log(
-                            "[{$collection->ShopifyID}] Collection {$collection->Title} is already published",
+                            "[{$collection->ShopifyID}] Unpublished collection {$collection->Title}",
                             self::SUCCESS
                         );
                     }
@@ -136,17 +168,17 @@ class ShopifyImportTask extends BuildTask
             if ($collections['body']->data->collections->pageInfo->hasNextPage) {
                 self::log(
                     "[{$sinceId}] Try to import the next page of collections since last cursor",
-                    self::SUCCESS
+                    self::NOTICE
                 );
                 $this->importCollections($client, $lastId, $keepCollections);
             } else {
                 // Cleanup old collections
                 foreach (ShopifyCollection::get()->exclude(['ID' => $keepCollections]) as $collection) {
                     $collectionShopifyId = $collection->ShopifyID;
+                    $collectionTitle = $collection->Title;
                     $collection->doUnpublish();
-                    $collection->delete(); //todo - just unpublish, don't delete
                     self::log(
-                        "[{$collectionShopifyId}] Deleted old collection {$collection->Title}",
+                        "[{$collectionShopifyId}] Unpublished collection {$collectionTitle}",
                         self::SUCCESS
                     );
                 }
@@ -186,6 +218,11 @@ class ShopifyImportTask extends BuildTask
                                 if ($image = $this->importObject(ShopifyFile::class, $shopifyImage->node)) {
                                     $keepImages[] = $image->ID;
                                     $product->Files()->add($image);
+                                } else {
+                                    self::log(
+                                        "[{$shopifyImage->node->id}] Could not create file",
+                                        self::ERROR
+                                    );
                                 }
                             }
 
@@ -195,14 +232,13 @@ class ShopifyImportTask extends BuildTask
                             } else {
                                 $files = $product->Files()->exclude(['ID' => $keepImages]);
                             }
-                            foreach ($files as $image) {
-                                $imageId = $image->ID;
-                                $imageShopifyId = $image->ShopifyID;
-                                $image->doUnpublish();
-                                $image->delete();
+                            foreach ($files as $file) {
+                                $fileTitle = $file->Title;
+                                $fileShopifyID = $file->ShopifyID;
+                                $file->doUnpublish();
+                                $file->delete();
                                 self::log(
-                                    // phpcs:ignore Generic.Files.LineLength.TooLong
-                                    "[{$imageShopifyId}] Deleted old image {$image->Title}",
+                                    "[{$fileShopifyID}] Deleted file {$fileTitle}",
                                     self::SUCCESS
                                 );
                             }
@@ -216,17 +252,28 @@ class ShopifyImportTask extends BuildTask
                                 if ($variant = $this->importObject(ShopifyVariant::class, $shopifyVariant->node)) {
                                     $variant->ProductID = $product->ID;
 
-                                    // Create the image
+                                    // Create the file
                                     if (!empty($shopifyVariant->node->image)) {
                                         if ($image = $this->importObject(ShopifyFile::class, $shopifyVariant->node->image)) {
                                             $variant->FileID = $image->ID;
+                                        } else {
+                                            self::log(
+                                                "[{$shopifyVariant->node->image->id}] Could not create file",
+                                                self::ERROR
+                                            );
                                         }
                                     } else {
                                         if ($variant->FileID) {
                                             $file = ShopifyFile::get()->byID($variant->FileID);
+                                            $fileShopifyID = $file->ShopifyID;
+                                            $fileTitle = $file->Title;
                                             $file->doUnpublish();
                                             $file->delete();
                                             $variant->FileID = 0;
+                                            self::log(
+                                                "[{$fileShopifyID}] Deleted file {$fileTitle}",
+                                                self::SUCCESS
+                                            );
                                         }
                                     }
 
@@ -239,6 +286,11 @@ class ShopifyImportTask extends BuildTask
                                     }
                                     $keepVariants[] = $variant->ID;
                                     $product->Variants()->add($variant);
+                                } else {
+                                    self::log(
+                                        "[{$shopifyVariant->node->ID}] Could not create variant",
+                                        self::ERROR
+                                    );
                                 }
                             }
 
@@ -249,7 +301,7 @@ class ShopifyImportTask extends BuildTask
                                 $variant->delete();
                                 self::log(
                                     // phpcs:ignore Generic.Files.LineLength.TooLong
-                                    "[{$variantShopifyId}] Deleted old variant {$variant->Title} connected to product",
+                                    "[{$variantShopifyId}] Deleted variant {$variant->Title} of product [{$product->ShopifyID}]",
                                     self::SUCCESS
                                 );
                             }
@@ -259,12 +311,12 @@ class ShopifyImportTask extends BuildTask
                         if ($product->isChanged()) {
                             $product->write();
                             self::log(
-                                "[{$product->ShopifyID}] Saved changes in product {$product->Title}",
+                                "[{$product->ShopifyID}] Saved product {$product->Title}",
                                 self::SUCCESS
                             );
                         } else {
                             self::log(
-                                "[{$product->ShopifyID}] Product {$product->Title} has no changes",
+                                "[{$product->ShopifyID}] Product {$product->Title} is unchanged",
                                 self::SUCCESS
                             );
                         }
@@ -279,25 +331,20 @@ class ShopifyImportTask extends BuildTask
                         } elseif (!$product->ProductActive && $product->IsPublished()) {
                             $product->doUnpublish();
                             self::log(
-                                "[{$product->ShopifyID}] Product not active on Shopify, unpublished",
-                                self::SUCCESS
-                            );
-                        } else {
-                            self::log(
-                                "[{$product->ShopifyID}] Product {$product->Title} is already published",
+                                "[{$product->ShopifyID}] Unpublished product {$product->Title}",
                                 self::SUCCESS
                             );
                         }
                         $lastId = $shopifyProduct->cursor;
                     } else {
-                        self::log("[{$lastId}] Could not create product", self::ERROR);
+                        self::log("[{$shopifyProduct->node->id}] Could not create product", self::ERROR);
                     }
                 }
 
                 if ($products['body']->data->products->pageInfo->hasNextPage) {
                     self::log(
                         "[{$sinceId}] Try to import the next page of products since last cursor",
-                        self::SUCCESS
+                        self::NOTICE
                     );
                     $this->importProducts($client, $lastId, $keepProducts);
                 } else {
@@ -305,9 +352,8 @@ class ShopifyImportTask extends BuildTask
                     foreach (ShopifyProduct::get()->exclude(['ID' => $keepProducts]) as $product) {
                         $productShopifyId = $product->ShopifyID;
                         $product->doUnpublish();
-                        $product->delete(); //todo - just unpublish, don't delete
                         self::log(
-                            "[{$productShopifyId}] Deleted old product {$product->Title}",
+                            "[{$productShopifyId}] Unpublished  product {$product->Title}",
                             self::SUCCESS
                         );
                     }
@@ -360,16 +406,16 @@ class ShopifyImportTask extends BuildTask
                         $product->ParentID = $collection->ID;
                         if ($product->isChanged('ParentID', DataObject::CHANGE_VALUE)) {
                             $product->write();
-                            if ($product->isPublished()) {
+                            if ($product->isPublished() && !$product->isLiveVersion()) {
                                 $product->publishSingle();
                             }
                             self::log(
-                                "Collection [$collection->ShopifyID] now parent of Product [$product->ShopifyID] ",
+                                "[$collection->ShopifyID] Collection set as parent of product [$product->ShopifyID] ",
                                 self::SUCCESS
                             );
                         } else {
                             self::log(
-                                "Product [{$product->ShopifyID}] has no changes",
+                                "[{$product->ShopifyID}] Product is unchanged",
                                 self::SUCCESS
                             );
                         }
@@ -385,7 +431,7 @@ class ShopifyImportTask extends BuildTask
                             $ShopifyID = $product->ShopifyID;
                             $CollectionID = $collection->ShopifyID;
                             self::log(
-                                "Virtual Product [$ShopifyID] created under Collection [$CollectionID]",
+                                "[$ShopifyID] Virtual Product created under Collection [$CollectionID]",
                                 self::SUCCESS
                             );
                         }
@@ -393,26 +439,27 @@ class ShopifyImportTask extends BuildTask
                         if ($virtual->isChanged()) {
                             $virtual->write();
                             self::log(
-                                "Virtual Product [{$product->ShopifyID}] updated",
+                                "[{$product->ShopifyID}] Updated virtual product",
                                 self::SUCCESS
                             );
                         } else {
                             self::log(
-                                "Virtual Product [{$product->ShopifyID}] has no changes",
+                                "[{$product->ShopifyID}] Virtual product is unchanged",
                                 self::SUCCESS
                             );
                         }
                         // Set current publish status for virtual product
-                        if ($product->ProductActive) {
+                        if ($product->ProductActive && !$virtual->isLiveVersion()) {
                             $virtual->publishSingle();
                             self::log(
-                                "Virtual Product [{$product->ShopifyID}] published",
+                                "[{$product->ShopifyID}] Published virtual product",
                                 self::SUCCESS
                             );
                         } elseif (!$product->ProductActive && $virtual->IsPublished()) {
                             $virtual->doUnpublish();
+                            $virtual->delete();
                             self::log(
-                                "Virtual Product [{$product->ShopifyID}] unpublished",
+                                "[{$product->ShopifyID}] Deleted virtual product",
                                 self::SUCCESS
                             );
                         }
@@ -424,7 +471,7 @@ class ShopifyImportTask extends BuildTask
             if ($collections['body']->data->product->collections->pageInfo->hasNextPage) {
                 self::log(
                     "[{$sinceId}] Try to import the next page of collections since last cursor",
-                    self::SUCCESS
+                    self::NOTICE
                 );
                 $this->generateVirtuals($client, $productId, $lastId, $keepVirtuals);
             } else {
@@ -441,7 +488,7 @@ class ShopifyImportTask extends BuildTask
                         $oldVirtual->doUnpublish();
                         $oldVirtual->delete();
                         self::log(
-                            "[{$virtualShopifyId}] Deleted old virtual {$virtualTitle}",
+                            "[{$virtualShopifyId}] Deleted virtual product {$virtualTitle}",
                             self::SUCCESS
                         );
                     }

@@ -144,7 +144,7 @@ class ShopifyImportTask extends BuildTask
                 foreach (ShopifyCollection::get()->exclude(['ID' => $keepCollections]) as $collection) {
                     $collectionShopifyId = $collection->ShopifyID;
                     $collection->doUnpublish();
-                    $collection->delete();
+                    $collection->delete(); //todo - just unpublish, don't delete
                     self::log(
                         "[{$collectionShopifyId}] Deleted old collection {$collection->Title}",
                         self::SUCCESS
@@ -305,7 +305,7 @@ class ShopifyImportTask extends BuildTask
                     foreach (ShopifyProduct::get()->exclude(['ID' => $keepProducts]) as $product) {
                         $productShopifyId = $product->ShopifyID;
                         $product->doUnpublish();
-                        $product->delete();
+                        $product->delete(); //todo - just unpublish, don't delete
                         self::log(
                             "[{$productShopifyId}] Deleted old product {$product->Title}",
                             self::SUCCESS
@@ -392,16 +392,27 @@ class ShopifyImportTask extends BuildTask
                         $keepVirtuals[] = $virtual->ID;
                         if ($virtual->isChanged()) {
                             $virtual->write();
-                            if ($product->isPublished()) {
-                                $virtual->publishSingle();
-                                self::log(
-                                    "Virtual Product [{$product->ShopifyID}] published",
-                                    self::SUCCESS
-                                );
-                            }
+                            self::log(
+                                "Virtual Product [{$product->ShopifyID}] updated",
+                                self::SUCCESS
+                            );
                         } else {
                             self::log(
                                 "Virtual Product [{$product->ShopifyID}] has no changes",
+                                self::SUCCESS
+                            );
+                        }
+                        // Set current publish status for virtual product
+                        if ($product->ProductActive) {
+                            $virtual->publishSingle();
+                            self::log(
+                                "Virtual Product [{$product->ShopifyID}] published",
+                                self::SUCCESS
+                            );
+                        } elseif (!$product->ProductActive && $virtual->IsPublished()) {
+                            $virtual->doUnpublish();
+                            self::log(
+                                "Virtual Product [{$product->ShopifyID}] unpublished",
                                 self::SUCCESS
                             );
                         }

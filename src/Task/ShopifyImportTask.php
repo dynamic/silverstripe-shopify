@@ -95,6 +95,7 @@ class ShopifyImportTask extends BuildTask
                             $fileShopifyID = $file->ShopifyID;
                             $file->doUnpublish();
                             $file->delete();
+                            $collection->FileID = 0;
                             self::log(
                                 "[{$fileShopifyID}] Deleted file {$fileTitle}",
                                 self::SUCCESS

@@ -260,7 +260,10 @@ class ShopifyImportTask extends BuildTask
                                     $keepVariants[] = $variant->ID;
                                     $product->Variants()->add($variant);
                                 } else {
-                                    self::log("[{$shopifyVariant->node->ID}] Could not create variant", self::ERROR);
+                                    self::log(
+                                        "[{$shopifyVariant->node->ID}] Could not create variant",
+                                        self::ERROR
+                                    );
                                 }
                             }
 
@@ -271,7 +274,7 @@ class ShopifyImportTask extends BuildTask
                                 $variant->delete();
                                 self::log(
                                     // phpcs:ignore Generic.Files.LineLength.TooLong
-                                    "[{$variantShopifyId}] Deleted variant {$variant->Title} connected to product [{$product->ShopifyID}]",
+                                    "[{$variantShopifyId}] Deleted variant {$variant->Title} of product [{$product->ShopifyID}]",
                                     self::SUCCESS
                                 );
                             }

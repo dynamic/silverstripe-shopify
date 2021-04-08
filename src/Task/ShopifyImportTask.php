@@ -65,8 +65,13 @@ class ShopifyImportTask extends BuildTask
             exit($e->getMessage());
         }
 
+        self::log("IMPORT COLLECTIONS", self::NOTICE);
         $this->importCollections($client);
+
+        self::log("IMPORT PRODUCTS", self::NOTICE);
         $this->importProducts($client);
+
+        self::log("ARRANGE SITEMAP", self::NOTICE);
         $this->arrangeSiteMap($client);
 
         if (!Director::is_cli()) {

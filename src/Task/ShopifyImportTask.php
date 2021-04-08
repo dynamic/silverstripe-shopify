@@ -16,6 +16,10 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 
+/**
+ * Class ShopifyImportTask
+ * @package Dynamic\Shopify\Task
+ */
 class ShopifyImportTask extends BuildTask
 {
     const NOTICE = 0;
@@ -23,14 +27,30 @@ class ShopifyImportTask extends BuildTask
     const WARN = 2;
     const ERROR = 3;
 
-    protected $title = 'Import shopify products';
+    /**
+     * @var string
+     */
+    protected $title = 'Shopify - import products';
 
+    /**
+     * @var string
+     */
     protected $description = 'Import shopify products from the configured store';
 
+    /**
+     * @var string
+     */
     private static $segment = 'ShopifyImportTask';
 
+    /**
+     * @var bool
+     */
     protected $enabled = true;
 
+    /**
+     * @param \SilverStripe\Control\HTTPRequest $request
+     * @throws \SilverStripe\ORM\ValidationException
+     */
     public function run($request)
     {
         if (!Director::is_cli()) {
@@ -150,9 +170,10 @@ class ShopifyImportTask extends BuildTask
                 // Cleanup old collections
                 foreach (ShopifyCollection::get()->exclude(['ID' => $keepCollections]) as $collection) {
                     $collectionShopifyId = $collection->ShopifyID;
+                    $collectionTitle = $collection->Title;
                     $collection->doUnpublish();
                     self::log(
-                        "[{$collectionShopifyId}] Unpublished collection {$collection->Title}",
+                        "[{$collectionShopifyId}] Unpublished collection {$collectionTitle}",
                         self::SUCCESS
                     );
                 }

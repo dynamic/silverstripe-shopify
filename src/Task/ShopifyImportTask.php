@@ -168,7 +168,7 @@ class ShopifyImportTask extends BuildTask
             if ($collections['body']->data->collections->pageInfo->hasNextPage) {
                 self::log(
                     "[{$sinceId}] Try to import the next page of collections since last cursor",
-                    self::SUCCESS
+                    self::NOTICE
                 );
                 $this->importCollections($client, $lastId, $keepCollections);
             } else {
@@ -344,7 +344,7 @@ class ShopifyImportTask extends BuildTask
                 if ($products['body']->data->products->pageInfo->hasNextPage) {
                     self::log(
                         "[{$sinceId}] Try to import the next page of products since last cursor",
-                        self::SUCCESS
+                        self::NOTICE
                     );
                     $this->importProducts($client, $lastId, $keepProducts);
                 } else {
@@ -410,7 +410,7 @@ class ShopifyImportTask extends BuildTask
                                 $product->publishSingle();
                             }
                             self::log(
-                                "Collection [$collection->ShopifyID] set as parent of Product [$product->ShopifyID] ",
+                                "[$collection->ShopifyID] Collection set as parent of product [$product->ShopifyID] ",
                                 self::SUCCESS
                             );
                         } else {
@@ -471,7 +471,7 @@ class ShopifyImportTask extends BuildTask
             if ($collections['body']->data->product->collections->pageInfo->hasNextPage) {
                 self::log(
                     "[{$sinceId}] Try to import the next page of collections since last cursor",
-                    self::SUCCESS
+                    self::NOTICE
                 );
                 $this->generateVirtuals($client, $productId, $lastId, $keepVirtuals);
             } else {

@@ -2,6 +2,7 @@
 
 namespace Dynamic\Shopify\Extension;
 
+use SilverStripe\Control\Director;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataExtension;
 

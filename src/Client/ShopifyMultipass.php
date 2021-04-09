@@ -2,12 +2,28 @@
 
 namespace Dynamic\Shopify\Client;
 
+use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injectable;
+
 /**
  * Class ShopifyMultipass
  * @package Dynamic\Shopify\Client
  */
 class ShopifyMultipass
 {
+    use Configurable;
+    use Injectable;
+
+    /**
+     * @config null|string
+     */
+    private static $multipass_secret = null;
+
+    /**
+     * @var string 
+     */
+    private static $return_url = 'home';
+
     /**
      * @var false|string
      */

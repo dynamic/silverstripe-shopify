@@ -20,7 +20,7 @@ class ShopifyMultipass
     private static $multipass_secret = null;
 
     /**
-     * @var string 
+     * @var string
      */
     private static $return_url = 'home';
 
@@ -38,7 +38,8 @@ class ShopifyMultipass
      * ShopifyMultipass constructor.
      * @param $multipass_secret
      */
-    public function __construct($multipass_secret) {
+    public function __construct($multipass_secret)
+    {
         // Use the Multipass secret to derive two cryptographic keys,
         // one for encryption, one for signing
         $key_material = hash("sha256", $multipass_secret, true);
@@ -50,7 +51,8 @@ class ShopifyMultipass
      * @param $customer_data_hash
      * @return string
      */
-    public function generate_token($customer_data_hash) {
+    public function generate_token($customer_data_hash)
+    {
         // Store the current time in ISO8601 format.
         // The token will only be valid for a small timeframe around this timestamp.
         $customer_data_hash["created_at"] = date("c");
@@ -67,7 +69,8 @@ class ShopifyMultipass
      * @param $plaintext
      * @return string
      */
-    private function encrypt($plaintext) {
+    private function encrypt($plaintext)
+    {
         // Use a random IV
         $iv = openssl_random_pseudo_bytes(16);
 
@@ -79,7 +82,8 @@ class ShopifyMultipass
      * @param $data
      * @return false|string
      */
-    private function sign($data) {
+    private function sign($data)
+    {
         return hash_hmac("sha256", $data, $this->signature_key, true);
     }
 }

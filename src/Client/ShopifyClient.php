@@ -61,6 +61,11 @@ class ShopifyClient
     private static $shared_secret = null;
 
     /**
+     * @config null|string
+     */
+    private static $multipass_secret = null;
+
+    /**
      * Set this to false when creating your own custom shopify buy js
      * @config null|string
      */

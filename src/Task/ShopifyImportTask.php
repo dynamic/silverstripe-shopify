@@ -66,7 +66,7 @@ class ShopifyImportTask extends BuildTask
         }
 
         self::log("IMPORT COLLECTIONS", self::NOTICE);
-        $this->importCollections($client);
+        //$this->importCollections($client);
 
         self::log("IMPORT PRODUCTS", self::NOTICE);
         $this->importProducts($client);
@@ -188,7 +188,7 @@ class ShopifyImportTask extends BuildTask
 
     /**
      * Import the shopify products
-     * @param Client $client
+     * @param ShopifyClient $client
      * @param array $ids
      *
      * @throws \Exception
@@ -210,39 +210,8 @@ class ShopifyImportTask extends BuildTask
                     if ($product = $this->importObject(ShopifyProduct::class, $shopifyProduct->node)) {
                         $keepProducts[] = $product->ID;
 
-                        // Create images
-                        $images = new ArrayList((array)$shopifyProduct->node->images->edges);
-                        if ($images->exists()) {
-                            $keepImages = [];
-                            foreach ($shopifyProduct->node->images->edges as $shopifyImage) {
-                                if ($image = $this->importObject(ShopifyFile::class, $shopifyImage->node)) {
-                                    $keepImages[] = $image->ID;
-                                    $product->Files()->add($image);
-                                } else {
-                                    self::log(
-                                        "[{$shopifyImage->node->id}] Could not create file",
-                                        self::ERROR
-                                    );
-                                }
-                            }
-
-                            // remove unused images
-                            if (empty($keepImages)) {
-                                $files = $product->Files();
-                            } else {
-                                $files = $product->Files()->exclude(['ID' => $keepImages]);
-                            }
-                            foreach ($files as $file) {
-                                $fileTitle = $file->Title;
-                                $fileShopifyID = $file->ShopifyID;
-                                $file->doUnpublish();
-                                $file->delete();
-                                self::log(
-                                    "[{$fileShopifyID}] Deleted file {$fileTitle}",
-                                    self::SUCCESS
-                                );
-                            }
-                        }
+                        $this->importProductFiles($client, $product);
+                        die();
 
                         // Create variants
                         $variants = new ArrayList((array)$shopifyProduct->node->variants->edges);
@@ -300,7 +269,7 @@ class ShopifyImportTask extends BuildTask
                                 $variantShopifyId = $variant->ShopifyID;
                                 $variant->delete();
                                 self::log(
-                                    // phpcs:ignore Generic.Files.LineLength.TooLong
+                                // phpcs:ignore Generic.Files.LineLength.TooLong
                                     "[{$variantShopifyId}] Deleted variant {$variant->Title} of product [{$product->ShopifyID}]",
                                     self::SUCCESS
                                 );
@@ -358,6 +327,64 @@ class ShopifyImportTask extends BuildTask
                         );
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * @param ShopifyClient $client
+     * @param ShopifyProduct $product
+     * @param string|null $sinceId
+     * @param int $position
+     * @param array $keepFiles
+     */
+    private function importProductFiles($client, $product, $sinceId = null, $pos = 0, $keepFiles = [])
+    {
+        try {
+            $shopifyFiles = $client->productMedia($product->ShopifyID, $limit = 25, $sinceId);
+        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+            exit($e->getMessage());
+        }
+
+        if (!$shopifyFiles || !$shopifyFiles['body']) {
+            return;
+        }
+
+        $lastId = $sinceId;
+        $position = $pos;
+        foreach ($shopifyFiles['body']->data->product->media->edges as $shopifyFile) {
+            $shopifyFile->node->position = $position;
+            if ($file = $this->importObject(ShopifyFile::class, $shopifyFile->node)) {
+                $keepFiles[] = $file->ID;
+                $product->Files()->add($file);
+                $lastId = $shopifyFile->cursor;
+            } else {
+                self::log(
+                    "[{$shopifyFile->node->id}] Could not create file",
+                    self::ERROR
+                );
+            }
+            $position++;
+        }
+
+        if ($shopifyFiles['body']->data->product->media->pageInfo->hasNextPage) {
+            $this->importProductFiles($client, $product, $lastId, $position, $keepFiles);
+        } else {
+            // remove unused images
+            if (empty($keepFiles)) {
+                $files = $product->Files();
+            } else {
+                $files = $product->Files()->exclude(['ID' => $keepFiles]);
+            }
+            foreach ($files as $file) {
+                $fileTitle = $file->Title;
+                $fileShopifyID = $file->ShopifyID;
+                $file->doUnpublish();
+                $file->delete();
+                self::log(
+                    "[{$fileShopifyID}] Deleted file {$fileTitle}",
+                    self::SUCCESS
+                );
             }
         }
     }
@@ -528,7 +555,10 @@ class ShopifyImportTask extends BuildTask
     public static function loop_map($map, &$object, $data)
     {
         foreach ($map as $from => $to) {
-            if (is_array($to) && is_object($data[$from])) {
+            if (!isset($from, $data)) {
+                continue;
+            }
+            if (is_array($to) && (is_object($data[$from]) || is_array($data[$from]))) {
                 self::loop_map($to, $object, $data[$from]);
             } elseif (isset($data[$from])) {
                 $object->{$to} = $data[$from];

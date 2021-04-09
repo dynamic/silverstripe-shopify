@@ -17,12 +17,15 @@ use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\GraphQL\Scaffolding\Scaffolders\CRUD\Read;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Security;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * Class ShopifyFile
  * @package Dynamic\Shopify\Model
+ *
+ * @mixin Versioned
  */
-class ShopifyFile extends File
+class ShopifyFile extends DataObject
 {
     /**
      * @var string
@@ -32,11 +35,17 @@ class ShopifyFile extends File
     /**
      * @var string[]
      */
+    private static $extensions = [
+        Versioned::class,
+    ];
+
+    /**
+     * @var string[]
+     */
     private static $db = [
         'ShopifyID' => 'Varchar',
         'OriginalSrc' => 'Varchar(255)',
-        'Width' => 'Int',
-        'Height' => 'Int',
+        'PreviewSrc' => 'Varchar(255)',
         'SortOrder' => 'Int',
     ];
 
@@ -46,12 +55,13 @@ class ShopifyFile extends File
     private static $data_map = [
         'id' => 'ShopifyID',
         'altText' => 'Title',
-        //'position' => 'SortOrder',
         'originalSrc' => 'OriginalSrc',
-        //'created_at' => 'Created',
-        //'updated_at' => 'LastEdited',
-        'width' => 'Width',
-        'height' => 'Height',
+        'preview' => [
+            'image' => [
+                'originalSrc' => 'PreviewSrc',
+            ],
+        ],
+        'position' => 'SortOrder',
     ];
 
     /**
@@ -122,34 +132,26 @@ class ShopifyFile extends File
     /**
      * Creates a new Shopify Image from the given data
      *
-     * @param $shopifyImage
-     * @return Image
+     * @param $shopifyFile
+     * @return ShopifyFile
      * @throws \SilverStripe\ORM\ValidationException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public static function findOrMakeFromShopifyData($shopifyImage)
+    public static function findOrMakeFromShopifyData($shopifyFile)
     {
-        if (!$image = self::getByShopifyID($shopifyImage->id)) {
-            $image = self::create();
+        if (!$file = self::getByShopifyID($shopifyFile->id)) {
+            $file = self::create();
         }
         $map = self::config()->get('data_map');
-        ShopifyImportTask::loop_map($map, $image, $shopifyImage);
+        ShopifyImportTask::loop_map($map, $file, $shopifyFile);
 
-        // import the image if the source has changed
-        if ($image->isChanged('OriginalSrc', DataObject::CHANGE_VALUE)) {
-            $folder = isset($image->ProductID) ? $image->ProductID : 'collection';
-            $image->downloadImage($image->OriginalSrc, "shopify/$folder");
+        if ($file->isChanged()) {
+            $file->write();
+            if ($file->isPublished()) {
+                $file->publishSingle();
+            }
         }
 
-        if ($image->isChanged()) {
-            $image->write();
-        }
-
-        if (!$image->isLiveVersion()) {
-            $image->publishSingle();
-        }
-
-        return $image;
+        return $file;
     }
 
     /**
@@ -159,27 +161,5 @@ class ShopifyFile extends File
     public static function getByShopifyID($shopifyId)
     {
         return DataObject::get_one(self::class, ['ShopifyID' => $shopifyId]);
-    }
-
-    /**
-     * Download the image from the shopify CDN
-     *
-     * todo - create method in ShopifyClient for $request, update function for graphql
-     *
-     * @param $src
-     * @param $folder
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    private function downloadImage($src, $folder)
-    {
-        $client = new Client(['http_errors' => false]);
-        $request = $client->request('GET', $src, ['stream' => true]);
-        $folder = Folder::find_or_make($folder);
-        $sourcePath = pathinfo($src);
-        $fileName = explode('?', $sourcePath['basename'])[0];
-        $this->setFromString($request->getBody()->getContents(), $fileName);
-        $this->ParentID = $folder->ID;
-        $this->OwnerID = ($user = Security::getCurrentUser()) ? $user->ID : 0;
-        $this->publishFile();
     }
 }

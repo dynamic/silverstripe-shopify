@@ -355,9 +355,13 @@ query ($limit: Int!, $cursor: String){
         id
         media(first: $limit, after: $cursor) {
             edges {
+                cursor
                 node {
                     ... fieldsForMediaTypes
                 }
+            }
+            pageInfo {
+              hasNextPage
             }
         }
     }

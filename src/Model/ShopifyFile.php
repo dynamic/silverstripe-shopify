@@ -78,7 +78,6 @@ class ShopifyFile extends DataObject
         'id' => 'ShopifyID',
         'mediaContentType' => 'Type',
         'altText' => 'Title',
-        'originalSrc' => 'OriginalSrc',
         'preview' => [
             'image' => [
                 'originalSrc' => 'PreviewSrc',

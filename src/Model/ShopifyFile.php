@@ -274,6 +274,77 @@ class ShopifyFile extends DataObject
     }
 
     /**
+     * @param int|string $width
+     * @param int|string $height
+     * @param string $format
+     * @return string
+     */
+    private function generateTransformedURL($width = '', $height = '', $format = '')
+    {
+        $pattern = '/(.*)(\.\S+?)(\?.*)/m';
+        $dims = sprintf('_%sx%s', $width, $height);
+        if ($format !== 'png' && $format !== 'jpg' && $format !== 'webm') {
+            $format = '';
+        }
+
+        preg_match_all('/.*\.(\S+?)\?.*/m', $this->OriginalSource()->URL, $matches);
+        if (count($matches) > 1) {
+            if ($matches[1][0] === $format) {
+                $format = '';
+            }
+        }
+        if ($format !== '') {
+            $format = '.' . $format;
+        }
+
+        $subst = '$1' . $dims . '$2' . $format . '$3';
+        return preg_replace($pattern, $subst, $this->OriginalSource()->URL);
+    }
+
+    /**
+     * @param int $width
+     * @param int $height
+     * @param string $format
+     * @return ShopifyFileSource|null
+     */
+    public function getTransform($width, $height, $format = null)
+    {
+        if ($this->Type === 'EXTERNAL_VIDEO') {
+            return $this->OriginalSource();
+        }
+
+        if ($this->Type === 'MODEL_3D') {
+            if ($source = $this->Sources()->find('Format', $format)) {
+                return $source;
+            }
+            return $this->OriginalSource();
+        }
+
+        if ($this->Type === 'VIDEO') {
+            $filter = [
+                'Format' => $format,
+                'Width' => $width,
+                'Height' => $height,
+            ];
+            if ($source = $this->Sources()->filter($filter)->first()) {
+                return $source;
+            }
+            return $this->OriginalSource();
+        }
+
+        if ($this->Type === 'IMAGE') {
+            $file = ShopifyFileSource::create();
+            $file->Height = $height;
+            $file->Width = $width;
+            $file->Format = $format;
+            $file->URL = $this->generateTransformedURL($width, $height, $format);
+            return $file;
+        }
+
+        return null;
+    }
+
+    /**
      * @return string
      */
     public function getURL()

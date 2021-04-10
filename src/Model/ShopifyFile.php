@@ -26,7 +26,6 @@ use SilverStripe\Versioned\Versioned;
  *
  * @property string ShopifyID
  * @property string Type
- * @property string OriginalSrc
  * @property string PreviewSrc
  * @property int SortOrder
  *
@@ -67,7 +66,6 @@ class ShopifyFile extends DataObject
     private static $db = [
         'ShopifyID' => 'Varchar',
         'Type' => 'Varchar',
-        'OriginalSrc' => 'Varchar(255)',
         'PreviewSrc' => 'Varchar(255)',
         'SortOrder' => 'Int',
     ];
@@ -114,6 +112,7 @@ class ShopifyFile extends DataObject
      * @config
      */
     private static $cascade_deletes = [
+        'OriginalSource',
         'Sources',
     ];
 
@@ -215,5 +214,29 @@ class ShopifyFile extends DataObject
         }
 
         return $this->Sources()->find('Format', $format);
+    }
+
+    /**
+     * @return string
+     */
+    public function getURL()
+    {
+        return $this->OriginalSource()->URL;
+    }
+
+    /**
+     * @return int
+     */
+    public function getWidth()
+    {
+        return $this->OriginalSource()->Width;
+    }
+
+    /**
+     * @return int
+     */
+    public function getHeight()
+    {
+        return $this->OriginalSource()->Height;
     }
 }

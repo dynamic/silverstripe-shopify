@@ -111,7 +111,7 @@ class ShopifyClient
         }
 
         $options = new Options();
-        $options->setVersion('2020-01');//static::config()->get('api_version')
+        $options->setVersion('2021-01');//static::config()->get('api_version')
         $options->setApiPassword($password);
         $options->setType(true);
 
@@ -375,6 +375,8 @@ fragment fieldsForMediaTypes on Media {
             id
             altText
             originalSrc
+            width
+            height
         }
     }
     status
@@ -416,6 +418,8 @@ fragment fieldsForMediaTypes on Media {
         image {
             altText
             originalSrc
+            width
+            height
         }
     }
 }

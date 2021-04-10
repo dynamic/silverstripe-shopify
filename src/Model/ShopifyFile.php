@@ -182,6 +182,36 @@ class ShopifyFile extends DataObject
         }
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $file, $shopifyFile);
+        if (!$file->isInDB()) {
+            $file->write();
+        }
+
+        $originalSource = $file->OriginalSource() ?: ShopifyFileSource::create();
+        $originalSource->FileID = $file->ID;
+        if ($shopifyFile->mediaContentType === "IMAGE") {
+            $originalSource->URL = $shopifyFile->image->originalSrc;
+            $originalSource->Width = $shopifyFile->image->width;
+            $originalSource->Height = $shopifyFile->image->height;
+        } else if ($shopifyFile->mediaContentType === "EXTERNAL_VIDEO") {
+            $originalSource->URL = $shopifyFile->embeddedUrl;
+        } else { // Video & 3d model
+            $originalSource->URL = $shopifyFile->originalSource->url;
+            $originalSource->Format = $shopifyFile->originalSource->format;
+            $originalSource->MimeType = $shopifyFile->originalSource->mimeType;
+            if ($shopifyFile->mediaContentType === "VIDEO") {
+                $originalSource->Width = $shopifyFile->originalSource->width;
+                $originalSource->Height = $shopifyFile->originalSource->height;
+            }
+        }
+
+        if ($originalSource->isChanged()) {
+            $originalSource->write();
+        }
+        $file->OriginalSourceID = $originalSource->ID;
+
+        if ($shopifyFile->mediaContentType === "VIDEO" || $shopifyFile->mediaContentType === "MODEL_3D") {
+            print_r($shopifyFile->sources);
+        }
 
         if ($file->isChanged()) {
             $file->write();

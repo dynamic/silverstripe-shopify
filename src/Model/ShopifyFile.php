@@ -16,6 +16,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\GraphQL\Scaffolding\Scaffolders\CRUD\Read;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\HasManyList;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
 
@@ -23,17 +24,37 @@ use SilverStripe\Versioned\Versioned;
  * Class ShopifyFile
  * @package Dynamic\Shopify\Model
  *
+ * @property string ShopifyID
+ * @property string Type
+ * @property string OriginalSrc
+ * @property string PreviewSrc
+ * @property int SortOrder
+ *
+ * @property int ProductID
+ * @method ShopifyProduct Product
+ * @property int CollectionID
+ * @method ShopifyCollection Collection
+ * @property int VariantID
+ * @method ShopifyVariant Variant
+ * @property int OriginalSourceID
+ * @method ShopifyFileSource OriginalSource
+ *
+ * @method HasManyList|ShopifyVariant[] Variants
+ * @method HasManyList|ShopifyFileSource[] Sources
+ *
  * @mixin Versioned
  */
 class ShopifyFile extends DataObject
 {
     /**
      * @var string
+     * @config
      */
     private static $table_name = 'ShopifyFile';
 
     /**
      * @var string[]
+     * @config
      */
     private static $extensions = [
         Versioned::class,
@@ -41,9 +62,11 @@ class ShopifyFile extends DataObject
 
     /**
      * @var string[]
+     * @config
      */
     private static $db = [
         'ShopifyID' => 'Varchar',
+        'Type' => 'Varchar',
         'OriginalSrc' => 'Varchar(255)',
         'PreviewSrc' => 'Varchar(255)',
         'SortOrder' => 'Int',
@@ -51,9 +74,11 @@ class ShopifyFile extends DataObject
 
     /**
      * @var string[]
+     * @config
      */
     private static $data_map = [
         'id' => 'ShopifyID',
+        'mediaContentType' => 'Type',
         'altText' => 'Title',
         'originalSrc' => 'OriginalSrc',
         'preview' => [
@@ -66,22 +91,35 @@ class ShopifyFile extends DataObject
 
     /**
      * @var string[]
+     * @config
      */
     private static $has_one = [
         'Product' => ShopifyProduct::class,
         'Collection' => ShopifyCollection::class,
         'Variant' => ShopifyVariant::class,
+        'OriginalSource' => ShopifyFileSource::class,
     ];
 
     /**
      * @var string[]
+     * @config
      */
     private static $has_many = [
-        'Variants' => ShopifyVariant::class
+        'Variants' => ShopifyVariant::class,
+        'Sources' => ShopifyFileSource::class,
+    ];
+
+    /**
+     * @var string[]
+     * @config
+     */
+    private static $cascade_deletes = [
+        'Sources',
     ];
 
     /**
      * @var bool[]
+     * @config
      */
     private static $indexes = [
         'ShopifyID' => true
@@ -89,6 +127,7 @@ class ShopifyFile extends DataObject
 
     /**
      * @var string[]
+     * @config
      */
     private static $summary_fields = [
         'CMSThumbnail' => 'Image',
@@ -98,6 +137,7 @@ class ShopifyFile extends DataObject
 
     /**
      * @var string[]
+     * @config
      */
     private static $searchable_fields = [
         'Title',
@@ -106,6 +146,7 @@ class ShopifyFile extends DataObject
 
     /**
      * @var string
+     * @config
      */
     private static $default_sort = 'SortOrder ASC';
 
@@ -161,5 +202,18 @@ class ShopifyFile extends DataObject
     public static function getByShopifyID($shopifyId)
     {
         return DataObject::get_one(self::class, ['ShopifyID' => $shopifyId]);
+    }
+
+    /**
+     * @param string|null $format
+     * @return ShopifyFileSource|null
+     */
+    public function getFormat($format = null)
+    {
+        if ($format === null) {
+            return $this->OriginalSource();
+        }
+
+        return $this->Sources()->find('Format', $format);
     }
 }

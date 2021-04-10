@@ -210,7 +210,27 @@ class ShopifyFile extends DataObject
         $file->OriginalSourceID = $originalSource->ID;
 
         if ($shopifyFile->mediaContentType === "VIDEO" || $shopifyFile->mediaContentType === "MODEL_3D") {
-            print_r($shopifyFile->sources);
+            foreach ($shopifyFile->sources as $source) {
+                $filter = [
+                    'Format' => $source->format,
+                ];
+                if ($shopifyFile->mediaContentType === "VIDEO") {
+                    $filter['Height'] = $source->height;
+                }
+                $sourceFile = $file->Sources()->filter($filter)->first() ?: ShopifyFileSource::create();
+                $sourceFile->Format = $source->format;
+                $sourceFile->MimeType = $source->mimeType;
+                $sourceFile->URL = $source->url;
+                if ($shopifyFile->mediaContentType === "VIDEO") {
+                    $sourceFile->Height = $source->height;
+                    $sourceFile->Width = $source->width;
+                }
+
+                if ($sourceFile->isChanged()) {
+                    $sourceFile->write();
+                }
+                $file->Sources()->add($sourceFile);
+            }
         }
 
         if ($file->isChanged()) {
@@ -234,15 +254,23 @@ class ShopifyFile extends DataObject
 
     /**
      * @param string|null $format
+     * @param int $height
      * @return ShopifyFileSource|null
      */
-    public function getFormat($format = null)
+    public function getFormat($format = null, $height = 0)
     {
         if ($format === null) {
             return $this->OriginalSource();
         }
+        $filter = [
+            'Format' => $format,
+        ];
 
-        return $this->Sources()->find('Format', $format);
+        if ($height) {
+            $filter['Height'] = $height;
+        }
+
+        return $this->Sources()->filter($filter)->first();
     }
 
     /**

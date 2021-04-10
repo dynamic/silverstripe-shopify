@@ -66,7 +66,7 @@ class ShopifyImportTask extends BuildTask
         }
 
         self::log("IMPORT COLLECTIONS", self::NOTICE);
-        //$this->importCollections($client);
+        $this->importCollections($client);
 
         self::log("IMPORT PRODUCTS", self::NOTICE);
         $this->importProducts($client);
@@ -211,7 +211,6 @@ class ShopifyImportTask extends BuildTask
                         $keepProducts[] = $product->ID;
 
                         $this->importProductFiles($client, $product);
-                        die();
 
                         // Create variants
                         $variants = new ArrayList((array)$shopifyProduct->node->variants->edges);
@@ -222,6 +221,7 @@ class ShopifyImportTask extends BuildTask
                                     $variant->ProductID = $product->ID;
 
                                     // Create the file
+                                    /*
                                     if (!empty($shopifyVariant->node->image)) {
                                         if ($image = $this->importObject(ShopifyFile::class, $shopifyVariant->node->image)) {
                                             $variant->FileID = $image->ID;
@@ -244,7 +244,7 @@ class ShopifyImportTask extends BuildTask
                                                 self::SUCCESS
                                             );
                                         }
-                                    }
+                                    }*/
 
                                     if ($variant->isChanged()) {
                                         $variant->write();
@@ -555,7 +555,7 @@ class ShopifyImportTask extends BuildTask
     public static function loop_map($map, &$object, $data)
     {
         foreach ($map as $from => $to) {
-            if (!isset($from, $data)) {
+            if (!isset($from, $data) || !$data->offsetExists($from)) {
                 continue;
             }
             if (is_array($to) && (is_object($data[$from]) || is_array($data[$from]))) {

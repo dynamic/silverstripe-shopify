@@ -32,12 +32,9 @@ class ShopifyMultipassController extends Controller
             if ($member = Security::getCurrentUser()) {
                 if (filter_var($member->Email, FILTER_VALIDATE_EMAIL)) {
                     $domain = ShopifyClient::config()->get('shopify_domain');
-                    $token_date = new \DateTime('NOW');
-                    $token_date = $token_date->format('c'); // ISO8601 formated datetime
                     $request = $this->getRequest();
                     $customer_data = array(
                         "email" => $member->Email,
-                        "created_at" => $token_date,
                         "first_name" => $member->FirstName,
                         "last_name" => $member->Surname,
                         "return_to" => $return_url,

@@ -1,0 +1,10 @@
+---
+name: silverstripe-shopify-routes
+after:
+  - '#rootroutes'
+  - '#coreroutes'
+---
+
+SilverStripe\Control\Director:
+  rules:
+    'multipass': 'Dynamic\Shopify\Controller\ShopifyMultipassController'

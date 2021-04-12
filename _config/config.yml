@@ -15,3 +15,7 @@ SilverStripe\Security\Member:
 PageController:
   extensions:
     - Dynamic\Shopify\Extension\ShopifyExtension
+
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Security\MemberAuthenticator\LoginHandler:
+    class: Dynamic\Shopify\Extension\ShopifyLoginHandler

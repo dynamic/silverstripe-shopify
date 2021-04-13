@@ -8,10 +8,24 @@ use Dynamic\Shopify\Task\ShopifyImportTask;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBCurrency;
 
 /**
  * Class ShopifyVariant
  * @package Dynamic\Shopify\Model
+ *
+ * @property string Title
+ * @property string ShopifyID
+ * @property string SKU
+ * @property DBCurrency Price
+ * @property DBCurrency CompareAtPrice
+ * @property int SortOrder
+ * @property int Inventory
+ *
+ * @property int ProductID
+ * @method ShopifyProduct Product
+ * @property int FileID
+ * @method File File
  */
 class ShopifyVariant extends DataObject
 {

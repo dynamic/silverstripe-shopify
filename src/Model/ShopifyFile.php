@@ -5,7 +5,6 @@ namespace Dynamic\Shopify\Model;
 use Dynamic\Shopify\Client\ShopifyClient;
 use Dynamic\Shopify\Page\ShopifyCollection;
 use Dynamic\Shopify\Page\ShopifyProduct;
-use Dynamic\Shopify\Page\ShopifyVariant;
 use Dynamic\Shopify\Task\ShopifyImportTask;
 use GuzzleHttp\Client;
 use SilverStripe\Assets\File;

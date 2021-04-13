@@ -343,15 +343,18 @@ query ($limit: Int!, $cursor: String){
     /**
      * @param $productId
      * @param int $limit
-     * @param null $cursor
+     * @param string|null $cursor
+     * @param bool $variant
      * @return array|Promise
      * @throws Exception
      */
-    public function productMedia($productId, int $limit = 25, $cursor = null)
+    public function productMedia($productId, int $limit = 25, $cursor = null, $variant = false)
     {
+        $queryType = $variant ? 'productVariant' : 'product';
+        $idType = $variant ? 'ProductVariant' : 'Product';
         return $this->getClient()->graph(
             'query ($id: ID!, $limit: Int!, $cursor: String){
-    product(id: $id) {
+    ' . $queryType . '(id: $id) {
         id
         media(first: $limit, after: $cursor) {
             edges {
@@ -425,7 +428,7 @@ fragment fieldsForMediaTypes on Media {
 }
 ',
             [
-                'id' => "gid://shopify/Product/{$productId}",
+                'id' => "gid://shopify/{$idType}/{$productId}",
                 'limit' => (int)$limit,
                 'cursor' => $cursor,
             ]

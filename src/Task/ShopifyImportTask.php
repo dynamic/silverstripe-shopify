@@ -8,6 +8,7 @@ use Dynamic\Shopify\Page\ShopifyProduct;
 use Dynamic\Shopify\Page\ShopifyCollection;
 use Dynamic\Shopify\Model\ShopifyVariant;
 use GuzzleHttp\Client;
+use Osiset\BasicShopifyAPI\ResponseAccess;
 use SilverStripe\CMS\Model\VirtualPage;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
@@ -211,70 +212,7 @@ class ShopifyImportTask extends BuildTask
                         $keepProducts[] = $product->ID;
 
                         $this->importProductFiles($client, $product);
-
-                        // Create variants
-                        $variants = new ArrayList((array)$shopifyProduct->node->variants->edges);
-                        if ($variants->exists()) {
-                            $keepVariants = [];
-                            foreach ($shopifyProduct->node->variants->edges as $shopifyVariant) {
-                                if ($variant = $this->importObject(ShopifyVariant::class, $shopifyVariant->node)) {
-                                    $variant->ProductID = $product->ID;
-
-                                    // Create the file
-                                    /*
-                                    if (!empty($shopifyVariant->node->image)) {
-                                        if ($image = $this->importObject(ShopifyFile::class, $shopifyVariant->node->image)) {
-                                            $variant->FileID = $image->ID;
-                                        } else {
-                                            self::log(
-                                                "[{$shopifyVariant->node->image->id}] Could not create file",
-                                                self::ERROR
-                                            );
-                                        }
-                                    } else {
-                                        if ($variant->FileID) {
-                                            $file = ShopifyFile::get()->byID($variant->FileID);
-                                            $fileShopifyID = $file->ShopifyID;
-                                            $fileTitle = $file->Title;
-                                            $file->doUnpublish();
-                                            $file->delete();
-                                            $variant->FileID = 0;
-                                            self::log(
-                                                "[{$fileShopifyID}] Deleted file {$fileTitle}",
-                                                self::SUCCESS
-                                            );
-                                        }
-                                    }*/
-
-                                    if ($variant->isChanged()) {
-                                        $variant->write();
-                                        self::log(
-                                            "[{$variant->ShopifyID}] Saved Variant {$variant->Title}",
-                                            self::SUCCESS
-                                        );
-                                    }
-                                    $keepVariants[] = $variant->ID;
-                                    $product->Variants()->add($variant);
-                                } else {
-                                    self::log(
-                                        "[{$shopifyVariant->node->ID}] Could not create variant",
-                                        self::ERROR
-                                    );
-                                }
-                            }
-
-                            // remove unused variants
-                            foreach ($product->Variants()->exclude(['ID' => $keepVariants]) as $variant) {
-                                $variantId = $variant->ID;
-                                $variantShopifyId = $variant->ShopifyID;
-                                $variant->delete();
-                                self::log(
-                                // phpcs:ignore Generic.Files.LineLength.TooLong
-                                    "[{$variantShopifyId}] Deleted variant {$variant->Title} of product [{$product->ShopifyID}]",
-                                    self::SUCCESS
-                                );
-                            }
-                        }
+                        $this->importVariants($client, $product, $shopifyProduct);
 
                         // Write the product record if changed
                         if ($product->isChanged()) {
@@ -328,6 +266,99 @@ class ShopifyImportTask extends BuildTask
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * @param ShopifyClient $client
+     * @param ShopifyProduct $product
+     * @param array|ResponseAccess $shopifyProduct
+     */
+    private function importVariants($client, $product, $shopifyProduct)
+    {
+        // Create variants
+        $variants = new ArrayList((array)$shopifyProduct->node->variants->edges);
+        if (!$variants->exists()) {
+            return;
+        }
+        $keepVariants = [];
+        foreach ($shopifyProduct->node->variants->edges as $shopifyVariant) {
+            if ($variant = $this->importObject(ShopifyVariant::class, $shopifyVariant->node)) {
+                $variant->ProductID = $product->ID;
+
+                $this->importProductVariantFiles($client, $variant);
+
+                if ($variant->isChanged()) {
+                    $variant->write();
+                    self::log(
+                        "[{$variant->ShopifyID}] Saved Variant {$variant->Title}",
+                        self::SUCCESS
+                    );
+                }
+                $keepVariants[] = $variant->ID;
+                $product->Variants()->add($variant);
+            } else {
+                self::log(
+                    "[{$shopifyVariant->node->ID}] Could not create variant",
+                    self::ERROR
+                );
+            }
+        }
+
+        // remove unused variants
+        foreach ($product->Variants()->exclude(['ID' => $keepVariants]) as $variant) {
+            $variantId = $variant->ID;
+            $variantShopifyId = $variant->ShopifyID;
+            $variant->delete();
+            self::log(
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+                "[{$variantShopifyId}] Deleted variant {$variant->Title} of product [{$product->ShopifyID}]",
+                self::SUCCESS
+            );
+        }
+    }
+
+    /**
+     * @param ShopifyClient $client
+     * @param ShopifyVariant $product
+     * @param int $position
+     * @param array $keepFiles
+     */
+    private function importProductVariantFiles($client, $product)
+    {
+        try {
+            $shopifyFiles = $client->productMedia($product->ShopifyID, 1, null, true);
+        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+            exit($e->getMessage());
+        }
+
+        if (!$shopifyFiles || !$shopifyFiles['body']) {
+            return;
+        }
+
+        if (!$shopifyFiles['body']->data->offsetExists('productVariant')) {
+            return;
+        }
+
+        if (!$shopifyFiles['body']->data->productVariant->offsetExists('media')) {
+            return;
+        }
+
+        $edges = $shopifyFiles['body']->data->productVariant->media->edges;
+        if (!$edges->count()) {
+            return;
+        }
+
+        $shopifyFile = $edges->offsetGet(0);
+        /** @var ShopifyFile $file */
+        if ($file = $this->importObject(ShopifyFile::class, $shopifyFile->node)) {
+            $file->VariantID = $product->ID;
+            $file->write();
+        } else {
+            self::log(
+                "[{$shopifyFile->node->id}] Could not create file",
+                self::ERROR
+            );
         }
     }
 

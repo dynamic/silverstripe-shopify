@@ -384,8 +384,10 @@ class ShopifyImportTask extends BuildTask
         $lastId = $sinceId;
         $position = $pos;
         foreach ($shopifyFiles['body']->data->product->media->edges as $shopifyFile) {
-            $shopifyFile->node->position = $position;
+            $shopifyFile->node->offsetSet('position', $position);
+            /** @var ShopifyFile $file */
             if ($file = $this->importObject(ShopifyFile::class, $shopifyFile->node)) {
+                $file->SortOrder = $position;
                 $keepFiles[] = $file->ID;
                 $product->Files()->add($file);
                 $lastId = $shopifyFile->cursor;

@@ -6,6 +6,7 @@ use Exception;
 use GuzzleHttp\Promise\Promise;
 use Osiset\BasicShopifyAPI\BasicShopifyAPI;
 use Osiset\BasicShopifyAPI\Options;
+use Osiset\BasicShopifyAPI\ResponseAccess;
 use Osiset\BasicShopifyAPI\Session;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
@@ -345,7 +346,7 @@ query ($limit: Int!, $cursor: String){
      * @param int $limit
      * @param string|null $cursor
      * @param bool $variant
-     * @return array|Promise
+     * @return array|Promise|ResponseAccess
      * @throws Exception
      */
     public function productMedia($productId, int $limit = 25, $cursor = null, $variant = false)

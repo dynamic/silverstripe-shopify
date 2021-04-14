@@ -5,7 +5,6 @@ namespace Dynamic\Shopify\Model;
 use Dynamic\Shopify\Client\ShopifyClient;
 use Dynamic\Shopify\Page\ShopifyCollection;
 use Dynamic\Shopify\Page\ShopifyProduct;
-use Dynamic\Shopify\Page\ShopifyVariant;
 use Dynamic\Shopify\Task\ShopifyImportTask;
 use GuzzleHttp\Client;
 use SilverStripe\Assets\File;
@@ -16,62 +15,116 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\GraphQL\Scaffolding\Scaffolders\CRUD\Read;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\HasManyList;
 use SilverStripe\Security\Security;
+use SilverStripe\Versioned\Versioned;
+use SilverStripe\View\HTML;
 
 /**
  * Class ShopifyFile
  * @package Dynamic\Shopify\Model
+ *
+ * @property string ShopifyID
+ * @property string Type
+ * @property string PreviewSrc
+ * @property int SortOrder
+ *
+ * @property int ProductID
+ * @method ShopifyProduct Product
+ * @property int CollectionID
+ * @method ShopifyCollection Collection
+ * @property int VariantID
+ * @method ShopifyVariant Variant
+ * @property int OriginalSourceID
+ * @method ShopifyFileSource OriginalSource
+ *
+ * @method HasManyList|ShopifyVariant[] Variants
+ * @method HasManyList|ShopifyFileSource[] Sources
+ *
+ * @mixin Versioned
  */
-class ShopifyFile extends File
+class ShopifyFile extends DataObject
 {
+
+    const VIDEO = 'VIDEO';
+    const EXTERNAL_VIDEO = 'EXTERNAL_VIDEO';
+    const MODEL_3D = 'MODEL_3D';
+    const IMAGE = 'IMAGE';
+
     /**
      * @var string
+     * @config
      */
     private static $table_name = 'ShopifyFile';
 
     /**
      * @var string[]
+     * @config
+     */
+    private static $extensions = [
+        Versioned::class,
+    ];
+
+    /**
+     * @var string[]
+     * @config
      */
     private static $db = [
         'ShopifyID' => 'Varchar',
-        'OriginalSrc' => 'Varchar(255)',
-        'Width' => 'Int',
-        'Height' => 'Int',
+        'Type' => 'Varchar',
+        'PreviewSrc' => 'Varchar(255)',
         'SortOrder' => 'Int',
     ];
 
     /**
      * @var string[]
+     * @config
      */
     private static $data_map = [
         'id' => 'ShopifyID',
+        'mediaContentType' => 'Type',
         'altText' => 'Title',
-        //'position' => 'SortOrder',
-        'originalSrc' => 'OriginalSrc',
-        //'created_at' => 'Created',
-        //'updated_at' => 'LastEdited',
-        'width' => 'Width',
-        'height' => 'Height',
+        'preview' => [
+            'image' => [
+                'originalSrc' => 'PreviewSrc',
+            ],
+        ],
+        'position' => 'SortOrder',
     ];
 
     /**
      * @var string[]
+     * @config
      */
     private static $has_one = [
         'Product' => ShopifyProduct::class,
         'Collection' => ShopifyCollection::class,
         'Variant' => ShopifyVariant::class,
+        'OriginalSource' => ShopifyFileSource::class,
     ];
 
     /**
      * @var string[]
+     * @config
      */
     private static $has_many = [
-        'Variants' => ShopifyVariant::class
+        'Variants' => ShopifyVariant::class,
+        'Sources' => ShopifyFileSource::class,
+    ];
+
+    /**
+     * @var string[]
+     * @config
+     */
+    private static $cascade_deletes = [
+        'OriginalSource',
+        'Sources',
     ];
 
     /**
      * @var bool[]
+     * @config
      */
     private static $indexes = [
         'ShopifyID' => true
@@ -79,6 +132,7 @@ class ShopifyFile extends File
 
     /**
      * @var string[]
+     * @config
      */
     private static $summary_fields = [
         'CMSThumbnail' => 'Image',
@@ -88,6 +142,7 @@ class ShopifyFile extends File
 
     /**
      * @var string[]
+     * @config
      */
     private static $searchable_fields = [
         'Title',
@@ -96,6 +151,7 @@ class ShopifyFile extends File
 
     /**
      * @var string
+     * @config
      */
     private static $default_sort = 'SortOrder ASC';
 
@@ -122,34 +178,76 @@ class ShopifyFile extends File
     /**
      * Creates a new Shopify Image from the given data
      *
-     * @param $shopifyImage
-     * @return Image
+     * @param $shopifyFile
+     * @return ShopifyFile
      * @throws \SilverStripe\ORM\ValidationException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public static function findOrMakeFromShopifyData($shopifyImage)
+    public static function findOrMakeFromShopifyData($shopifyFile)
     {
-        if (!$image = self::getByShopifyID($shopifyImage->id)) {
-            $image = self::create();
+        if (!$file = self::getByShopifyID($shopifyFile->id)) {
+            $file = self::create();
         }
         $map = self::config()->get('data_map');
-        ShopifyImportTask::loop_map($map, $image, $shopifyImage);
-
-        // import the image if the source has changed
-        if ($image->isChanged('OriginalSrc', DataObject::CHANGE_VALUE)) {
-            $folder = isset($image->ProductID) ? $image->ProductID : 'collection';
-            $image->downloadImage($image->OriginalSrc, "shopify/$folder");
+        ShopifyImportTask::loop_map($map, $file, $shopifyFile);
+        if (!$file->isInDB()) {
+            $file->write();
         }
 
-        if ($image->isChanged()) {
-            $image->write();
+        $originalSource = $file->OriginalSource() ?: ShopifyFileSource::create();
+        $originalSource->FileID = $file->ID;
+        if ($shopifyFile->mediaContentType === static::IMAGE) {
+            $originalSource->URL = $shopifyFile->image->originalSrc;
+            $originalSource->Width = $shopifyFile->image->width;
+            $originalSource->Height = $shopifyFile->image->height;
+        } else if ($shopifyFile->mediaContentType === static::EXTERNAL_VIDEO) {
+            $originalSource->URL = $shopifyFile->embeddedUrl;
+        } else { // Video & 3d model
+            $originalSource->URL = $shopifyFile->originalSource->url;
+            $originalSource->Format = $shopifyFile->originalSource->format;
+            $originalSource->MimeType = $shopifyFile->originalSource->mimeType;
+            if ($shopifyFile->mediaContentType === static::VIDEO) {
+                $originalSource->Width = $shopifyFile->originalSource->width;
+                $originalSource->Height = $shopifyFile->originalSource->height;
+            }
         }
 
-        if (!$image->isLiveVersion()) {
-            $image->publishSingle();
+        if ($originalSource->isChanged()) {
+            $originalSource->write();
+        }
+        $file->OriginalSourceID = $originalSource->ID;
+
+        if ($shopifyFile->mediaContentType === static::VIDEO || $shopifyFile->mediaContentType === static::MODEL_3D) {
+            foreach ($shopifyFile->sources as $source) {
+                $filter = [
+                    'Format' => $source->format,
+                ];
+                if ($shopifyFile->mediaContentType === static::VIDEO) {
+                    $filter['Height'] = $source->height;
+                }
+                $sourceFile = $file->Sources()->filter($filter)->first() ?: ShopifyFileSource::create();
+                $sourceFile->Format = $source->format;
+                $sourceFile->MimeType = $source->mimeType;
+                $sourceFile->URL = $source->url;
+                if ($shopifyFile->mediaContentType === static::VIDEO) {
+                    $sourceFile->Height = $source->height;
+                    $sourceFile->Width = $source->width;
+                }
+
+                if ($sourceFile->isChanged()) {
+                    $sourceFile->write();
+                }
+                $file->Sources()->add($sourceFile);
+            }
         }
 
-        return $image;
+        if ($file->isChanged()) {
+            $file->write();
+            if ($file->isPublished()) {
+                $file->publishSingle();
+            }
+        }
+
+        return $file;
     }
 
     /**
@@ -162,24 +260,133 @@ class ShopifyFile extends File
     }
 
     /**
-     * Download the image from the shopify CDN
-     *
-     * todo - create method in ShopifyClient for $request, update function for graphql
-     *
-     * @param $src
-     * @param $folder
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param string|null $format
+     * @param int $height
+     * @return ShopifyFileSource|null
      */
-    private function downloadImage($src, $folder)
+    public function getFormat($format = null, $height = 0)
     {
-        $client = new Client(['http_errors' => false]);
-        $request = $client->request('GET', $src, ['stream' => true]);
-        $folder = Folder::find_or_make($folder);
-        $sourcePath = pathinfo($src);
-        $fileName = explode('?', $sourcePath['basename'])[0];
-        $this->setFromString($request->getBody()->getContents(), $fileName);
-        $this->ParentID = $folder->ID;
-        $this->OwnerID = ($user = Security::getCurrentUser()) ? $user->ID : 0;
-        $this->publishFile();
+        if ($format === null) {
+            return $this->OriginalSource();
+        }
+        $filter = [
+            'Format' => $format,
+        ];
+
+        if ($height) {
+            $filter['Height'] = $height;
+        }
+
+        return $this->Sources()->filter($filter)->first();
+    }
+
+    /**
+     * @param int|string $width
+     * @param int|string $height
+     * @param string $format
+     * @return string
+     */
+    private function generateTransformedURL($width = '', $height = '', $format = '')
+    {
+        $pattern = '/(.*)(\.\S+?)(\?.*)/m';
+        $dims = sprintf('_%sx%s', $width, $height);
+        if ($format !== 'png' && $format !== 'jpg' && $format !== 'webm') {
+            $format = '';
+        }
+
+        preg_match_all('/.*\.(\S+?)\?.*/m', $this->OriginalSource()->URL, $matches);
+        if (count($matches) > 1) {
+            if ($matches[1][0] === $format) {
+                $format = '';
+            }
+        }
+        if ($format !== '') {
+            $format = '.' . $format;
+        }
+
+        $subst = '$1' . $dims . '$2' . $format . '$3';
+        return preg_replace($pattern, $subst, $this->OriginalSource()->URL);
+    }
+
+    /**
+     * @param int $width
+     * @param int $height
+     * @param string $format
+     * @return ShopifyFileSource|null
+     */
+    public function getTransform($width, $height, $format = null)
+    {
+        if ($this->Type === static::EXTERNAL_VIDEO) {
+            return $this->OriginalSource();
+        }
+
+        if ($this->Type === static::MODEL_3D) {
+            if ($source = $this->Sources()->find('Format', $format)) {
+                return $source;
+            }
+            return $this->OriginalSource();
+        }
+
+        if ($this->Type === static::VIDEO) {
+            $filter = [
+                'Format' => $format,
+                'Width' => $width,
+                'Height' => $height,
+            ];
+            if ($source = $this->Sources()->filter($filter)->first()) {
+                return $source;
+            }
+            return $this->OriginalSource();
+        }
+
+        if ($this->Type === static::IMAGE) {
+            $file = ShopifyFileSource::create();
+            $file->Height = $height;
+            $file->Width = $width;
+            $file->Format = $format;
+            $file->URL = $this->generateTransformedURL($width, $height, $format);
+            return $file;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string
+     */
+    public function getURL()
+    {
+        return $this->OriginalSource()->URL;
+    }
+
+    /**
+     * @return int
+     */
+    public function getWidth()
+    {
+        return $this->OriginalSource()->Width;
+    }
+
+    /**
+     * @return int
+     */
+    public function getHeight()
+    {
+        return $this->OriginalSource()->Height;
+    }
+
+    /**
+     * @return DBField
+     */
+    public function CMSThumbnail()
+    {
+        return DBField::create_field(
+            'HTMLFragment',
+            HTML::createTag('img', [
+                'src' => $this->PreviewSrc,
+                'width' => 60,
+                'height' => 60,
+            ])
+        );
     }
 }

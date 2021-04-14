@@ -18,6 +18,8 @@ use SilverStripe\View\Requirements;
 /**
  * Class ShopifyProduct
  * @package Dynamic\Shopify\Page
+ *
+ * @property string ShopifyID
  */
 class ShopifyProduct extends \Page
 {

@@ -6,6 +6,7 @@ use Exception;
 use GuzzleHttp\Promise\Promise;
 use Osiset\BasicShopifyAPI\BasicShopifyAPI;
 use Osiset\BasicShopifyAPI\Options;
+use Osiset\BasicShopifyAPI\ResponseAccess;
 use Osiset\BasicShopifyAPI\Session;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
@@ -111,7 +112,7 @@ class ShopifyClient
         }
 
         $options = new Options();
-        $options->setVersion('2020-01');//static::config()->get('api_version')
+        $options->setVersion('2021-01');//static::config()->get('api_version')
         $options->setApiPassword($password);
         $options->setType(true);
 
@@ -343,21 +344,28 @@ query ($limit: Int!, $cursor: String){
     /**
      * @param $productId
      * @param int $limit
-     * @param null $cursor
-     * @return array|Promise
+     * @param string|null $cursor
+     * @param bool $variant
+     * @return array|Promise|ResponseAccess
      * @throws Exception
      */
-    public function productMedia($productId, int $limit = 25, $cursor = null)
+    public function productMedia($productId, int $limit = 25, $cursor = null, $variant = false)
     {
+        $queryType = $variant ? 'productVariant' : 'product';
+        $idType = $variant ? 'ProductVariant' : 'Product';
         return $this->getClient()->graph(
             'query ($id: ID!, $limit: Int!, $cursor: String){
-    product(id: $id) {
+    ' . $queryType . '(id: $id) {
         id
         media(first: $limit, after: $cursor) {
             edges {
+                cursor
                 node {
                     ... fieldsForMediaTypes
                 }
+            }
+            pageInfo {
+              hasNextPage
             }
         }
     }
@@ -371,6 +379,8 @@ fragment fieldsForMediaTypes on Media {
             id
             altText
             originalSrc
+            width
+            height
         }
     }
     status
@@ -412,12 +422,14 @@ fragment fieldsForMediaTypes on Media {
         image {
             altText
             originalSrc
+            width
+            height
         }
     }
 }
 ',
             [
-                'id' => "gid://shopify/Product/{$productId}",
+                'id' => "gid://shopify/{$idType}/{$productId}",
                 'limit' => (int)$limit,
                 'cursor' => $cursor,
             ]

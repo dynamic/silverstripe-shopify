@@ -15,9 +15,11 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\GraphQL\Scaffolding\Scaffolders\CRUD\Read;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\View\HTML;
 
 /**
  * Class ShopifyFile
@@ -371,5 +373,20 @@ class ShopifyFile extends DataObject
     public function getHeight()
     {
         return $this->OriginalSource()->Height;
+    }
+
+    /**
+     * @return DBField
+     */
+    public function CMSThumbnail()
+    {
+        return DBField::create_field(
+            'HTMLFragment',
+            HTML::createTag('img', [
+                'src' => $this->PreviewSrc,
+                'width' => 60,
+                'height' => 60,
+            ])
+        );
     }
 }

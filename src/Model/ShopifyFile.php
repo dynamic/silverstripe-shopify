@@ -44,6 +44,12 @@ use SilverStripe\Versioned\Versioned;
  */
 class ShopifyFile extends DataObject
 {
+
+    const VIDEO = 'VIDEO';
+    const EXTERNAL_VIDEO = 'EXTERNAL_VIDEO';
+    const MODEL_3D = 'MODEL_3D';
+    const IMAGE = 'IMAGE';
+
     /**
      * @var string
      * @config
@@ -187,17 +193,17 @@ class ShopifyFile extends DataObject
 
         $originalSource = $file->OriginalSource() ?: ShopifyFileSource::create();
         $originalSource->FileID = $file->ID;
-        if ($shopifyFile->mediaContentType === "IMAGE") {
+        if ($shopifyFile->mediaContentType === static::IMAGE) {
             $originalSource->URL = $shopifyFile->image->originalSrc;
             $originalSource->Width = $shopifyFile->image->width;
             $originalSource->Height = $shopifyFile->image->height;
-        } else if ($shopifyFile->mediaContentType === "EXTERNAL_VIDEO") {
+        } else if ($shopifyFile->mediaContentType === static::EXTERNAL_VIDEO) {
             $originalSource->URL = $shopifyFile->embeddedUrl;
         } else { // Video & 3d model
             $originalSource->URL = $shopifyFile->originalSource->url;
             $originalSource->Format = $shopifyFile->originalSource->format;
             $originalSource->MimeType = $shopifyFile->originalSource->mimeType;
-            if ($shopifyFile->mediaContentType === "VIDEO") {
+            if ($shopifyFile->mediaContentType === static::VIDEO) {
                 $originalSource->Width = $shopifyFile->originalSource->width;
                 $originalSource->Height = $shopifyFile->originalSource->height;
             }
@@ -208,19 +214,19 @@ class ShopifyFile extends DataObject
         }
         $file->OriginalSourceID = $originalSource->ID;
 
-        if ($shopifyFile->mediaContentType === "VIDEO" || $shopifyFile->mediaContentType === "MODEL_3D") {
+        if ($shopifyFile->mediaContentType === static::VIDEO || $shopifyFile->mediaContentType === static::MODEL_3D) {
             foreach ($shopifyFile->sources as $source) {
                 $filter = [
                     'Format' => $source->format,
                 ];
-                if ($shopifyFile->mediaContentType === "VIDEO") {
+                if ($shopifyFile->mediaContentType === static::VIDEO) {
                     $filter['Height'] = $source->height;
                 }
                 $sourceFile = $file->Sources()->filter($filter)->first() ?: ShopifyFileSource::create();
                 $sourceFile->Format = $source->format;
                 $sourceFile->MimeType = $source->mimeType;
                 $sourceFile->URL = $source->url;
-                if ($shopifyFile->mediaContentType === "VIDEO") {
+                if ($shopifyFile->mediaContentType === static::VIDEO) {
                     $sourceFile->Height = $source->height;
                     $sourceFile->Width = $source->width;
                 }
@@ -308,18 +314,18 @@ class ShopifyFile extends DataObject
      */
     public function getTransform($width, $height, $format = null)
     {
-        if ($this->Type === 'EXTERNAL_VIDEO') {
+        if ($this->Type === static::EXTERNAL_VIDEO) {
             return $this->OriginalSource();
         }
 
-        if ($this->Type === 'MODEL_3D') {
+        if ($this->Type === static::MODEL_3D) {
             if ($source = $this->Sources()->find('Format', $format)) {
                 return $source;
             }
             return $this->OriginalSource();
         }
 
-        if ($this->Type === 'VIDEO') {
+        if ($this->Type === static::VIDEO) {
             $filter = [
                 'Format' => $format,
                 'Width' => $width,
@@ -331,7 +337,7 @@ class ShopifyFile extends DataObject
             return $this->OriginalSource();
         }
 
-        if ($this->Type === 'IMAGE') {
+        if ($this->Type === static::IMAGE) {
             $file = ShopifyFileSource::create();
             $file->Height = $height;
             $file->Width = $width;

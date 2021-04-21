@@ -25,7 +25,7 @@ document.addEventListener('click', function (e) {
     fetch(target.href, function (data) {
       var orders = data.getElementsByClassName('order');
       for (var i = 0; i < orders.length; i++) {
-        orderList.appendChild(orders[i]);
+        orderList.appendChild(orders[i].cloneNode(true));
       }
 
       var fetchButton = data.querySelector('#orders-next-link');

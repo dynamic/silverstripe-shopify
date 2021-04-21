@@ -435,4 +435,29 @@ fragment fieldsForMediaTypes on Media {
             ]
         );
     }
+
+    /**
+     * @param string $collectionId
+     *
+     * @return array|Promise|ResponseAccess
+     * @throws Exception
+     */
+    public function collectionMedia($collectionId)
+    {
+        return $this->getClient()->graph('
+        query ($id: ID!){
+    collection(id: $id) {
+    	image {
+        id
+        altText
+        originalSrc
+        width
+        height
+      }
+  }
+}
+        ',[
+            'id' => "gid://shopify/Collection/{$collectionId}",
+        ]);
+    }
 }

@@ -22,6 +22,15 @@ use SilverStripe\Security\Security;
 /**
  * Class ShopifyCollection
  * @package Dynamic\Shopify\Page
+ *
+ * @property string ShopifyID
+ * @property int ProductsCt
+ * @property string SortOrder
+ * @property bool CollectionActive
+ * @property int ProductsPerPage
+ *
+ * @property int FileID
+ * @method ShopifyFile File
  */
 class ShopifyCollection extends \Page
 {
@@ -124,9 +133,9 @@ class ShopifyCollection extends \Page
 
             $fields->addFieldsToTab('Root.Details', [
                 ReadonlyField::create('ShopifyID'),
-                UploadField::create('File')
+                ReadonlyField::create('Image')
                     ->setTitle('Image')
-                    ->performReadonlyTransformation(),
+                    ->setValue($this->File()->getThumbnail(100, 100)),
                 ReadonlyField::create('CollectionActive'),
                 ReadonlyField::create('PublishedAt'),
             ]);

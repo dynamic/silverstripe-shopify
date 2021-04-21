@@ -12,6 +12,7 @@ use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\GraphQL\Scaffolding\Scaffolders\CRUD\Read;
 use SilverStripe\ORM\DataObject;
@@ -165,11 +166,17 @@ class ShopifyFile extends DataObject
                 $field->setReadonly(true);
             }
 
-            $fields->add(ReadonlyField::create('ShopifyID'));
-            $fields->add(ReadonlyField::create('OrginialSrc'));
-            $fields->add(ReadonlyField::create('Width'));
-            $fields->add(ReadonlyField::create('Height'));
-            $fields->add(ReadonlyField::create('SortOrder'));
+            $fields->addFieldToTab('Root.Main', ReadonlyField::create('ShopifyID'));
+
+            $fields->addFieldsToTab('Root.Sources', [
+                ReadonlyField::create('PreviewSrc'),
+                ReadonlyField::create('Width'),
+                ReadonlyField::create('Height'),
+                ReadonlyField::create('SortOrder'),
+            ]);
+
+            $fields->fieldByName('Root.Sources.Sources')
+                ->getConfig()->removeComponentsByType(GridFieldFilterHeader::class);
         });
 
         return parent::getCMSFields();
@@ -195,19 +202,26 @@ class ShopifyFile extends DataObject
 
         $originalSource = $file->OriginalSource() ?: ShopifyFileSource::create();
         $originalSource->FileID = $file->ID;
-        if ($shopifyFile->mediaContentType === static::IMAGE) {
-            $originalSource->URL = $shopifyFile->image->originalSrc;
-            $originalSource->Width = $shopifyFile->image->width;
-            $originalSource->Height = $shopifyFile->image->height;
-        } else if ($shopifyFile->mediaContentType === static::EXTERNAL_VIDEO) {
-            $originalSource->URL = $shopifyFile->embeddedUrl;
-        } else { // Video & 3d model
-            $originalSource->URL = $shopifyFile->originalSource->url;
-            $originalSource->Format = $shopifyFile->originalSource->format;
-            $originalSource->MimeType = $shopifyFile->originalSource->mimeType;
-            if ($shopifyFile->mediaContentType === static::VIDEO) {
-                $originalSource->Width = $shopifyFile->originalSource->width;
-                $originalSource->Height = $shopifyFile->originalSource->height;
+        if (!$shopifyFile->offsetExists('mediaContentType')) {
+            $originalSource->URL = $shopifyFile->originalSrc;
+            $originalSource->Width = $shopifyFile->width;
+            $originalSource->Height = $shopifyFile->height;
+            $file->Type = static::IMAGE;
+        } else {
+            if ($shopifyFile->mediaContentType === static::IMAGE) {
+                $originalSource->URL = $shopifyFile->image->originalSrc;
+                $originalSource->Width = $shopifyFile->image->width;
+                $originalSource->Height = $shopifyFile->image->height;
+            } else if ($shopifyFile->mediaContentType === static::EXTERNAL_VIDEO) {
+                $originalSource->URL = $shopifyFile->embeddedUrl;
+            } else { // Video & 3d model
+                $originalSource->URL = $shopifyFile->originalSource->url;
+                $originalSource->Format = $shopifyFile->originalSource->format;
+                $originalSource->MimeType = $shopifyFile->originalSource->mimeType;
+                if ($shopifyFile->mediaContentType === static::VIDEO) {
+                    $originalSource->Width = $shopifyFile->originalSource->width;
+                    $originalSource->Height = $shopifyFile->originalSource->height;
+                }
             }
         }
 
@@ -216,7 +230,9 @@ class ShopifyFile extends DataObject
         }
         $file->OriginalSourceID = $originalSource->ID;
 
-        if ($shopifyFile->mediaContentType === static::VIDEO || $shopifyFile->mediaContentType === static::MODEL_3D) {
+        if ( $shopifyFile->offsetExists('mediaContentType') &&
+            ($shopifyFile->mediaContentType === static::VIDEO || $shopifyFile->mediaContentType === static::MODEL_3D)
+        ) {
             foreach ($shopifyFile->sources as $source) {
                 $filter = [
                     'Format' => $source->format,
@@ -246,7 +262,6 @@ class ShopifyFile extends DataObject
                 $file->publishSingle();
             }
         }
-
         return $file;
     }
 
@@ -376,17 +391,27 @@ class ShopifyFile extends DataObject
     }
 
     /**
+     * @param int $width
+     * @param int $height
      * @return DBField
      */
-    public function CMSThumbnail()
+    public function getThumbnail($width, $height)
     {
         return DBField::create_field(
             'HTMLFragment',
             HTML::createTag('img', [
-                'src' => $this->PreviewSrc,
-                'width' => 60,
-                'height' => 60,
+                'src' => $this->PreviewSrc ?: $this->getURL(),
+                'width' => $width,
+                'height' => $height,
             ])
         );
+    }
+
+    /**
+     * @return DBField
+     */
+    public function getCMSThumbnail()
+    {
+        return $this->getThumbnail(60, 60);
     }
 }

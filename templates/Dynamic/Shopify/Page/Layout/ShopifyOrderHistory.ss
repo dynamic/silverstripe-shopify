@@ -1,3 +1,9 @@
+<% require javascript('dynamic/silverstripe-shopify: client/order-history.js') %>
+
+<% if $HasPreviousPage %>
+ <a id="orders-previous-link" href="$PreviousPageLink">Newer Orders</a>
+<% end_if %>
+<div id="order-list" class="col-12 p-0">
 <% loop $Orders %>
     <div class="order container mb-5" id="$Cursor">
         <div class="row">
@@ -54,3 +60,7 @@
     </div>
     <% if not $Last %><hr/><% end_if %>
 <% end_loop %>
+</div>
+<% if $HasNextPage %>
+ <a id="orders-next-link" href="$NextPageLink">Older Orders</a>
+<% end_if %>

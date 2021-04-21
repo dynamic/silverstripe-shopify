@@ -39,7 +39,7 @@ class ShopifyOrderHistoryController extends \PageController
 
         $email = $user->Email;
         $cursor = $request->getVar('cursor');
-        $limit = (int) $request->getVar('limit') ?: 5;
+        $limit = (int)$request->getVar('limit') ?: 5;
         if ($limit > 5) {
             $limit = 5;
         }
@@ -163,11 +163,57 @@ fragment presentmentMoney on MoneyBag {
         );
 
         $body = $response['body'];
-        return $this->customise([
-            'Orders' => $this->parseOrders($body->data->orders->edges->container),
-            'HasPreviousPage' => $body->data->orders->pageInfo->hasPreviousPage,
-            'HasNextPage' => $body->data->orders->pageInfo->hasNextPage,
-        ]);
+        $data = $this->getCustomizedData(
+            $request,
+            $this->parseOrders($body->data->orders->edges),
+            $body->data->orders->pageInfo->hasPreviousPage,
+            $body->data->orders->pageInfo->hasNextPage
+        );
+        if ($request->isAjax()) {
+            return $this->customise($data)->renderWith('Dynamic\Shopify\Page\Layout\ShopifyOrderHistory');
+        }
+        return $this->customise($data);
+    }
+
+
+    /**
+     * @param HTTPRequest $request
+     * @param ArrayList $orders
+     * @param bool $hasPrevious
+     * @param bool $hasNext
+     * @return array
+     */
+    private function getCustomizedData($request, $orders, $hasPrevious, $hasNext)
+    {
+        if ($orders->Count() === 0) {
+            return [
+                'Orders' => $orders,
+                'HasPreviousPage' => $hasPrevious,
+                'PreviousPageLink' => "",
+                'HasNextPage' => $hasNext,
+                'NextPageLink' => "",
+            ];
+        }
+
+        $queryPrevious = http_build_query(
+            array_merge($request->getVars(), [
+                'direction' => 'previous',
+                'cursor' => $orders->first()->Cursor,
+            ])
+        );
+        $queryNext = http_build_query(
+            array_merge($request->getVars(), [
+                'direction' => 'next',
+                'cursor' => $orders->last()->Cursor,
+            ])
+        );
+        return [
+            'Orders' => $orders,
+            'HasPreviousPage' => $hasPrevious,
+            'PreviousPageLink' => "{$this->Link()}?{$queryPrevious}",
+            'HasNextPage' => $hasNext,
+            'NextPageLink' => "{$this->Link()}?{$queryNext}",
+        ];
     }
 
     /**
@@ -187,7 +233,7 @@ fragment presentmentMoney on MoneyBag {
     {
         $orders = new ArrayList();
         foreach ($ordersData as $orderData) {
-            $order = new ArrayData((array)$orderData['node']);
+            $order = $orderData->node;
             $orders->push(
                 new ArrayData([
                     'ID' => $order->id,
@@ -206,7 +252,7 @@ fragment presentmentMoney on MoneyBag {
                     'TotalDiscount' => $this->toCurrency($order->totalDiscountsSet->presentmentMoney->amount),
                     'Taxes' => $this->parseTaxes($order->taxLines),
                     'Total' => $this->toCurrency($order->totalPriceSet->presentmentMoney->amount),
-                    'Cursor' => $orderData['cursor'],
+                    'Cursor' => $orderData->cursor,
                 ])
             );
         }
@@ -234,7 +280,7 @@ fragment presentmentMoney on MoneyBag {
     {
         $items = new ArrayList();
         foreach ($lineItems->edges as $lineItem) {
-            $item = new ArrayData((array)$lineItem['node']);
+            $item = $lineItem->node;
             $singlePrice = $this->toCurrency($item->originalUnitPriceSet->presentmentMoney->amount);
             $totalPrice = $this->toCurrency($item->originalTotalSet->presentmentMoney->amount);
             $discountTotal = $this->getTotalDiscount($item->discountAllocations);
@@ -271,8 +317,7 @@ fragment presentmentMoney on MoneyBag {
     private function getTotalDiscount($discountAllocations)
     {
         $discountTotal = 0;
-        foreach ($discountAllocations as $discountAllocation) {
-            $discount = new ArrayData($discountAllocation);
+        foreach ($discountAllocations as $discount) {
             $discountTotal += $discount->allocatedAmountSet->presentmentMoney->amount;
         }
 
@@ -286,12 +331,11 @@ fragment presentmentMoney on MoneyBag {
     private function parseDiscounts($discountAllocations)
     {
         $discounts = ArrayList::create();
-        foreach ($discountAllocations as $discountAllocation) {
-            $discount = new ArrayData($discountAllocation);
-            $isCodeField = $discount->__typename === 'DiscountCodeApplication';
+        foreach ($discountAllocations as $discount) {
+            $isCodeField = $discount->discountApplication->__typename === 'DiscountCodeApplication';
             $discounts->push(
                 ArrayData::create([
-                    'Code' => $isCodeField ? $discount->code : $discount->title,
+                    'Code' => $isCodeField ? $discount->code : $discount->discountApplication->title,
                     'Amount' => $this->toCurrency($discount->allocatedAmountSet->presentmentMoney->amount),
                 ])
             );
@@ -306,8 +350,7 @@ fragment presentmentMoney on MoneyBag {
     private function parseTaxes($taxLines)
     {
         $taxes = new ArrayList();
-        foreach ($taxLines as $taxLine) {
-            $tax = $item = new ArrayData($taxLine);
+        foreach ($taxLines as $tax) {
             $taxes->push(
                 new ArrayData([
                     'Title' => $tax->title,

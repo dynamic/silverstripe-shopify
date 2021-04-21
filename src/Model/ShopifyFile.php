@@ -231,7 +231,7 @@ class ShopifyFile extends DataObject
         }
         $file->OriginalSourceID = $originalSource->ID;
 
-        if ( $shopifyFile->offsetExists('mediaContentType') &&
+        if ($shopifyFile->offsetExists('mediaContentType') &&
             ($shopifyFile->mediaContentType === static::VIDEO || $shopifyFile->mediaContentType === static::MODEL_3D)
         ) {
             foreach ($shopifyFile->sources as $source) {

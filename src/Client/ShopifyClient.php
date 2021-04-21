@@ -307,9 +307,9 @@ query ($limit: Int!, $cursor: String){
 }
         ',
             [
-            'id' => "gid://shopify/Product/{$productId}",
-            "limit" => (int)$limit,
-            "cursor" => $cursor,
+                'id' => "gid://shopify/Product/{$productId}",
+                "limit" => (int)$limit,
+                "cursor" => $cursor,
             ]
         );
     }
@@ -456,7 +456,7 @@ fragment fieldsForMediaTypes on Media {
       }
   }
 }
-        ',[
+        ', [
             'id' => "gid://shopify/Collection/{$collectionId}",
         ]);
     }

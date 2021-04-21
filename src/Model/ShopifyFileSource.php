@@ -44,4 +44,15 @@ class ShopifyFileSource extends DataObject
     private static $has_one = [
         'File' => ShopifyFile::class,
     ];
+
+    /**
+     * @var string[]
+     */
+    private static $summary_fields = [
+        'ID',
+        'Format',
+        'MimeType',
+        'Width',
+        'Height',
+    ];
 }

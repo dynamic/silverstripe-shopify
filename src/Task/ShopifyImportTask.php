@@ -105,29 +105,7 @@ class ShopifyImportTask extends BuildTask
                     $keepCollections[] = $collection->ID;
 
                     // Create the image
-                    if (!empty($shopifyCollection->node->image)) {
-                        if ($image = $this->importObject(ShopifyFile::class, $shopifyCollection->node->image)) {
-                            $collection->FileID = $image->ID;
-                        } else {
-                            self::log(
-                                "[{$shopifyCollection->node->image->id}] Could not create file",
-                                self::ERROR
-                            );
-                        }
-                    } else {
-                        if ($collection->FileID) {
-                            $file = ShopifyFile::get()->byID($collection->FileID);
-                            $fileTitle = $file->Title;
-                            $fileShopifyID = $file->ShopifyID;
-                            $file->doUnpublish();
-                            $file->delete();
-                            $collection->FileID = 0;
-                            self::log(
-                                "[{$fileShopifyID}] Deleted file {$fileTitle}",
-                                self::SUCCESS
-                            );
-                        }
-                    }
+                    $this->importCollectionFiles($client, $collection);
 
                     if ($collection->isChanged()) {
                         $collection->write();
@@ -184,6 +162,43 @@ class ShopifyImportTask extends BuildTask
                     );
                 }
             }
+        }
+    }
+
+
+    /**
+     * @param ShopifyClient $client
+     * @param ShopifyCollection $collection
+     */
+    private function importCollectionFiles($client, $collection)
+    {
+        try {
+            $shopifyFile = $client->collectionMedia($collection->ShopifyID);
+        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+            exit($e->getMessage());
+        }
+
+        if (!$shopifyFile || !$shopifyFile['body']) {
+            return;
+        }
+
+        if (!$shopifyFile['body']->data->offsetExists('collection')) {
+            return;
+        }
+
+        if (!$shopifyFile['body']->data->collection->offsetExists('image')) {
+            return;
+        }
+
+        /** @var ShopifyFile $file */
+        if ($file = $this->importObject(ShopifyFile::class, $shopifyFile['body']->data->collection->image)) {
+            $file->CollectionID = $collection->ID;
+            $file->write();
+        } else {
+            self::log(
+                "[{$shopifyFile->node->id}] Could not create file",
+                self::ERROR
+            );
         }
     }
 

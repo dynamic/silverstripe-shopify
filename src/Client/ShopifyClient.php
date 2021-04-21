@@ -307,9 +307,9 @@ query ($limit: Int!, $cursor: String){
 }
         ',
             [
-            'id' => "gid://shopify/Product/{$productId}",
-            "limit" => (int)$limit,
-            "cursor" => $cursor,
+                'id' => "gid://shopify/Product/{$productId}",
+                "limit" => (int)$limit,
+                "cursor" => $cursor,
             ]
         );
     }
@@ -434,5 +434,30 @@ fragment fieldsForMediaTypes on Media {
                 'cursor' => $cursor,
             ]
         );
+    }
+
+    /**
+     * @param string $collectionId
+     *
+     * @return array|Promise|ResponseAccess
+     * @throws Exception
+     */
+    public function collectionMedia($collectionId)
+    {
+        return $this->getClient()->graph('
+        query ($id: ID!){
+    collection(id: $id) {
+    	image {
+        id
+        altText
+        originalSrc
+        width
+        height
+      }
+  }
+}
+        ', [
+            'id' => "gid://shopify/Collection/{$collectionId}",
+        ]);
     }
 }

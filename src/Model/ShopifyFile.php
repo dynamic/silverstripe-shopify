@@ -169,6 +169,7 @@ class ShopifyFile extends DataObject
             $fields->addFieldToTab('Root.Main', ReadonlyField::create('ShopifyID'));
 
             $fields->addFieldsToTab('Root.Sources', [
+                ReadonlyField::create('OriginalSourceID'),
                 ReadonlyField::create('PreviewSrc'),
                 ReadonlyField::create('Width'),
                 ReadonlyField::create('Height'),

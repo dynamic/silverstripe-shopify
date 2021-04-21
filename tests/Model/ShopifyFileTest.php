@@ -26,7 +26,7 @@ class ShopifyFileTest extends SapphireTest
         $fields = $object->getCMSFields();
         $this->assertInstanceOf(FieldList::class, $fields);
         $this->assertNotNull($fields->dataFieldByName('ShopifyID'));
-        $this->assertNotNull($fields->dataFieldByName('OrginialSrc'));
+        $this->assertNotNull($fields->dataFieldByName('OriginalSourceID'));
         $this->assertNotNull($fields->dataFieldByName('Width'));
         $this->assertNotNull($fields->dataFieldByName('Height'));
         $this->assertNotNull($fields->dataFieldByName('SortOrder'));

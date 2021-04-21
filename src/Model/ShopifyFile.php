@@ -213,7 +213,7 @@ class ShopifyFile extends DataObject
                 $originalSource->URL = $shopifyFile->image->originalSrc;
                 $originalSource->Width = $shopifyFile->image->width;
                 $originalSource->Height = $shopifyFile->image->height;
-            } else if ($shopifyFile->mediaContentType === static::EXTERNAL_VIDEO) {
+            } elseif ($shopifyFile->mediaContentType === static::EXTERNAL_VIDEO) {
                 $originalSource->URL = $shopifyFile->embeddedUrl;
             } else { // Video & 3d model
                 $originalSource->URL = $shopifyFile->originalSource->url;

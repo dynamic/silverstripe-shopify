@@ -8,4 +8,5 @@ after:
 SilverStripe\Control\Director:
   rules:
     'multipass': 'Dynamic\Shopify\Controller\ShopifyMultipassController'
-    'webhooks/shopify//$Action': 'Dynamic\Shopify\Controller\WebhookController'
+    'webhooks/shopify/product//$Action': 'Dynamic\Shopify\Controller\Webhook\ProductWebhookController'
+    'webhooks/shopify/collection//$Action': 'Dynamic\Shopify\Controller\Webhook\CollectionWebhookController'

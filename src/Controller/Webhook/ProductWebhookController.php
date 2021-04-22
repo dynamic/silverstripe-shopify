@@ -3,29 +3,15 @@
 namespace Dynamic\Shopify\Controller\Webhook;
 
 use Dynamic\Shopify\Page\ShopifyProduct;
+use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
 
 /**
  * Class ProductWebhookController
  * @package Dynamic\Shopify\Controller\Webhook
  */
-class ProductWebhookController extends WebhookController
+class ProductWebhookController extends Controller
 {
-    /**
-     * @var string[]
-     */
-    private static $url_handlers = [
-        'create' => 'createProduct',
-    ];
-
-    /**
-     * @var string[]
-     */
-    private static $allowed_actions = [
-        'createProduct',
-        'update',
-        'delete',
-    ];
 
     /**
      * @param HTTPRequest $request
@@ -54,7 +40,7 @@ class ProductWebhookController extends WebhookController
         if ($request === null) {
             $request = $this->getRequest();
         }
-        return 'All good';
+        return 'create product';
     }
 
     /**
@@ -65,5 +51,7 @@ class ProductWebhookController extends WebhookController
         if ($request === null) {
             $request = $this->getRequest();
         }
+
+        return 'update product';
     }
 }

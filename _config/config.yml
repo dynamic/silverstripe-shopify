@@ -16,6 +16,11 @@ PageController:
   extensions:
     - Dynamic\Shopify\Extension\ShopifyExtension
 
+Dynamic\Shopify\Controller\Webhook\WebhookController:
+  type_routing:
+    products: Dynamic\Shopify\Controller\Webhook\ProductWebhookController
+    collections: Dynamic\Shopify\Controller\Webhook\CollectionWebhookController
+
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Security\MemberAuthenticator\LoginHandler:
     class: Dynamic\Shopify\Extension\ShopifyLoginHandler

@@ -4,29 +4,15 @@ namespace Dynamic\Shopify\Controller\Webhook;
 
 use Dynamic\Shopify\Page\ShopifyCollection;
 use Dynamic\Shopify\Page\ShopifyProduct;
+use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
 
 /**
  * Class CollectionWebhookController
  * @package Dynamic\Shopify\Controller\Webhook
  */
-class CollectionWebhookController extends WebhookController
+class CollectionWebhookController extends Controller
 {
-    /**
-     * @var string[]
-     */
-    private static $url_handlers = [
-        'create' => 'createCollection',
-    ];
-
-    /**
-     * @var string[]
-     */
-    private static $allowed_actions = [
-        'createCollection',
-        'update',
-        'delete',
-    ];
 
     /**
      * @param HTTPRequest $request

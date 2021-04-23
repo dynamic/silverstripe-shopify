@@ -211,7 +211,7 @@ class ShopifyCollection extends \Page
 
     /**
      * @param $shopifyId
-     * @return ProductCollection
+     * @return ShopifyCollection
      */
     public static function getByShopifyID($shopifyId)
     {
@@ -220,7 +220,7 @@ class ShopifyCollection extends \Page
 
     /**
      * @param $urlSegment
-     * @return DataObject|null
+     * @return ShopifyProduct|null
      */
     public static function getByURLSegment($urlSegment)
     {

@@ -376,7 +376,7 @@ JS
 
     /**
      * @param $shopifyId
-     * @return DataObject|null
+     * @return ShopifyProduct|null
      */
     public static function getByShopifyID($shopifyId)
     {
@@ -385,7 +385,7 @@ JS
 
     /**
      * @param $urlSegment
-     * @return DataObject|null
+     * @return ShopifyProduct|null
      */
     public static function getByURLSegment($urlSegment)
     {

@@ -48,6 +48,9 @@ class WebhookController extends Controller
         $procedure = $topic[1];
         if ($procedure === 'create') {
             $procedure = 'create' . ucfirst($type);
+            if (substr($procedure, -1) === 's') {
+                $procedure = substr($procedure, 0, -1);
+            }
         }
 
         $routing = static::config()->get('type_routing');

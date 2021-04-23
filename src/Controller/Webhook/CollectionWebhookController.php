@@ -2,6 +2,8 @@
 
 namespace Dynamic\Shopify\Controller\Webhook;
 
+use Dynamic\Shopify\Model\ShopifyFile;
+use Dynamic\Shopify\Model\ShopifyFileSource;
 use Dynamic\Shopify\Page\ShopifyCollection;
 use Dynamic\Shopify\Page\ShopifyProduct;
 use SilverStripe\Control\Controller;
@@ -41,7 +43,21 @@ class CollectionWebhookController extends Controller
         if ($request === null) {
             $request = $this->getRequest();
         }
-        return 'All good';
+
+        $data = json_decode($request->getBody());
+        $collection = ShopifyCollection::create();
+        $collection->ShopifyID = $data->id;
+        $collection->URLSegment = $data->handle;
+        $collection->SortOrder = $data->sort_order;
+        $collection->Title = $data->title;
+        $collection->Content = $data->body_html;
+        $collection->Created = $data->updated_at;
+        $collection->LastEdited = $data->updated_at;
+
+        $collection->write();
+        if ($data->published_at) {
+            $collection->publishRecursive();
+        }
     }
 
     /**
@@ -51,6 +67,62 @@ class CollectionWebhookController extends Controller
     {
         if ($request === null) {
             $request = $this->getRequest();
+        }
+
+        $data = json_decode($request->getBody());
+        $collection = ShopifyCollection::getByShopifyID($data->id);
+        if (!$collection) {
+            $collection = ShopifyCollection::create();
+            $collection->ShopifyID = $data->id;
+        }
+        $collection->URLSegment = $data->handle;
+        $collection->SortOrder = $data->sort_order;
+        $collection->Title = $data->title;
+        $collection->Content = $data->body_html;
+        $collection->Created = $data->updated_at;
+        $collection->LastEdited = $data->updated_at;
+
+        if (isset($data->image)) {
+            $file = $collection->File();
+            if (!$file || $collection->FileID === 0) {
+                if (!$collection->exists()) {
+                    $collection->write();
+                }
+                $file = ShopifyFile::create();
+                $file->Type = ShopifyFile::IMAGE;
+                $file->ShopifyID = $collection->ShopifyID;
+                $file->CollectionID = $collection->ID;
+                $file->write();
+                $collection->FileID = $file->ID;
+
+                $source = ShopifyFileSource::create();
+                $source->write();
+                $file->OriginalSourceID = $source->ID;
+            }
+
+            $source = $file->OriginalSource();
+            $source->Width = $data->image->width;
+            $source->Height = $data->image->height;
+            $source->URL = $data->image->src;
+            if ($source->isChanged()) {
+                $source->write();
+            }
+
+            $file->PreviewSrc = $data->image->src;
+            if ($file->isChanged()) {
+                $file->write();
+            }
+
+        } elseif ($collection->FileID) {
+            $collection->File()->delete();
+            $collection->FileID = 0;
+        }
+
+        if ($collection->isChanged()) {
+            $collection->write();
+            if ($data->published_at) {
+                $collection->publishRecursive();
+            }
         }
     }
 }

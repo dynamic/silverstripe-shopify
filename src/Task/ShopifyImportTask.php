@@ -170,7 +170,7 @@ class ShopifyImportTask extends BuildTask
      * @param ShopifyClient $client
      * @param ShopifyCollection $collection
      */
-    private function importCollectionFiles($client, $collection)
+    private function importCollectionFiles($client, &$collection)
     {
         try {
             $shopifyFile = $client->collectionMedia($collection->ShopifyID);
@@ -190,10 +190,12 @@ class ShopifyImportTask extends BuildTask
             return;
         }
 
+        $shopifyFile['body']->data->collection->image->offsetSet('id', $shopifyFile['body']->data->collection->id);
         /** @var ShopifyFile $file */
         if ($file = $this->importObject(ShopifyFile::class, $shopifyFile['body']->data->collection->image)) {
             $file->CollectionID = $collection->ID;
             $file->write();
+            $collection->FileID = $file->ID;
         } else {
             self::log(
                 "[{$shopifyFile->node->id}] Could not create file",
@@ -603,13 +605,15 @@ class ShopifyImportTask extends BuildTask
     public static function loop_map($map, &$object, $data)
     {
         foreach ($map as $from => $to) {
-            if (!isset($from, $data) || !$data->offsetExists($from)) {
+            if (!isset($from, $data) || ($data instanceof ResponseAccess && !$data->offsetExists($from))) {
                 continue;
             }
             if (is_array($to) && (is_object($data[$from]) || is_array($data[$from]))) {
                 self::loop_map($to, $object, $data[$from]);
-            } elseif (isset($data[$from])) {
+            } elseif (is_array($data) && isset($data[$from])) {
                 $object->{$to} = $data[$from];
+            } elseif (is_object($data) && isset($data->{$from})) {
+                $object->{$to} = $data->{$from};
             }
         }
     }

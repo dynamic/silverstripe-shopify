@@ -268,7 +268,7 @@ class ShopifyFile extends DataObject
 
     /**
      * @param $shopifyId
-     * @return DataObject|null
+     * @return ShopifyFile|null
      */
     public static function getByShopifyID($shopifyId)
     {

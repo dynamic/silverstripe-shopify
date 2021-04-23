@@ -26,13 +26,13 @@ class CollectionWebhookController extends Controller
             $request = $this->getRequest();
         }
 
-        $body = json_decode($request->getBody(), true);
-        /** @var ShopifyCollection|null $product */
-        $product = ShopifyCollection::get()->find('ShopifyID', $body['id']);
-        if (!$product) {
-            return $this->httpError(404, 'collection with id ' . $body['id'] . ' not found');
+        $body = json_decode($request->getBody());
+        /** @var ShopifyCollection|null $collection */
+        $collection = ShopifyCollection::get()->find('ShopifyID', $body->id);
+        if (!$collection) {
+            return $this->httpError(404, 'collection with id ' . $body->id . ' not found');
         }
-        $product->doUnpublish();
+        $collection->doArchive();
     }
 
     /**

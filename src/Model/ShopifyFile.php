@@ -35,8 +35,6 @@ use SilverStripe\View\HTML;
  * @method ShopifyProduct Product
  * @property int CollectionID
  * @method ShopifyCollection Collection
- * @property int VariantID
- * @method ShopifyVariant Variant
  * @property int OriginalSourceID
  * @method ShopifyFileSource OriginalSource
  *
@@ -101,7 +99,6 @@ class ShopifyFile extends DataObject
     private static $has_one = [
         'Product' => ShopifyProduct::class,
         'Collection' => ShopifyCollection::class,
-        'Variant' => ShopifyVariant::class,
         'OriginalSource' => ShopifyFileSource::class,
     ];
 

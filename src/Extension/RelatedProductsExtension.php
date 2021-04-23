@@ -9,6 +9,7 @@ use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Versioned\GridFieldArchiveAction;
 use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
@@ -16,6 +17,8 @@ use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 /**
  * Class RelatedProductsExtension
  * @package Dynamic\Shopify\Extension
+ *
+ * @method ManyManyList|ShopifyProduct[] RelatedProducts
  */
 class RelatedProductsExtension extends DataExtension
 {

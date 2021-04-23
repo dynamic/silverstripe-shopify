@@ -155,7 +155,7 @@ class ShopifyVariant extends DataObject
 
     /**
      * @param $shopifyId
-     * @return DataObject|null
+     * @return ShopifyVariant|null
      */
     public static function getByShopifyID($shopifyId)
     {

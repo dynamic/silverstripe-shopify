@@ -369,8 +369,7 @@ class ShopifyImportTask extends BuildTask
         $shopifyFile = $edges->offsetGet(0);
         /** @var ShopifyFile $file */
         if ($file = $this->importObject(ShopifyFile::class, $shopifyFile->node)) {
-            $file->VariantID = $product->ID;
-            $file->write();
+            $file->Variants()->add($file);
         } else {
             self::log(
                 "[{$shopifyFile->node->id}] Could not create file",

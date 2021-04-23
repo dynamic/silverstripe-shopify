@@ -13,6 +13,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBCurrency;
+use SilverStripe\ORM\HasManyList;
 use SilverStripe\View\Requirements;
 
 /**
@@ -20,6 +21,12 @@ use SilverStripe\View\Requirements;
  * @package Dynamic\Shopify\Page
  *
  * @property string ShopifyID
+ * @property string Vendor
+ * @property string ProductType
+ * @property bool ProductActive
+ *
+ * @method HasManyList|ShopifyVariant[] Variants
+ * @method HasManyList|ShopifyFile[] Files
  */
 class ShopifyProduct extends \Page
 {

@@ -112,7 +112,6 @@ class CollectionWebhookController extends Controller
             if ($file->isChanged()) {
                 $file->write();
             }
-
         } elseif ($collection->FileID) {
             $collection->File()->delete();
             $collection->FileID = 0;

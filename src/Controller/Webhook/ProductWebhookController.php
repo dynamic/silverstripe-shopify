@@ -154,13 +154,13 @@ class ProductWebhookController extends Controller
                 $source->write();
             }
 
-           if ($file->isChanged()) {
-               $file->OriginalSourceID = $source->ID;
-               $file->write();
-               if ($image->product_id) {
-                   ShopifyProduct::getByShopifyID($image->product_id)->Files()->add($file);
-               }
-           }
+            if ($file->isChanged()) {
+                $file->OriginalSourceID = $source->ID;
+                $file->write();
+                if ($image->product_id) {
+                    ShopifyProduct::getByShopifyID($image->product_id)->Files()->add($file);
+                }
+            }
 
             foreach ($image->variant_ids as $variantID) {
                 $variant = ShopifyVariant::getByShopifyID($variantID);

@@ -321,7 +321,12 @@ class ShopifyImportTask extends BuildTask
         }
 
         // remove unused variants
-        foreach ($product->Variants()->exclude(['ID' => $keepVariants]) as $variant) {
+        if (count($keepVariants)) {
+            $variants = $product->Variants()->exclude(['ID' => $keepVariants]);
+        } else {
+            $variants = $product->Variants();
+        }
+        foreach ($variants as $variant) {
             $variantId = $variant->ID;
             $variantShopifyId = $variant->ShopifyID;
             $variant->delete();
@@ -474,6 +479,10 @@ class ShopifyImportTask extends BuildTask
 
         if ($collections && $collections['body']) {
             $lastId = $sinceId;
+
+            if (!$collections['body']->data->product) {
+                return;
+            }
             foreach ($collections['body']->data->product->collections->edges as $index => $shopifyCollection) {
                 if ($collection = ShopifyCollection::getByShopifyID(self::parseShopifyID($shopifyCollection->node->id))
                 ) {

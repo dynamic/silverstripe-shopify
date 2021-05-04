@@ -7,6 +7,7 @@ Dynamic\Shopify\Page\ShopifyProduct:
   parent_classes:
     - Dynamic\Shopify\Page\ShopifyCollection
   sort_column: false
+  automatic_live_sort: false
 
 SilverStripe\Security\Member:
   extensions:

@@ -138,6 +138,17 @@ class ShopifyClient
     }
 
     /**
+     * @return mixed
+     */
+    public static function getDomain()
+    {
+        if (!$domain = self::config()->get('custom_domain')) {
+            $domain = self::config()->get('shopify_domain');
+        }
+        return $domain;
+    }
+
+    /**
      * @param array $options
      * @return array|Promise
      * @throws Exception

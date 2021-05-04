@@ -158,17 +158,17 @@ class ShopifyCollection extends \Page
      */
     public function getProductList()
     {
-        $categories = ShopifyCollection::get()->filter('ParentID', $this->data()->ID)->column('ID');
-        $categories[] = $this->data()->ID;
+        $id = $this->CopyContentFromID ?: $this->ID;
+        $categories = ShopifyCollection::get()->filter('ParentID', $id)->column('ID');
+        $categories[] = $id;
 
-        $classes = [
-            VirtualPage::class,
-            RedirectorPage::class,
-        ];
-
-        foreach (ClassInfo::subclassesFor(ShopifyProduct::class) as $class) {
-            $classes[] = $class;
-        }
+        $classes = array_merge(
+            [
+                VirtualPage::class,
+                RedirectorPage::class,
+            ],
+            ClassInfo::subclassesFor(ShopifyProduct::class)
+        );
 
         $products = SiteTree::get()
             ->filter('ClassName', $classes)

@@ -31,7 +31,8 @@ class ShopifyExtension extends Extension
                     'total' => _t('Shopify.CartTotal', 'Subtotal'),
                     'currency' => ShopifyProduct::config()->get('currency'),
                     'notice' => _t('Shopify.CartNotice', 'Shipping and discount codes are added at checkout.')
-                ]
+                ],
+                'popup' => 0,
             ]
         ]));
     }

@@ -34,7 +34,13 @@ class ShopifyOrderHistoryController extends \PageController
         }
 
         if (!$user = Security::getCurrentUser()) {
-            return 'No user';
+            return $this->customise([
+                'Orders' => false,
+                'HasPreviousPage' => false,
+                'PreviousPageLink' => "",
+                'HasNextPage' => false,
+                'NextPageLink' => "",
+            ]);
         }
 
         $email = $user->Email;

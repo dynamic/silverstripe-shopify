@@ -160,7 +160,7 @@ class ShopifyCollection extends \Page
     {
         $id = $this->CopyContentFromID ?: $this->ID;
         $categories = ShopifyCollection::get()->filter('ParentID', $id)->column('ID');
-        $categories[] = $this->ID;
+        $categories[] = $id;
 
         $classes = array_merge(
             [

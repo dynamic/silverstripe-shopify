@@ -39,6 +39,7 @@ Dynamic\Shopify\Client\ShopifyClient:
   api_password: 'YOUR_API_PASSWORD'
   storefront_access_token: 'YOUR_ACCESS_TOKEN' # for buy button
   shopify_domain: 'YOUR_SHOPIFY_DOMAIN' # mydomain.myshopify.com
+  custom_domain: 'YOUR_CUSTOM_DOMAIN' # checkout.example.com
   shared_secret: 'YOUR_API_SHARED_SECRET'
 
 ```

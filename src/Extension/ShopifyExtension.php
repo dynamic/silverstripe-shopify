@@ -43,7 +43,7 @@ class ShopifyExtension extends Extension
     public function onAfterInit()
     {
         if (ShopifyClient::config()->get('inject_javascript') !== false) {
-            $domain = ShopifyClient::getDomain();
+            $domain = ShopifyClient::get_domain();
             $accessToken = ShopifyClient::config()->get('storefront_access_token');
             $currencySymbol = DBCurrency::config()->get('currency_symbol');
             Requirements::javascript('//sdks.shopifycdn.com/buy-button/latest/buybutton.js');

@@ -341,7 +341,7 @@ fragment presentmentMoney on MoneyBag {
             $isCodeField = $discount->discountApplication->__typename === 'DiscountCodeApplication';
             $discounts->push(
                 ArrayData::create([
-                    'Code' => $isCodeField ? $discount->code : $discount->discountApplication->title,
+                    'Code' => $isCodeField ? $discount->discountApplication->code : $discount->discountApplication->title,
                     'Amount' => $this->toCurrency($discount->allocatedAmountSet->presentmentMoney->amount),
                 ])
             );

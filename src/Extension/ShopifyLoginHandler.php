@@ -20,7 +20,7 @@ class ShopifyLoginHandler extends LoginHandler
     {
         $multipass_secret = ShopifyMultipass::config()->get('multipass_secret');
         if (isset($multipass_secret)) {
-            $url = Director::absoluteBaseURL() . 'multipass';
+            $url = Director::absoluteURL('multipass');
             if ($backURL = $this->getBackURL()){
                 $url = $url . '?BackURL=' . $backURL;
             } else if ($backURL = $this->getOffSiteBackURL('postVar')) {

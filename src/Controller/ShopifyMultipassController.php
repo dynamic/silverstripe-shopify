@@ -28,9 +28,9 @@ class ShopifyMultipassController extends Controller
     {
         $request = $this->getRequest();
 
-        $return_url = Director::absoluteBaseURL() . ShopifyMultipass::config()->get('return_url');
+        $return_url = Director::absoluteURL(ShopifyMultipass::config()->get('return_url'));
         if ($backURL = $request->getVar('BackURL')) {
-            $return_url = $backURL;
+            $return_url = Director::absoluteURL($backURL);
         }
 
         if ($multipass_secret = ShopifyMultipass::config()->get('multipass_secret')) {

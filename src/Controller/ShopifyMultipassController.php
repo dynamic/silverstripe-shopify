@@ -26,13 +26,17 @@ class ShopifyMultipassController extends Controller
      */
     public function index()
     {
+        $request = $this->getRequest();
+
         $return_url = Director::absoluteBaseURL() . ShopifyMultipass::config()->get('return_url');
+        if ($backURL = $request->getVar('BackURL')) {
+            $return_url = $backURL;
+        }
 
         if ($multipass_secret = ShopifyMultipass::config()->get('multipass_secret')) {
             if ($member = Security::getCurrentUser()) {
                 if (filter_var($member->Email, FILTER_VALIDATE_EMAIL)) {
                     $domain = ShopifyClient::config()->get('shopify_domain');
-                    $request = $this->getRequest();
                     $customer_data = array(
                         "email" => $member->Email,
                         "first_name" => $member->FirstName,

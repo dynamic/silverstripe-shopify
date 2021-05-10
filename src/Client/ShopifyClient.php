@@ -458,6 +458,7 @@ fragment fieldsForMediaTypes on Media {
         return $this->getClient()->graph('
         query ($id: ID!){
     collection(id: $id) {
+        id
     	image {
         id
         altText

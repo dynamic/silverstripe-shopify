@@ -8,6 +8,8 @@ use SilverStripe\ORM\DataExtension;
 /**
  * Class ShopifyMember
  * @package Dynamic\Shopify\Extension
+ *
+ * @property string ShopifyID
  */
 class ShopifyMember extends DataExtension
 {

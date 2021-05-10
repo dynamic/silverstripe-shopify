@@ -8,3 +8,4 @@ after:
 SilverStripe\Control\Director:
   rules:
     'multipass': 'Dynamic\Shopify\Controller\ShopifyMultipassController'
+    'webhooks/shopify': 'Dynamic\Shopify\Controller\Webhook\WebhookController'

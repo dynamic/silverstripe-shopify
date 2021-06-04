@@ -59,6 +59,11 @@ class ShopifyClient
     /**
      * @config null|string
      */
+    private static $custom_domain = null;
+
+    /**
+     * @config null|string
+     */
     private static $shared_secret = null;
 
     /**

@@ -26,43 +26,29 @@ class ShopifyExtension extends Extension
             'cart' => [
                 'text' => [
                     'title' => _t('Shopify.CartTitle', 'Cart'),
-                    'empty'=> _t('Shopify.CartEmpty', 'Your cart is empty.'),
+                    'empty' => _t('Shopify.CartEmpty', 'Your cart is empty.'),
                     'button' => _t('Shopify.CartButton', 'Checkout'),
                     'total' => _t('Shopify.CartTotal', 'Subtotal'),
                     'currency' => ShopifyProduct::config()->get('currency'),
-                    'notice' => _t('Shopify.CartNotice', 'Shipping and discount codes are added at checkout.')
+                    'notice' => _t('Shopify.CartNotice', 'Shipping and discount codes are added at checkout.'),
                 ],
                 'popup' => 0,
-            ]
+            ],
         ]));
     }
 
-    /**
-     *
-     */
-    public function onAfterInit()
+    public function getStoreFrontToken()
     {
-        if (ShopifyClient::config()->get('inject_javascript') !== false) {
-            $domain = ShopifyClient::get_domain();
-            $accessToken = ShopifyClient::config()->get('storefront_access_token');
-            $currencySymbol = DBCurrency::config()->get('currency_symbol');
-            Requirements::javascript('//sdks.shopifycdn.com/buy-button/latest/buybutton.js');
-            Requirements::customScript(<<<JS
-            (function () {
-                var client = ShopifyBuy.buildClient({
-                  domain: '{$domain}',
-                  storefrontAccessToken: '{$accessToken}'
-                });
+        return ShopifyClient::config()->get('storefront_access_token');
+    }
 
-                window.shopifyClient = ShopifyBuy.UI.init(client);
-                window.shopifyClient.createComponent('cart', {
-                   node: document.getElementById('shopify-cart'),
-                   moneyFormat: '$currencySymbol{{amount}}',
-                   options: {$this->getCartOptions()}
-                });
-            })();
-JS
-            );
-        }
+    public function getCurrencySymbol()
+    {
+        return DBCurrency::config()->get('currency_symbol');
+    }
+
+    public function getDomain()
+    {
+        return ShopifyClient::get_domain();
     }
 }

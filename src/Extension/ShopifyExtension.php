@@ -24,7 +24,7 @@ class ShopifyExtension extends Extension
      */
     public function getCartOptions()
     {
-        return DBField::create_field(DBHTMLText::class, Convert::array2json([
+        $configValue = Convert::array2json([
             'cart' => [
                 'text' => [
                     'title' => _t('Shopify.CartTitle', 'Cart'),
@@ -36,7 +36,9 @@ class ShopifyExtension extends Extension
                 ],
                 'popup' => 0,
             ],
-        ]));
+        ]);
+
+        return DBField::create_field(DBHTMLText::class, "$configValue");
     }
 
     /**

@@ -277,7 +277,7 @@ class ShopifyProduct extends \Page
      */
     public function getButtonOptions()
     {
-        return DBField::create_field(DBHTMLText::class, Convert::array2json(array_merge_recursive(self::config()->get('button_options'), [
+        $configValue = $this->prepareConfigString(json_encode(array_merge_recursive(self::config()->get('button_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
@@ -286,6 +286,8 @@ class ShopifyProduct extends \Page
                 ],
             ],
         ])));
+
+        return DBField::create_field(DBHTMLText::class, "$configValue");
     }
 
     /**
@@ -293,7 +295,7 @@ class ShopifyProduct extends \Page
      */
     public function getFormOptions()
     {
-        return DBField::create_field(DBHTMLText::class, Convert::array2json(array_merge_recursive(self::config()->get('cartform_options'), [
+        $configValue = $this->prepareConfigString(json_encode(array_merge_recursive(self::config()->get('cartform_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
@@ -302,6 +304,8 @@ class ShopifyProduct extends \Page
                 ],
             ],
         ])));
+
+        return DBField::create_field(DBHTMLText::class, "$configValue");
     }
 
     /**
@@ -309,13 +313,25 @@ class ShopifyProduct extends \Page
      */
     public function getOverlayOptions()
     {
-        return DBField::create_field(DBHTMLText::class, Convert::array2json(array_merge_recursive(self::config()->get('overlay_options'), [
+        $configValue = $this->prepareConfigString(json_encode(array_merge_recursive(self::config()->get('overlay_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
                 ],
             ],
         ])));
+
+        return DBField::create_field(DBHTMLText::class, "$configValue");
+    }
+
+    /**
+     * @param string $string
+     * @return array|string|string[]
+     */
+    protected function prepareConfigString($string)
+    {
+        return $string;
+        //return str_replace('"', '&quote;', $string);
     }
 
     /**

@@ -295,7 +295,7 @@ class ShopifyProduct extends \Page
      */
     public function getFormOptions()
     {
-        $configValue = $this->prepareConfigString(json_encode(array_merge_recursive(self::config()->get('cartform_options'), [
+        $configValue = $this->prepareConfigString(json_encode(array_merge_recursive(self::config()->get('form_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),

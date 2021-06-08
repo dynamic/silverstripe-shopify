@@ -7,6 +7,8 @@ use Dynamic\Shopify\Page\ShopifyProduct;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extension;
 use SilverStripe\ORM\FieldType\DBCurrency;
+use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\Requirements;
 
 /**
@@ -22,7 +24,7 @@ class ShopifyExtension extends Extension
      */
     public function getCartOptions()
     {
-        return Convert::array2json(array_merge_recursive(ShopifyProduct::config()->get('button_options'), [
+        return DBField::create_field(DBHTMLText::class, Convert::array2json(array_merge_recursive(ShopifyProduct::config()->get('button_options'), [
             'cart' => [
                 'text' => [
                     'title' => _t('Shopify.CartTitle', 'Cart'),
@@ -34,21 +36,38 @@ class ShopifyExtension extends Extension
                 ],
                 'popup' => 0,
             ],
-        ]));
+        ])));
     }
 
+    /**
+     * @return mixed
+     */
     public function getStoreFrontToken()
     {
         return ShopifyClient::config()->get('storefront_access_token');
     }
 
+    /**
+     * @return mixed
+     */
     public function getCurrencySymbol()
     {
         return DBCurrency::config()->get('currency_symbol');
     }
 
+    /**
+     * @return mixed
+     */
     public function getDomain()
     {
         return ShopifyClient::get_domain();
+    }
+
+    /**
+     *
+     */
+    public function onAfterInit()
+    {
+        Requirements::javascript('dynamic/silverstripe-shopify:client/cart.init.js');
     }
 }

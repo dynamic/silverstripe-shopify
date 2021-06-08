@@ -13,6 +13,8 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBCurrency;
+use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\Requirements;
 
 /**
@@ -49,7 +51,7 @@ class ShopifyProduct extends \Page
      */
     private static $has_many = [
         'Variants' => ShopifyVariant::class,
-        'Files' => ShopifyFile::class
+        'Files' => ShopifyFile::class,
     ];
 
     /**
@@ -96,7 +98,7 @@ class ShopifyProduct extends \Page
         'Title',
         'Vendor',
         'ProductType',
-        'ShopifyID'
+        'ShopifyID',
     ];
 
     /**
@@ -127,7 +129,7 @@ class ShopifyProduct extends \Page
         'createdAt' => 'Created',
         'updatedAt' => 'LastEdited',
         //'tags' => 'Tags',
-        'publishedOnCurrentPublication' => 'ProductActive'
+        'publishedOnCurrentPublication' => 'ProductActive',
     ];
 
     /**
@@ -146,8 +148,8 @@ class ShopifyProduct extends \Page
                 'description' => false,
                 'quantity' => true,
                 'img' => false,
-            ]
-        ]
+            ],
+        ],
     ];
 
     /**
@@ -166,7 +168,7 @@ class ShopifyProduct extends \Page
                 'options' => false,
                 'quantityInput' => false,
                 'description' => false,
-            ]
+            ],
         ],
         'modalProduct' => [
             'contents' => [
@@ -179,8 +181,8 @@ class ShopifyProduct extends \Page
                 'buttonWithQuantity' => true,
                 'button' => false,
                 'quantity' => false,
-            ]
-        ]
+            ],
+        ],
     ];
 
     /**
@@ -219,7 +221,7 @@ class ShopifyProduct extends \Page
                         'Variants',
                         $this->Variants(),
                         GridFieldConfig_RecordViewer::create()
-                    )
+                    ),
                 ]
             );
 
@@ -231,7 +233,7 @@ class ShopifyProduct extends \Page
                         'Files',
                         $this->Files(),
                         GridFieldConfig_RecordViewer::create()
-                    )
+                    ),
                 ]
             );
         });
@@ -260,8 +262,8 @@ class ShopifyProduct extends \Page
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
                     'outOfStock' => _t('Shopify.ProductOutOfStock', 'Out of stock'),
                     'unavailable' => _t('Shopify.ProductUnavailable', 'Unavailable'),
-                ]
-            ]
+                ],
+            ],
         ]));
 
         return $this->getBuyButtonScript($options);
@@ -276,11 +278,25 @@ class ShopifyProduct extends \Page
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
-                ]
-            ]
+                ],
+            ],
         ]));
 
         return $this->getBuyButtonScript($options);
+    }
+
+    /**
+     * @return DBField
+     */
+    public function getProductOverlayOptions()
+    {
+        return DBField::create_field(DBHTMLText::class, Convert::array2json(array_merge_recursive(self::config()->get('ovevrlay_options'), [
+            'product' => [
+                'text' => [
+                    'button' => _t('Shopify.ProductButton', 'Add to cart'),
+                ],
+            ],
+        ])));
     }
 
     /**

@@ -35,6 +35,9 @@ class ShopifyExtension extends Extension
                     'notice' => _t('Shopify.CartNotice', 'Shipping and discount codes are added at checkout.'),
                 ],
                 'popup' => 0,
+                'contents' => [
+                    'note' => 1
+                ]
             ],
         ]);
 

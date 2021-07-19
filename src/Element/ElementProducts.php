@@ -14,6 +14,7 @@ use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\ORM\ValidationException;
 use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
+use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 
 if (!class_exists(BaseElement::class)) {
     return;
@@ -52,7 +53,7 @@ class ElementProducts extends BaseElement
      */
     private static $many_many_extraFields = [
         'Products' => [
-            'SortOrder' => 'Int',
+            'ElementSortOrder' => 'Int',
         ],
     ];
 
@@ -92,6 +93,7 @@ class ElementProducts extends BaseElement
                     ])
                     ->addComponents([
                         new GridFieldAddExistingSearchButton(),
+                        new GridFieldOrderableRows('ElementSortOrder')
                     ]);
             }
         });
@@ -109,7 +111,7 @@ class ElementProducts extends BaseElement
     {
         $random = DB::get_conn()->random();
         $limit = $this->Limit;
-        $products = $this->Products()->limit($limit);
+        $products = $this->Products()->limit($limit)->sort('ElementSortOrder');
         $count = $products->count();
         $combined = ArrayList::create();
 
@@ -159,7 +161,7 @@ class ElementProducts extends BaseElement
     protected function provideBlockSchema()
     {
         $blockSchema = parent::provideBlockSchema();
-        //$blockSchema['content'] = $this->getSummary();
+        $blockSchema['content'] = $this->getSummary();
         return $blockSchema;
     }
 

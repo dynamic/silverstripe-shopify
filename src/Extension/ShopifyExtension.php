@@ -18,9 +18,7 @@ use SilverStripe\View\Requirements;
 class ShopifyExtension extends Extension
 {
     /**
-     * @return string
-     *
-     * todo - create private static $cart_options on ShopifyProduct to isolate cart options from button options
+     * @return DBField
      */
     public function getCartOptions()
     {

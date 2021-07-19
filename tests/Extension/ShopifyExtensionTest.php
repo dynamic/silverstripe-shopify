@@ -4,6 +4,7 @@ namespace Dynamic\Shopify\Test\Extension;
 
 use Dynamic\Shopify\Page\ShopifyProduct;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\FieldType\DBField;
 
 /**
  * Class ShopifyExtensionTest
@@ -18,6 +19,6 @@ class ShopifyExtensionTest extends SapphireTest
     {
         $object = singleton(\PageController::class);
         $script = $object->getCartOptions();
-        $this->assertInternalType('string', $script);
+        $this->assertInstanceOf(DBField::class, $script);
     }
 }

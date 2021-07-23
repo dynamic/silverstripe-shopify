@@ -23,7 +23,11 @@ use SilverStripe\View\Requirements;
  * @package Dynamic\Shopify\Page
  *
  * @property string ShopifyID
+ * @property string Vendor
+ * @property string ProductType
+ * @property boolean ProductActive
  *
+ * @method HasManyList|ShopifyVariant[] Variants()
  * @method HasManyList|ShopifyFile[] Files
  */
 class ShopifyProduct extends \Page

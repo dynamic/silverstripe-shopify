@@ -6,6 +6,8 @@ Dynamic\Shopify\Page\ShopifyProduct:
     - LittleGiant\CatalogManager\Extensions\CatalogPageExtension
   parent_classes:
     - Dynamic\Shopify\Page\ShopifyCollection
+  active_schema:
+    - Dynamic\Shopify\SEO\ProductSchemaBuilder
   sort_column: false
   automatic_live_sort: false
 
@@ -16,6 +18,10 @@ SilverStripe\Security\Member:
 PageController:
   extensions:
     - Dynamic\Shopify\Extension\ShopifyExtension
+
+SilverStripe\SiteConfig\SiteConfig:
+  extensions:
+    - Dynamic\Shopify\Extension\ShopifySiteConfigExtension
 
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Security\MemberAuthenticator\LoginHandler:

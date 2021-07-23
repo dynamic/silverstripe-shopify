@@ -2,6 +2,7 @@
 
 namespace Dynamic\Shopify\Client;
 
+use Dynamic\Shopify\Extension\ShopifySiteConfigExtension;
 use Exception;
 use GuzzleHttp\Promise\Promise;
 use Osiset\BasicShopifyAPI\BasicShopifyAPI;
@@ -12,6 +13,7 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Dev\Debug;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\View\ArrayData;
 
 /**
@@ -126,6 +128,7 @@ class ShopifyClient
 
         $this->client = $client;
 
+        $this->updateLocalCache();
         return $this;
     }
 
@@ -151,6 +154,34 @@ class ShopifyClient
             $domain = self::config()->get('shopify_domain');
         }
         return $domain;
+    }
+
+    /**
+     * Updates locally stored config options set in shopify
+     */
+    protected function updateLocalCache()
+    {
+        /** @var SiteConfig|ShopifySiteConfigExtension $config */
+        $config = SiteConfig::current_site_config();
+        $config->ShopCurrencyCode = $this->currencyCode();
+
+        if ($config->isChanged()) {
+            $config->write();
+        }
+    }
+
+    /**
+     * Gets the shop's currency code
+     * @return array|Promise
+     * @throws Exception
+     */
+    public function currencyCode()
+    {
+        $result = $this->getClient()->graph('query {shop{currencyCode}}');
+        if ($result && $result['body']) {
+            return $result['body']->data->shop->currencyCode;
+        }
+        return '';
     }
 
     /**

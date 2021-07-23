@@ -15,6 +15,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBCurrency;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBHTMLText;
+use SilverStripe\ORM\HasManyList;
 use SilverStripe\View\Requirements;
 
 /**
@@ -22,6 +23,8 @@ use SilverStripe\View\Requirements;
  * @package Dynamic\Shopify\Page
  *
  * @property string ShopifyID
+ *
+ * @method HasManyList|ShopifyFile[] Files
  */
 class ShopifyProduct extends \Page
 {

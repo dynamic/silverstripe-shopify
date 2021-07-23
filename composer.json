@@ -13,7 +13,8 @@
         "littlegiant/silverstripe-catalogmanager": "^5.2",
         "silverstripe/recipe-cms": "^4.5",
         "symbiote/silverstripe-gridfieldextensions": "^3.0",
-        "osiset/basic-shopify-api": "^10.0"
+        "osiset/basic-shopify-api": "^10.0",
+        "bramdeleeuw/silverstripe-schema": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7",

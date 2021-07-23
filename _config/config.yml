@@ -6,6 +6,8 @@ Dynamic\Shopify\Page\ShopifyProduct:
     - LittleGiant\CatalogManager\Extensions\CatalogPageExtension
   parent_classes:
     - Dynamic\Shopify\Page\ShopifyCollection
+  active_schema:
+    - Dynamic\Shopify\SEO\ProductSchemaBuilder
   sort_column: false
   automatic_live_sort: false
 

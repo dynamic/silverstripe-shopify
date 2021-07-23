@@ -7,6 +7,7 @@ use Broarm\Schema\Type\OfferSchema;
 use Broarm\Schema\Type\ProductSchema;
 use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Page\ShopifyProduct;
+use SilverStripe\SiteConfig\SiteConfig;
 
 /**
  * Class ProductSchemaBuilder
@@ -33,7 +34,7 @@ class ProductSchemaBuilder extends SchemaBuilder
             $page->Content,
             new OfferSchema(
                 number_format($page->getPrice()->getValue(), 2),
-                'USD',
+                SiteConfig::current_site_config()->ShopCurrencyCode,
                 $page->ProductActive ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
             ),
             $page->getSKU(),

@@ -344,6 +344,31 @@ query ($limit: Int!, $cursor: String){
         ]);
     }
 
+    public function collection($collectionId)
+    {
+        return $this->getClient()->graph('
+query ($id: ID!){
+    collection(id: $id) {
+        id
+        title
+        handle
+        descriptionHtml
+        productsCount
+        updatedAt
+        sortOrder
+        publishedOnCurrentPublication
+        image {
+            id
+            altText
+            originalSrc
+        }
+    }
+}
+        ', [
+            'id' => "gid://shopify/Collection/{$collectionId}",
+        ]);
+    }
+
     /**
      * @param $productID
      * @param int $limit

@@ -171,7 +171,7 @@ class ShopifyImportTask extends BuildTask
      * @param ShopifyClient $client
      * @param ShopifyCollection $collection
      */
-    private function importCollectionFiles($client, $collection)
+    public function importCollectionFiles($client, $collection)
     {
         try {
             $shopifyFile = $client->collectionMedia($collection->ShopifyID);

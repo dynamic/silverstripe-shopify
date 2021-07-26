@@ -76,7 +76,29 @@ class ShopifyFetchExtension extends LeftAndMainExtension
         }
 
         $importTask = ShopifyImportTask::create();
-        $importTask->importCollections($this->getClient(), $record->ShopifyID, [], true);
+        $previousSilent = $importTask->config()->get('silent');
+        $importTask->config()->set('silent', true);
+        $shopifyCollection = $this->getClient()->collection($record->ShopifyID)['body']->data->collection;
+
+        if ($collection = $importTask->importObject(ShopifyCollection::class, $shopifyCollection)) {
+            // Create the image
+            $importTask->importCollectionFiles($this->getClient(), $collection);
+
+            if ($collection->isChanged()) {
+                $collection->write();
+            }
+
+            // Set current publish status for collection
+            if ($collection->CollectionActive && !$collection->isLiveVersion()) {
+                $collection->publishRecursive();
+            } elseif (!$collection->CollectionActive && $collection->IsPublished()) {
+                $collection->doUnpublish();
+            }
+
+            $importTask->config()->set('silent', $previousSilent);
+            return $this->returnSuccess();
+        }
+        $this->owner->httpError(500, "Could not create collection: $record->ShopifyID");
     }
 
     /**

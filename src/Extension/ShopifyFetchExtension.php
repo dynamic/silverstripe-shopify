@@ -48,7 +48,8 @@ class ShopifyFetchExtension extends LeftAndMainExtension
     /**
      * @return ShopifyClient
      */
-    public function getClient() {
+    public function getClient()
+    {
         if (!$this->client) {
             $this->setClient();
         }

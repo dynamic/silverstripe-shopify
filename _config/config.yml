@@ -23,6 +23,10 @@ SilverStripe\SiteConfig\SiteConfig:
   extensions:
     - Dynamic\Shopify\Extension\ShopifySiteConfigExtension
 
+SilverStripe\Admin\LeftAndMain:
+  extensions:
+    - Dynamic\Shopify\Extension\ShopifyFetchExtension
+
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Security\MemberAuthenticator\LoginHandler:
     class: Dynamic\Shopify\Extension\ShopifyLoginHandler

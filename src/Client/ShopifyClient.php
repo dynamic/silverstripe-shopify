@@ -257,25 +257,43 @@ class ShopifyClient
     public function product($productId, array $options = [])
     {
         return $this->getClient()->graph(
-            'query ($id: String!){
+            'query ($id: ID!){
     product(id: $id) {
         id
         title
-        bodyHtml
+        handle
+        descriptionHtml
         vendor
         productType
         createdAt
-        handle
         updatedAt
-        tags
+        publishedOnCurrentPublication
         images(first: 10) {
-            edges {
-                node {
-                    id
-                    altText
-                    originalSrc
-                }
+          edges {
+            node {
+              id
+              altText
+              originalSrc
             }
+          }
+        }
+        variants(first: 25) {
+          edges {
+            node {
+              id
+              title
+              sku
+              price
+              compareAtPrice
+              position
+              inventoryQuantity
+              image {
+                id
+                altText
+                originalSrc
+              }
+            }
+          }
         }
     }
 }
@@ -323,6 +341,31 @@ query ($limit: Int!, $cursor: String){
         ', [
             'limit' => (int)$limit,
             'cursor' => $cursor,
+        ]);
+    }
+
+    public function collection($collectionId)
+    {
+        return $this->getClient()->graph('
+query ($id: ID!){
+    collection(id: $id) {
+        id
+        title
+        handle
+        descriptionHtml
+        productsCount
+        updatedAt
+        sortOrder
+        publishedOnCurrentPublication
+        image {
+            id
+            altText
+            originalSrc
+        }
+    }
+}
+        ', [
+            'id' => "gid://shopify/Collection/{$collectionId}",
         ]);
     }
 

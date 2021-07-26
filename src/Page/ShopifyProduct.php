@@ -5,9 +5,12 @@ namespace Dynamic\Shopify\Page;
 use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Model\ShopifyVariant;
 use Dynamic\Shopify\Task\ShopifyImportTask;
+use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\AssetAdmin\Forms\UploadField;
+use SilverStripe\Control\Controller;
 use SilverStripe\Core\Convert;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
@@ -263,6 +266,30 @@ class ShopifyProduct extends \Page
         });
 
         return parent::getCMSFields();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCMSActions()
+    {
+        $actions = parent::getCMSActions();
+
+        if (!$this->ShopifyID || !$this->canEdit()) {
+            return $actions;
+        }
+
+        $controller = Controller::curr();
+        if ($controller instanceof LeftAndMain) {
+            /** @var FormAction $action */
+            $action = FormAction::create('shopifyProductFetch', 'Re-fetch Shopify')
+                ->addExtraClass('btn-primary font-icon-sync')
+                ->setUseButtonTag(true);
+
+            $actions->push($action);
+        }
+
+        return $actions;
     }
 
     /**

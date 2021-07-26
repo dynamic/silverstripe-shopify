@@ -11,6 +11,7 @@ use GuzzleHttp\Client;
 use Osiset\BasicShopifyAPI\ResponseAccess;
 use SilverStripe\CMS\Model\VirtualPage;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ArrayList;
@@ -170,7 +171,7 @@ class ShopifyImportTask extends BuildTask
      * @param ShopifyClient $client
      * @param ShopifyCollection $collection
      */
-    private function importCollectionFiles($client, $collection)
+    public function importCollectionFiles($client, $collection)
     {
         try {
             $shopifyFile = $client->collectionMedia($collection->ShopifyID);
@@ -204,10 +205,10 @@ class ShopifyImportTask extends BuildTask
 
     /**
      * Import the shopify products
-     * @param ShopifyClient $client
-     * @param array $ids
      *
-     * @throws \Exception
+     * @param ShopifyClient $client
+     * @param null|string $sinceId
+     * @param array $keepCollections
      */
     public function importProducts(ShopifyClient $client, $sinceId = null, $keepProducts = [])
     {
@@ -227,7 +228,7 @@ class ShopifyImportTask extends BuildTask
                         $keepProducts[] = $product->ID;
 
                         $this->importProductFiles($client, $product);
-                        $this->importVariants($client, $product, $shopifyProduct);
+                        $this->importVariants($client, $product, $shopifyProduct->node);
 
                         // Write the product record if changed
                         if ($product->isChanged()) {
@@ -289,15 +290,15 @@ class ShopifyImportTask extends BuildTask
      * @param ShopifyProduct $product
      * @param array|ResponseAccess $shopifyProduct
      */
-    private function importVariants($client, $product, $shopifyProduct)
+    public function importVariants($client, $product, $shopifyProduct)
     {
         // Create variants
-        $variants = new ArrayList((array)$shopifyProduct->node->variants->edges);
+        $variants = new ArrayList((array)$shopifyProduct->variants->edges);
         if (!$variants->exists()) {
             return;
         }
         $keepVariants = [];
-        foreach ($shopifyProduct->node->variants->edges as $shopifyVariant) {
+        foreach ($shopifyProduct->variants->edges as $shopifyVariant) {
             if ($variant = $this->importObject(ShopifyVariant::class, $shopifyVariant->node)) {
                 $variant->ProductID = $product->ID;
 
@@ -389,7 +390,7 @@ class ShopifyImportTask extends BuildTask
      * @param int $position
      * @param array $keepFiles
      */
-    private function importProductFiles($client, $product, $sinceId = null, $pos = 0, $keepFiles = [])
+    public function importProductFiles($client, $product, $sinceId = null, $pos = 0, $keepFiles = [])
     {
         try {
             $shopifyFiles = $client->productMedia($product->ShopifyID, $limit = 25, $sinceId);
@@ -586,7 +587,7 @@ class ShopifyImportTask extends BuildTask
      * @param $shopifyData
      * @return null
      */
-    private function importObject($class, $shopifyData)
+    public function importObject($class, $shopifyData)
     {
         $object = null;
         $shopifyData->id = self::parseShopifyID($shopifyData->id);
@@ -639,8 +640,11 @@ class ShopifyImportTask extends BuildTask
      * @param $message
      * @param $code
      */
-    protected static function log($message, $code = self::NOTICE)
+    public static function log($message, $code = self::NOTICE)
     {
+        if (Config::inst()->get(static::class, 'silent')) {
+            return;
+        }
         switch ($code) {
             case self::ERROR:
                 echo "[ ERROR ] {$message}\n";

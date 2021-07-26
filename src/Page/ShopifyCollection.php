@@ -163,7 +163,7 @@ class ShopifyCollection extends \Page
     {
         $actions = parent::getCMSActions();
 
-        if (!$this->ShopifyID) {
+        if (!$this->ShopifyID || !$this->canEdit()) {
             return $actions;
         }
 

@@ -61,9 +61,12 @@
     return mergeDeep(target, ...sources);
   }
 
-  function addVariantToCart(product) {
-    var selectedVariant = product.selectedVariant;
-    var productModel = product.model;
+  function addVariantToCart(product, quantity) {
+    var selectedVariant = product.hasOwnProperty('selectedVariant') ? product.selectedVariant : product.variant;
+    var productModel = product.hasOwnProperty('model') ? product.model : product;
+    if (typeof quantity === 'undefined') {
+      quantity = product.selectedQuantity;
+    }
     dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
     dataLayer.push({
       event: 'addToCart',
@@ -77,7 +80,34 @@
             brand: productModel.vendor,
             category: productModel.productType,
             variant: selectedVariant.title,
-            quantity: product.selectedQuantity
+            quantity: quantity
+          }]
+        }
+      }
+    });
+  }
+
+  function removeVariantFromCart(product, quantity) {
+    var selectedVariant = product.hasOwnProperty('selectedVariant') ? product.selectedVariant : product.variant;
+    var productModel = product.hasOwnProperty('model') ? product.model : product;
+    if (typeof quantity === 'undefined') {
+      quantity = product.selectedQuantity;
+    }
+console.log(product);
+    dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+    dataLayer.push({
+      event: 'removeFromCart',
+      ecommerce: {
+        currencyCode: selectedVariant.priceV2.currencyCode,
+        remove: {
+          products: [{
+            name: selectedVariant.title == 'Default Title' ? productModel.title : selectedVariant.title,
+            id: selectedVariant.sku,
+            price: selectedVariant.priceV2.amount,
+            brand: productModel.vendor,
+            category: productModel.productType,
+            variant: selectedVariant.title,
+            quantity: quantity
           }]
         }
       }
@@ -107,9 +137,9 @@
     var quantityDiffs = getLineItemQuantityDiffs(lineItemsMerged);
     quantityDiffs.forEach(function(lineItem) {
       if (lineItem.quantity > lineItem.newQuantity) {
-        // remove item
+        removeVariantFromCart(lineItem, lineItem.quantity - lineItem.newQuantity);
       } else {
-        // add item
+        addVariantToCart(lineItem, lineItem.newQuantity - lineItem.quantity);
       }
     });
     console.log(quantityDiffs);

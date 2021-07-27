@@ -93,7 +93,6 @@
     if (typeof quantity === 'undefined') {
       quantity = product.selectedQuantity;
     }
-console.log(product);
     dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
     dataLayer.push({
       event: 'removeFromCart',
@@ -142,7 +141,6 @@ console.log(product);
         addVariantToCart(lineItem, lineItem.newQuantity - lineItem.quantity);
       }
     });
-    console.log(quantityDiffs);
   }
 
   function getLineItemQuantityDiffs(lineItems) {

@@ -1,5 +1,8 @@
 (function () {
   var scriptURL = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
+  var lineItems = [];
+  var client;
+
   window.dataLayer = window.dataLayer || [];
 
   if (window.ShopifyBuy) {
@@ -58,37 +61,94 @@
   }
 
   function addVariantToCart(product) {
-      var selectedVariant = product.selectedVariant;
-      var productModel = product.model;
-      dataLayer.push({
-        event: 'addToCart',
-        ecommerce: {
-          currencyCode: selectedVariant.priceV2.currencyCode,
-          add: {
-            products: [{
-              name: selectedVariant.title == 'Default Title' ? productModel.title : selectedVariant.title,
-              id: selectedVariant.sku,
-              price: selectedVariant.priceV2.amount,
-              brand: productModel.vendor,
-              category: productModel.productType,
-              variant: selectedVariant.title,
-              quantity: product.selectedQuantity
-            }]
-          }
+    var selectedVariant = product.selectedVariant;
+    var productModel = product.model;
+    dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+    dataLayer.push({
+      event: 'addToCart',
+      ecommerce: {
+        currencyCode: selectedVariant.priceV2.currencyCode,
+        add: {
+          products: [{
+            name: selectedVariant.title == 'Default Title' ? productModel.title : selectedVariant.title,
+            id: selectedVariant.sku,
+            price: selectedVariant.priceV2.amount,
+            brand: productModel.vendor,
+            category: productModel.productType,
+            variant: selectedVariant.title,
+            quantity: product.selectedQuantity
+          }]
         }
-      });
+      }
+    });
+    lineItems = cart.model.lineItems;
   }
 
   function updateItemQuantity(cart) {
-    console.log(cart);
+    // buy button js fires event before anything is updated in cart
+    lineItems = cart.model.lineItems;
+  }
+
+  function beforeRender(component) {
+    if (!lineItems) {
+      return;
+    }
+
+    if (!component.hasOwnProperty('lineItemCache')) {
+      return;
+    }
+
+    if (!component.model.lineItems) {
+      return;
+    }
+
+    var lineItemsMerged = getLineItemsMerged(lineItems, component.model.lineItems);
+    var quantityDiffs = getLineItemQuantityDiffs(lineItemsMerged);
+    quantityDiffs.forEach(function(lineItem) {
+      if (lineItem.quantity > lineItem.newQuantity) {
+        // remove item
+      } else {
+        // add item
+      }
+    });
+    console.log(quantityDiffs);
+  }
+
+  function getLineItemQuantityDiffs(lineItems) {
+    return lineItems.filter(function(lineItem) {
+      return lineItem.hasOwnProperty('newQuantity') && lineItem.quantity !== lineItem.newQuantity;
+    });
+  }
+
+  function getLineItemsMerged(oldLineItems, newLineItems) {
+    var lineItems = [];
+    oldLineItems.forEach(function(oldLineItem) {
+      var newLineItem = newLineItems.filter(function(newLineItem) {
+        return newLineItem.id === oldLineItem.id;
+      })[0];
+      if (newLineItem && oldLineItem.quantity != newLineItem.quantity) {
+        oldLineItem.newQuantity = newLineItem.quantity;
+      }
+      lineItems.push(oldLineItem);
+    });
+
+    newLineItems.forEach(function(newLineItem) {
+      if (lineItems.filter(function(lineItem) {
+        return lineItem.id == newLineItem.id;
+      }).length === 0) {
+        lineItems.push(newLineItem);
+      }
+    });
+
+    return lineItems;
   }
 
   function ShopifyBuyInit() {
-    var cartElement = document.getElementById('shopify-cart'),
-      client = ShopifyBuy.buildClient({
-        domain: '' + cartElement.dataset.domain + '',
-        storefrontAccessToken: '' + cartElement.dataset.token,
-      });
+    var cartElement = document.getElementById('shopify-cart');
+    client = ShopifyBuy.buildClient({
+      domain: '' + cartElement.dataset.domain + '',
+      storefrontAccessToken: '' + cartElement.dataset.token,
+    });
 
     ShopifyBuy.UI.onReady(client).then(function (ui) {
       ui.createComponent('cart', {
@@ -97,7 +157,11 @@
         options: mergeDeep(JSON.parse(cartElement.dataset.cartOptions), {
           cart: {
             events: {
-              updateItemQuantity
+              updateItemQuantity,
+              afterInit: function(cart) {
+                lineItems = cart.model.lineItems;
+              },
+              beforeRender
             }
           }
         })

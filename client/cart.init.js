@@ -2,6 +2,7 @@
   var scriptURL = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
   var lineItems = [];
   var client;
+  var cart;
 
   window.dataLayer = window.dataLayer || [];
 
@@ -81,7 +82,6 @@
         }
       }
     });
-    lineItems = cart.model.lineItems;
   }
 
   function updateItemQuantity(cart) {
@@ -89,8 +89,9 @@
     lineItems = cart.model.lineItems;
   }
 
-  function beforeRender(component) {
+  function afterRender(component) {
     if (!lineItems) {
+      lineItems = cart.model.lineItems;
       return;
     }
 
@@ -126,8 +127,10 @@
       var newLineItem = newLineItems.filter(function(newLineItem) {
         return newLineItem.id === oldLineItem.id;
       })[0];
-      if (newLineItem && oldLineItem.quantity != newLineItem.quantity) {
+      if (newLineItem) {
         oldLineItem.newQuantity = newLineItem.quantity;
+      } else {
+        oldLineItem.newQuantity = 0;
       }
       lineItems.push(oldLineItem);
     });
@@ -161,7 +164,7 @@
               afterInit: function(cart) {
                 lineItems = cart.model.lineItems;
               },
-              beforeRender
+              afterRender
             }
           }
         })

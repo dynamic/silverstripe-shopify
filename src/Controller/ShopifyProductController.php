@@ -22,7 +22,7 @@ class ShopifyProductController extends \PageController
         Requirements::customScript("
             (function () {
                 window.dataLayer = window.dataLayer || [];
-                dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+                dataLayer.push({ ecommerce: null });  /* Clear the previous ecommerce object. */
                 dataLayer.push({
                   'ecommerce': {
                     'detail': {

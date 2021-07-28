@@ -67,7 +67,7 @@
     if (typeof quantity === 'undefined') {
       quantity = product.selectedQuantity;
     }
-    dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+    dataLayer.push({ ecommerce: null });  /* Clear the previous ecommerce object. */
     dataLayer.push({
       event: 'addToCart',
       ecommerce: {
@@ -93,7 +93,7 @@
     if (typeof quantity === 'undefined') {
       quantity = product.selectedQuantity;
     }
-    dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+    dataLayer.push({ ecommerce: null });  /* Clear the previous ecommerce object. */
     dataLayer.push({
       event: 'removeFromCart',
       ecommerce: {
@@ -114,7 +114,7 @@
   }
 
   function updateItemQuantity(cart) {
-    // buy button js fires event before anything is updated in cart
+    /* buy button js fires event before anything is updated in cart */
     lineItems = cart.model.lineItems;
   }
 

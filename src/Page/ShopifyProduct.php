@@ -2,6 +2,7 @@
 
 namespace Dynamic\Shopify\Page;
 
+use Dynamic\Shopify\Controller\ShopifyProductController;
 use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Model\ShopifyVariant;
 use Dynamic\Shopify\Task\ShopifyImportTask;
@@ -26,7 +27,11 @@ use SilverStripe\View\Requirements;
  * @package Dynamic\Shopify\Page
  *
  * @property string ShopifyID
+ * @property string Vendor
+ * @property string ProductType
+ * @property boolean ProductActive
  *
+ * @method HasManyList|ShopifyVariant[] Variants()
  * @method HasManyList|ShopifyFile[] Files
  */
 class ShopifyProduct extends \Page
@@ -35,6 +40,11 @@ class ShopifyProduct extends \Page
      * @var string
      */
     private static $table_name = 'ShopifyProduct';
+
+    /**
+     * @var string
+     */
+    private static $controller_name = ShopifyProductController::class;
 
     /**
      * @var string

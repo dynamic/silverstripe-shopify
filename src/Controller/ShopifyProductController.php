@@ -18,6 +18,7 @@ class ShopifyProductController extends \PageController
      */
     public function init()
     {
+        $price = number_format($this->getPrice()->getValue(), 2);
         Requirements::customScript("
             (function () {
                 window.dataLayer = window.dataLayer || [];
@@ -29,7 +30,7 @@ class ShopifyProductController extends \PageController
                       'products': [{
                         'name': '{$this->Title}',
                         'id': '{$this->getSKU()}',
-                        'price': '{$this->getPrice()->Nice()}',
+                        'price': '{$price}',
                         'brand': '{$this->Vendor}',
                         'category': '{$this->ProductType}'
                        }]

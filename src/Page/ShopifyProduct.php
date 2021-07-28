@@ -2,6 +2,7 @@
 
 namespace Dynamic\Shopify\Page;
 
+use Dynamic\Shopify\Controller\ShopifyProductController;
 use Dynamic\Shopify\Model\ShopifyFile;
 use Dynamic\Shopify\Model\ShopifyVariant;
 use Dynamic\Shopify\Task\ShopifyImportTask;
@@ -36,6 +37,11 @@ class ShopifyProduct extends \Page
      * @var string
      */
     private static $table_name = 'ShopifyProduct';
+
+    /**
+     * @var string
+     */
+    private static $controller_name = ShopifyProductController::class;
 
     /**
      * @var string

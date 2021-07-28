@@ -128,6 +128,10 @@
       return;
     }
 
+    if (!component.hasOwnProperty('model') || component.model == null) {
+      return;
+    }
+
     if (!component.model.lineItems) {
       return;
     }
@@ -190,6 +194,9 @@
             events: {
               updateItemQuantity,
               afterInit: function(cart) {
+                if (!cart.hasOwnProperty('model') || cart.model == null) {
+                  return;
+                }
                 lineItems = cart.model.lineItems;
               },
               afterRender

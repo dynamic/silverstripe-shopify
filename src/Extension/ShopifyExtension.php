@@ -71,6 +71,7 @@ class ShopifyExtension extends Extension
      */
     public function onAfterInit()
     {
+        Requirements::css('http://sdks.shopifycdn.com/buy-button/latest/buybutton.css');
         Requirements::javascript('dynamic/silverstripe-shopify:client/cart.init.js');
     }
 }

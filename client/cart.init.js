@@ -201,6 +201,9 @@
               },
               afterRender
             }
+          },
+          toggle: { /* for easier cart opened tracking */
+            iframe: false
           }
         })
       });

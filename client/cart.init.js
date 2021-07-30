@@ -228,4 +228,32 @@
       }
     });
   }
+
+  window.addEventListener('load',function(event) {
+    var products = document.querySelectorAll('[data-sku]:not(.trustpilot-widget)');
+    var impressions = [];
+
+    products.forEach(function(product) {
+      if (impressions.filter(function(impression) {
+        return impression.id === product.dataset.sku;
+      }).length > 0) {
+        return;
+      }~
+
+      impressions.push({
+        name: product.dataset.title,
+        id: product.dataset.sku,
+        brand: product.dataset.vendor,
+        category: product.dataset.category,
+        position: impressions.length + 1
+      });
+    });
+
+    dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+    dataLayer.push({
+      ecommerce: {
+        impressions: impressions
+      }
+    });
+  });
 })();

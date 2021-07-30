@@ -44,6 +44,14 @@ Dynamic\Shopify\Client\ShopifyClient:
 
 ```
 
+## Product impression tracking
+Product impressions can be tracked by adding data attributes to html tags rendered with products.
+`data-sku` is the only required data attribute, but `data-title`, `data-category`, and `data-vendor` can also be added.
+
+```html
+<div class="product__content" data-sku="$SKU" data-title="$Title" data-category="$Category.Title" data-vendor="$Vendor"></div>
+```
+
 ## Maintainers
 
  *  [Dynamic](http://www.dynamicagency.com) (<dev@dynamicagency.com>)

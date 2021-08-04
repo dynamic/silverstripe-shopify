@@ -99,10 +99,7 @@ class ShopifyImportTask extends BuildTask
     public function importCollections(ShopifyClient $client, $sinceId = null, $keepCollections = [])
     {
         try {
-            $collections = $client->collections(
-                10,
-                $sinceId
-            );
+            $collections = $client->collections(10, $sinceId);
         } catch (\GuzzleHttp\Exception\GuzzleException $e) {
             exit($e->getMessage());
         }
@@ -112,53 +109,15 @@ class ShopifyImportTask extends BuildTask
             return;
         }
 
-        if (self::offsetExists($data, ['collections', 'edges'])) {
+        if (!self::offsetExists($data, ['collections', 'edges'])) {
             return;
         }
 
         $lastId = $sinceId;
-        foreach ($data->collections->edges as $shopifyCollection) {
-            // Create the collection
-            if ($collection = $this->importObject(ShopifyCollection::class, $shopifyCollection->node)) {
+        foreach ($this->yieldSingle($data->collections->edges) as $shopifyCollection) {
+            if ($collection = $this->importCollection($client, $shopifyCollection->node)) {
                 $keepCollections[] = $collection->ID;
-
-                // Create the image
-                $this->importCollectionFiles($client, $collection);
-
-                if ($collection->isChanged()) {
-                    $collection->write();
-                    self::log(
-                        "[{$collection->ShopifyID}] Saved collection {$collection->Title}",
-                        self::SUCCESS
-                    );
-                } else {
-                    self::log(
-                        "[{$collection->ShopifyID}] Collection {$collection->Title} is unchanged",
-                        self::SUCCESS
-                    );
-                }
-
-                // Set current publish status for collection
-                if ($collection->CollectionActive && !$collection->isLiveVersion()) {
-                    $collection->publishRecursive();
-                    self::log(
-                        "[{$collection->ShopifyID}] Published collection {$collection->Title}",
-                        self::SUCCESS
-                    );
-                } elseif (!$collection->CollectionActive && $collection->IsPublished()) {
-                    $collection->doUnpublish();
-                    self::log(
-                        "[{$collection->ShopifyID}] Unpublished collection {$collection->Title}",
-                        self::SUCCESS
-                    );
-                }
-
                 $lastId = $shopifyCollection->cursor;
-            } else {
-                self::log(
-                    "[{$shopifyCollection->node->id}] Could not create collection",
-                    self::ERROR
-                );
             }
         }
 
@@ -182,6 +141,53 @@ class ShopifyImportTask extends BuildTask
         }
     }
 
+    /**
+     * @param ShopifyClient $client
+     * @param array|ResponseAccess $shopifyCollection
+     */
+    public function importCollection($client, $shopifyCollection)
+    {
+        $collection = $this->importObject(ShopifyCollection::class, $shopifyCollection);
+        if (!$collection) {
+            return self::log(
+                "[{$shopifyCollection->node->id}] Could not create collection",
+                self::ERROR
+            );
+        }
+
+        // Create the image
+        $this->importCollectionFiles($client, $collection);
+
+        if ($collection->isChanged()) {
+            $collection->write();
+            self::log(
+                "[{$collection->ShopifyID}] Saved collection {$collection->Title}",
+                self::SUCCESS
+            );
+        } else {
+            self::log(
+                "[{$collection->ShopifyID}] Collection {$collection->Title} is unchanged",
+                self::SUCCESS
+            );
+        }
+
+        // Set current publish status for collection
+        if ($collection->CollectionActive && !$collection->isLiveVersion()) {
+            $collection->publishRecursive();
+            self::log(
+                "[{$collection->ShopifyID}] Published collection {$collection->Title}",
+                self::SUCCESS
+            );
+        } elseif (!$collection->CollectionActive && $collection->IsPublished()) {
+            $collection->doUnpublish();
+            self::log(
+                "[{$collection->ShopifyID}] Unpublished collection {$collection->Title}",
+                self::SUCCESS
+            );
+        }
+        return $collection;
+    }
+
 
     /**
      * @param ShopifyClient $client
@@ -200,7 +206,7 @@ class ShopifyImportTask extends BuildTask
             return;
         }
 
-        if (self::offsetExists($data, ['collection', 'image'])) {
+        if (!self::offsetExists($data, ['collection', 'image'])) {
             return;
         }
 
@@ -233,76 +239,85 @@ class ShopifyImportTask extends BuildTask
 
         $data = self::getData($products);
         if (!$data) {
-            return;
+            return self::log('Unable to import products, no data in response', self::WARN);
         }
 
         if (!self::offsetExists($data, ['products', 'edges'])) {
-            return;
+            return self::log('Unable to import products, no products in response', self::WARN);
         }
 
         $lastId = $sinceId;
-        $shopifyProducts = new ArrayList((array)$data->products->edges);
-        if ($shopifyProducts->exists()) {
-            foreach ($data->products->edges as $shopifyProduct) {
-                // Create the product
-                if ($product = $this->importObject(ShopifyProduct::class, $shopifyProduct->node)) {
-                    $keepProducts[] = $product->ID;
-
-                    $this->importProductFiles($client, $product);
-                    $this->importVariants($client, $product, $shopifyProduct->node);
-
-                    // Write the product record if changed
-                    if ($product->isChanged()) {
-                        $product->write();
-                        self::log(
-                            "[{$product->ShopifyID}] Saved product {$product->Title}",
-                            self::SUCCESS
-                        );
-                    } else {
-                        self::log(
-                            "[{$product->ShopifyID}] Product {$product->Title} is unchanged",
-                            self::SUCCESS
-                        );
-                    }
-
-                    // Set current publish status for product
-                    if ($product->ProductActive && !$product->isLiveVersion()) {
-                        $product->publishRecursive();
-                        self::log(
-                            "[{$product->ShopifyID}] Published product {$product->Title}",
-                            self::SUCCESS
-                        );
-                    } elseif (!$product->ProductActive && $product->IsPublished()) {
-                        $product->doUnpublish();
-                        self::log(
-                            "[{$product->ShopifyID}] Unpublished product {$product->Title}",
-                            self::SUCCESS
-                        );
-                    }
-                    $lastId = $shopifyProduct->cursor;
-                } else {
-                    self::log("[{$shopifyProduct->node->id}] Could not create product", self::ERROR);
-                }
-            }
-
-            if ($data->products->pageInfo->hasNextPage) {
-                self::log(
-                    "[{$sinceId}] Try to import the next page of products since last cursor",
-                    self::NOTICE
-                );
-                $this->importProducts($client, $lastId, $keepProducts);
-            } else {
-                // Cleanup old products
-                foreach (ShopifyProduct::get()->exclude(['ID' => $keepProducts]) as $product) {
-                    $productShopifyId = $product->ShopifyID;
-                    $product->doUnpublish();
-                    self::log(
-                        "[{$productShopifyId}] Unpublished  product {$product->Title}",
-                        self::SUCCESS
-                    );
-                }
+        foreach ($this->yieldSingle($data->products->edges) as $shopifyProduct) {
+            // Create the product
+            if ($product = $this->importProduct($client, $shopifyProduct->node)) {
+                $keepProducts[] = $product->ID;
+                $lastId = $shopifyProduct->cursor;
             }
         }
+
+        if ($data->products->pageInfo->hasNextPage) {
+            self::log(
+                "[{$sinceId}] Try to import the next page of products since last cursor",
+                self::NOTICE
+            );
+            $this->importProducts($client, $lastId, $keepProducts);
+        } else {
+            // Cleanup old products
+            foreach (ShopifyProduct::get()->exclude(['ID' => $keepProducts]) as $product) {
+                $productShopifyId = $product->ShopifyID;
+                $product->doUnpublish();
+                self::log(
+                    "[{$productShopifyId}] Unpublished  product {$product->Title}",
+                    self::SUCCESS
+                );
+            }
+        }
+    }
+
+    /**
+     * @param ShopifyClient $client
+     * @param array|ResponseAccess $shopifyProduct
+     */
+    public function importProduct($client, $shopifyProduct)
+    {
+        /** @var ShopifyProduct $product */
+        $product = $this->importObject(ShopifyProduct::class, $shopifyProduct);
+        if (!$product) {
+            return self::log("[{$shopifyProduct->id}] Could not create product", self::ERROR);
+        }
+
+        $this->importProductFiles($client, $product);
+        $this->importVariants($client, $product, $shopifyProduct);
+
+        // Write the product record if changed
+        if ($product->isChanged()) {
+            $product->write();
+            self::log(
+                "[{$product->ShopifyID}] Saved product {$product->Title}",
+                self::SUCCESS
+            );
+        } else {
+            self::log(
+                "[{$product->ShopifyID}] Product {$product->Title} is unchanged",
+                self::SUCCESS
+            );
+        }
+
+        // Set current publish status for product
+        if ($product->ProductActive && !$product->isLiveVersion()) {
+            $product->publishRecursive();
+            self::log(
+                "[{$product->ShopifyID}] Published product {$product->Title}",
+                self::SUCCESS
+            );
+        } elseif (!$product->ProductActive && $product->IsPublished()) {
+            $product->doUnpublish();
+            self::log(
+                "[{$product->ShopifyID}] Unpublished product {$product->Title}",
+                self::SUCCESS
+            );
+        }
+        return $product;
     }
 
     /**
@@ -312,14 +327,14 @@ class ShopifyImportTask extends BuildTask
      */
     public function importVariants($client, $product, $shopifyProduct)
     {
-        if (self::offsetExists($shopifyProduct, ['variants', 'edges'])) {
+        if (!self::offsetExists($shopifyProduct, ['variants', 'edges'])) {
             return;
         }
 
         // Create variants
         $variants = $shopifyProduct->variants->edges;
         $keepVariants = [];
-        foreach ($shopifyProduct->variants->edges as $shopifyVariant) {
+        foreach ($this->yieldSingle($shopifyProduct->variants->edges) as $shopifyVariant) {
             if ($variant = $this->importObject(ShopifyVariant::class, $shopifyVariant->node)) {
                 $variant->ProductID = $product->ID;
 
@@ -379,7 +394,7 @@ class ShopifyImportTask extends BuildTask
             return;
         }
 
-        if (!self::offsetExists($data, ['productVariant', 'media', 'edges'])) {
+        if (!self::offsetExists($data, ['productVariant', 'media', 'edges', 0])) {
             return;
         }
 
@@ -426,7 +441,7 @@ class ShopifyImportTask extends BuildTask
 
         $lastId = $sinceId;
         $position = $pos;
-        foreach ($data->product->media->edges as $shopifyFile) {
+        foreach ($this->yieldSingle($data->product->media->edges) as $shopifyFile) {
             $shopifyFile->node->offsetSet('position', $position);
             /** @var ShopifyFile $file */
             if ($file = $this->importObject(ShopifyFile::class, $shopifyFile->node)) {
@@ -508,7 +523,7 @@ class ShopifyImportTask extends BuildTask
         }
 
         $lastId = $sinceId;
-        foreach ($data->product->collections->edges as $index => $shopifyCollection) {
+        foreach ($this->yieldSingle($data->product->collections->edges) as $index => $shopifyCollection) {
             if ($collection = ShopifyCollection::getByShopifyID(self::parseShopifyID($shopifyCollection->node->id))
             ) {
                 if ($index < 1) {
@@ -606,9 +621,9 @@ class ShopifyImportTask extends BuildTask
     }
 
     /**
-     * @param $class
-     * @param $shopifyData
-     * @return null
+     * @param string $class
+     * @param array|ResponseAccess $shopifyData
+     * @return null|DataObject
      */
     public function importObject($class, $shopifyData)
     {

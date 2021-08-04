@@ -6,6 +6,7 @@ use Dynamic\Shopify\Client\ShopifyClient;
 use Dynamic\Shopify\Page\ShopifyCollection;
 use Dynamic\Shopify\Page\ShopifyProduct;
 use Dynamic\Shopify\Task\ShopifyImportTask;
+use Dynamic\Shopify\Traits\OffsetValidator;
 use SilverStripe\Admin\LeftAndMainExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Security;
@@ -13,9 +14,12 @@ use SilverStripe\Security\Security;
 /**
  * Class ShopifyFetchExtension
  * @package Dynamic\Shopify\Extension
+ * @mixin OffsetValidator
  */
 class ShopifyFetchExtension extends LeftAndMainExtension
 {
+    use OffsetValidator;
+
     /**
      * @config
      * @var array
@@ -77,25 +81,20 @@ class ShopifyFetchExtension extends LeftAndMainExtension
         }
 
         $importTask = ShopifyImportTask::create();
+        $collectionResponse = $this->getClient()->collection($record->ShopifyID);
+
+        $data = self::getData($collectionResponse);
+        if (!$data) {
+            return;
+        }
+
+        if (!self::offsetExists($data, 'collection')) {
+            return $this->owner->httpError(500, "Could not create collection: $record->ShopifyID");
+        }
+
         $previousSilent = $importTask->config()->get('silent');
         $importTask->config()->set('silent', true);
-        $shopifyCollection = $this->getClient()->collection($record->ShopifyID)['body']->data->collection;
-
-        if ($collection = $importTask->importObject(ShopifyCollection::class, $shopifyCollection)) {
-            // Create the image
-            $importTask->importCollectionFiles($this->getClient(), $collection);
-
-            if ($collection->isChanged()) {
-                $collection->write();
-            }
-
-            // Set current publish status for collection
-            if ($collection->CollectionActive && !$collection->isLiveVersion()) {
-                $collection->publishRecursive();
-            } elseif (!$collection->CollectionActive && $collection->IsPublished()) {
-                $collection->doUnpublish();
-            }
-
+        if ($importTask->importCollection($this->getClient(), $data->collection)) {
             $importTask->config()->set('silent', $previousSilent);
             return $this->returnSuccess();
         }
@@ -127,27 +126,28 @@ class ShopifyFetchExtension extends LeftAndMainExtension
         $importTask->config()->set('silent', true);
         $shopifyProduct = $this->getClient()->product($record->ShopifyID)['body']->data->product;
 
-        if ($product = $importTask->importObject(ShopifyProduct::class, $shopifyProduct)) {
-            $importTask->importProductFiles($this->getClient(), $product);
-            $importTask->importVariants($this->getClient(), $product, $shopifyProduct);
-
-            // Write the product record if changed
-            if ($product->isChanged()) {
-                $product->write();
-            }
-
-            // Set current publish status for product
-            if ($product->ProductActive) {
-                $product->publishRecursive();
-            } elseif (!$product->ProductActive && $product->IsPublished()) {
-                $product->doUnpublish();
-            }
-            $importTask->config()->set('silent', $previousSilent);
-            return $this->returnSuccess();
-        } else {
+        $product = $importTask->importProduct($this->getClient(), $shopifyProduct);
+        if (!$product) {
             $importTask->config()->set('silent', $previousSilent);
             $this->owner->httpError(500, "Could not create product: $record->ShopifyID");
         }
+
+        $importTask->importProductFiles($this->getClient(), $product);
+        $importTask->importVariants($this->getClient(), $product, $shopifyProduct);
+
+        // Write the product record if changed
+        if ($product->isChanged()) {
+            $product->write();
+        }
+
+        // Set current publish status for product
+        if ($product->ProductActive) {
+            $product->publishRecursive();
+        } elseif (!$product->ProductActive && $product->IsPublished()) {
+            $product->doUnpublish();
+        }
+        $importTask->config()->set('silent', $previousSilent);
+        return $this->returnSuccess();
     }
 
     /**

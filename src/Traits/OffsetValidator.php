@@ -23,7 +23,7 @@ trait OffsetValidator
      */
     public function getData($response)
     {
-        if (!self::hasData($response)) {
+        if (!static::hasData($response)) {
             return false;
         }
         return $response['body']->data;
@@ -47,7 +47,9 @@ trait OffsetValidator
         }
 
         if (count($offsets)) {
-            return self::offsetExists($data->{$currentOffset}, $offsets);
+            return static::offsetExists($data->{$currentOffset}, $offsets);
         }
+
+        return true;
     }
 }

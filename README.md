@@ -17,8 +17,12 @@ A Shopify Store module for Silverstripe.
 ## Requirements
 
 * silverstripe/recipe-cms ^4.5
+* dynamic/silverstripe-site-tools ^1.1
 * guzzlehttp/guzzle ^7.2
 * littlegiant/silverstripe-catalogmanager ^5.2
+* symbiote/silverstripe-gridfieldextensions ^3.0
+* osiset/basic-shopify-api ^10.0
+* bramdeleeuw/silverstripe-schema ^2.0
 
 ## Installation
 
@@ -32,19 +36,53 @@ See [License](license.md)
 
 ## Example configuration
 
+### Basic configuration
+
 ```yaml
 
 Dynamic\Shopify\Client\ShopifyClient:
   api_key: 'YOUR_API_KEY'
   api_password: 'YOUR_API_PASSWORD'
+  shared_secret: 'YOUR_API_SHARED_SECRET'
   storefront_access_token: 'YOUR_ACCESS_TOKEN' # for buy button
   shopify_domain: 'YOUR_SHOPIFY_DOMAIN' # mydomain.myshopify.com
-  custom_domain: 'YOUR_CUSTOM_DOMAIN' # checkout.example.com
-  shared_secret: 'YOUR_API_SHARED_SECRET'
+  custom_domain: 'YOUR_CUSTOM_DOMAIN' # optional - checkout.example.com
 
 ```
 
-## Product impression tracking
+### Using Multipass
+
+```yaml
+
+Dynamic\Shopify\Client\ShopifyMultipass:
+  multipass_secret: 'YOUR_MULTIPASS_SECRET'
+```  
+
+## Usage
+
+### Create a private app
+
+In your Shopify Admin, click `Apps` from the left column navigation. Once the page loads, scroll to the bottom and click on the link in the following line:
+
+`Working with a developer on your shop? Manage private apps`
+
+If no private apps exist, click `Create new private app`. Otherwise, click on the link to the existing private app you'd like to use for your Silverstripe website.
+
+### Obtaining API Keys
+
+
+
+### Importing products
+
+Once the basic configuration above is setup, you can import Shopify products and collections using the ShopifyImportTask:
+
+```yaml
+vendor/bin/sake dev/tasks/ShopifyImportTask
+```
+
+or by running the task in the browser at `/dev/tasks/ShopifyImportTask`
+
+### Product impression tracking
 Product impressions can be tracked by adding data attributes to html tags rendered with products.
 `data-sku` is the only required data attribute, but `data-title`, `data-category`, and `data-vendor` can also be added.
 

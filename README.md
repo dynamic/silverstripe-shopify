@@ -17,7 +17,6 @@ A Shopify Store module for Silverstripe.
 ## Requirements
 
 * silverstripe/recipe-cms ^4.5
-* dynamic/silverstripe-site-tools ^1.1
 * guzzlehttp/guzzle ^7.2
 * littlegiant/silverstripe-catalogmanager ^5.2
 * symbiote/silverstripe-gridfieldextensions ^3.0

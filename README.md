@@ -82,6 +82,29 @@ vendor/bin/sake dev/tasks/ShopifyImportTask
 
 or by running the task in the browser at `/dev/tasks/ShopifyImportTask`
 
+## Theme
+
+### Cart Include
+
+In your top-level Page.ss template, include the following just before the `</body>` tag:
+
+```
+<% include Cart %>
+```
+
+### Display Buy Button
+
+Out of the box, there are 3 includes to display different variations of the Shopify Buy Button:
+
+* BuyButton - just a simple add to cart button with no other product info
+* BuyForm - a typical add to cart form, ideal for a ShopifyProduct page
+* BuyOverlay - an add to cart button that opens an overlay containing product info from Shopify
+
+To display the Buy Button, just include one of the files above in your template.
+
+
+## Advanced
+
 ### Product impression tracking
 Product impressions can be tracked by adding data attributes to html tags rendered with products.
 `data-sku` is the only required data attribute, but `data-title`, `data-category`, and `data-vendor` can also be added.

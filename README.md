@@ -33,6 +33,10 @@ composer require dynamic/silverstripe-shopify
 
 See [License](license.md)
 
+## Overview
+
+Silverstripe Shopify allows you to create a headless Shopify store using Silverstripe CMS. Products and collections are imported from Shopify, and created as pages in the CMS. The Shopify Buy Button is used to purchase products via the Shopify cart and checkout.
+
 ## Example configuration
 
 ### Basic configuration
@@ -67,19 +71,59 @@ In your Shopify Admin, click `Apps` from the left column navigation. Once the pa
 
 If no private apps exist, click `Create new private app`. Otherwise, click on the link to the existing private app you'd like to use for your Silverstripe website.
 
-### Obtaining API Keys
+### Obtaining API Keys and Setting Permissions
 
+#### Admin API
 
+In the Admin API section, set the following permissions to `Read Access`
+
+* Customers
+* Orders
+* Product Listings
+* Products
+
+Copy the following keys to the correspoding variables in your config:
+
+* API key > `api_key`
+* Password > `api_password`
+* Shared Secret > `shared_secret`
+
+#### Storefront API
+
+In the Storefront API section, check `Allow this app to access your storefront data using the Storefront API`
+
+Check the following permission boxes:
+
+* `Read products, variants and collections`
+* `Read product tags`
+* `Read inventory of products and their variants`
+* `Read and modify customer details`
+* `Read customer tags`
+* `Read and modify checkouts`
+
+Copy the following key to the corresponding variable in your config:
+
+* Storefront access token > `storefront_access_token`
 
 ### Importing products
 
-Once the basic configuration above is setup, you can import Shopify products and collections using the ShopifyImportTask:
+Once the basic configuration above is setup, you can import Shopify products and collections via CLI using the ShopifyImportTask:
 
 ```yaml
 vendor/bin/sake dev/tasks/ShopifyImportTask
 ```
 
 or by running the task in the browser at `/dev/tasks/ShopifyImportTask`
+
+### CMS
+
+Products and collections are created as pages in the CMS. Products that belong to collections are automatically set as a child page of that collection in the site tree. If a product belongs to multiple collections, the ShopifyProduct page is created under the first listed collection, and subsequent collections will list a VirtualPage of the product.
+
+Shopify related pages are set as draft or published based on the status set in Shopify. For products, if the product is set to Active in Shopify, it will be published in Silverstripe.
+
+The module also uses CatalogPageAdmin to manage Shopify records via a ModelAdmin.
+
+The ShopifyProduct page also implements product schema from schema.org. This provides more information to be displayed in search results for google and other search engines. 
 
 ## Theme
 

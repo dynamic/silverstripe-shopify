@@ -61,7 +61,7 @@ class ElementProducts extends BaseElement
      * @var array
      */
     private static $defaults = array(
-        'Limit' => 3,
+        'Limit' => 4,
     );
 
     /**

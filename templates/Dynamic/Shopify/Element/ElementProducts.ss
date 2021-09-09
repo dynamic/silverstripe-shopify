@@ -8,7 +8,9 @@
     <div class="row">
         <% if $ProductsList %>
             <% loop $ProductsList %>
+            <div class="col-md-3 product inner">
                 <% include ShopifyProductSummary %>
+            </div>
             <% end_loop %>
         <% end_if %>
     </div>

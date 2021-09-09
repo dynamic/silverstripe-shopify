@@ -4,7 +4,6 @@ namespace Dynamic\Shopify\Element;
 
 use DNADesign\Elemental\Models\BaseElement;
 use Dynamic\Shopify\Page\ShopifyProduct;
-use Dynamic\SiteTools\Traits\YieldTrait;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
@@ -26,8 +25,6 @@ if (!class_exists(BaseElement::class)) {
  */
 class ElementProducts extends BaseElement
 {
-    use YieldTrait;
-
     /**
      * @var string
      */
@@ -124,11 +121,11 @@ class ElementProducts extends BaseElement
                 ->sort($random)
                 ->limit($limit - $count);
 
-            foreach ($this->yieldSingle($products) as $product) {
+            foreach ($products as $product) {
                 $combined->push($product);
             }
 
-            foreach ($this->yieldSingle($backFill) as $product) {
+            foreach ($backFill as $product) {
                 $combined->push($product);
             }
 

@@ -20,7 +20,7 @@ class ShopifyProductController extends \PageController
     {
         $price = number_format($this->getPrice()->getValue(), 2);
         $name = str_replace('\'', '\\\'', $this->Title);
-        $vendor = str_replace('\'', '\\\'',$this->Vendor);
+        $vendor = str_replace('\'', '\\\'', $this->Vendor);
         $category = str_replace('\'', '\\\'', $this->Parent()->Title);
         Requirements::customScript("
             (function () {

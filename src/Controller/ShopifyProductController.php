@@ -19,6 +19,9 @@ class ShopifyProductController extends \PageController
     public function init()
     {
         $price = number_format($this->getPrice()->getValue(), 2);
+        $name = str_replace('\'', '\\\'', $this->Title);
+        $vendor = str_replace('\'', '\\\'', $this->Vendor);
+        $category = str_replace('\'', '\\\'', $this->Parent()->Title);
         Requirements::customScript("
             (function () {
                 window.dataLayer = window.dataLayer || [];
@@ -28,11 +31,11 @@ class ShopifyProductController extends \PageController
                     'detail': {
                       'actionField': {'list': 'Product Detail Page View'},
                       'products': [{
-                        'name': '{$this->Title}',
+                        'name': '{$name}',
                         'id': '{$this->getSKU()}',
                         'price': '{$price}',
-                        'brand': '{$this->Vendor}',
-                        'category': '{$this->ProductType}'
+                        'brand': '{$vendor}',
+                        'category': '{$category}'
                        }]
                      }
                    }

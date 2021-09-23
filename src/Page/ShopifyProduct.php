@@ -383,7 +383,7 @@ class ShopifyProduct extends \Page
     }
 
     /**
-     * @return DBCurrency|null
+     * @return DBCurrency
      */
     public function getPrice()
     {
@@ -391,11 +391,11 @@ class ShopifyProduct extends \Page
             return $product->dbObject('Price');
         }
 
-        return null;
+        return DBField::create_field('Currency', 0);
     }
 
     /**
-     * @return DBCurrency|null
+     * @return DBCurrency
      */
     public function getCompareAtPrice()
     {
@@ -403,7 +403,7 @@ class ShopifyProduct extends \Page
             return $product->dbObject('CompareAtPrice');
         }
 
-        return null;
+        return DBField::create_field('Currency', 0);
     }
 
     /**

@@ -433,7 +433,6 @@ class ShopifyImportTask extends BuildTask
             foreach ($files as $file) {
                 $fileTitle = $file->Title;
                 $fileShopifyID = $file->ShopifyID;
-                $file->doUnpublish();
                 $file->delete();
                 self::log(
                     "[{$fileShopifyID}] Deleted file {$fileTitle}",

@@ -19,7 +19,6 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\Security\Security;
-use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
 
 /**
@@ -42,8 +41,6 @@ use SilverStripe\View\HTML;
  *
  * @method HasManyList|ShopifyVariant[] Variants
  * @method HasManyList|ShopifyFileSource[] Sources
- *
- * @mixin Versioned
  */
 class ShopifyFile extends DataObject
 {
@@ -58,14 +55,6 @@ class ShopifyFile extends DataObject
      * @config
      */
     private static $table_name = 'ShopifyFile';
-
-    /**
-     * @var string[]
-     * @config
-     */
-    private static $extensions = [
-        Versioned::class,
-    ];
 
     /**
      * @var string[]

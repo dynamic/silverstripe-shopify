@@ -76,13 +76,6 @@ class ShopifyCollection extends \Page
     ];
 
     /**
-     * @var string[]
-     */
-    private static $owns = [
-        'File'
-    ];
-
-    /**
      * @var bool[]
      */
     private static $indexes = [

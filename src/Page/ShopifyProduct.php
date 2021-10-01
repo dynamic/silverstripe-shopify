@@ -73,13 +73,6 @@ class ShopifyProduct extends \Page
     /**
      * @var string[]
      */
-    private static $owns = [
-        'Files',
-    ];
-
-    /**
-     * @var string[]
-     */
     private static $cascade_deletes = [
         'Variants',
         'Files',

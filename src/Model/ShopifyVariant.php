@@ -55,10 +55,6 @@ class ShopifyVariant extends DataObject
         'File' => ShopifyFile::class
     ];
 
-    private static $owns = [
-        'File',
-    ];
-
     /**
      * @var string[]
      */

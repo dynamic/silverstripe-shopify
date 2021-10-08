@@ -17,7 +17,7 @@ A Shopify Store module for Silverstripe.
 ## Requirements
 
 * silverstripe/recipe-cms ^4.5
-* guzzlehttp/guzzle ^7.2
+* guzzlehttp/guzzle ^6.3
 * littlegiant/silverstripe-catalogmanager ^5.2
 * symbiote/silverstripe-gridfieldextensions ^3.0
 * osiset/basic-shopify-api ^10.0
@@ -37,33 +37,11 @@ See [License](license.md)
 
 Silverstripe Shopify allows you to create a headless Shopify store using Silverstripe CMS. Products and collections are imported from Shopify, and created as pages in the CMS. The Shopify Buy Button is used to purchase products via the Shopify cart and checkout.
 
-## Example configuration
-
-### Basic configuration
-
-```yaml
-
-Dynamic\Shopify\Client\ShopifyClient:
-  api_key: 'YOUR_API_KEY'
-  api_password: 'YOUR_API_PASSWORD'
-  shared_secret: 'YOUR_API_SHARED_SECRET'
-  storefront_access_token: 'YOUR_ACCESS_TOKEN' # for buy button
-  shopify_domain: 'YOUR_SHOPIFY_DOMAIN' # mydomain.myshopify.com
-  custom_domain: 'YOUR_CUSTOM_DOMAIN' # optional - checkout.example.com
-
-```
-
-### Using Multipass
-
-```yaml
-
-Dynamic\Shopify\Client\ShopifyMultipass:
-  multipass_secret: 'YOUR_MULTIPASS_SECRET'
-```  
-
-## Usage
+## Setup
 
 ### Create a private app
+
+First, ensure that [private apps are enabled](https://help.shopify.com/en/manual/apps/private-apps) in your Shopify Store (this is false by default).
 
 In your Shopify Admin, click `Apps` from the left column navigation. Once the page loads, scroll to the bottom and click on the link in the following line:
 
@@ -82,6 +60,8 @@ In the Admin API section, set the following permissions to `Read Access`
 * Product Listings
 * Products
 
+All other permissions are optional and are not required for Silverstripe Shopify.
+
 Copy the following keys to the correspoding variables in your config:
 
 * API key > `api_key`
@@ -90,9 +70,11 @@ Copy the following keys to the correspoding variables in your config:
 
 #### Storefront API
 
-In the Storefront API section, check `Allow this app to access your storefront data using the Storefront API`
+In the Storefront API section, check 
 
-Check the following permission boxes:
+* `Allow this app to access your storefront data using the Storefront API`
+
+Check the following permission boxes to enable the access required by Silverstripe Shopify:
 
 * `Read products, variants and collections`
 * `Read product tags`
@@ -101,9 +83,32 @@ Check the following permission boxes:
 * `Read customer tags`
 * `Read and modify checkouts`
 
+All other permissions are optional and are not required for Silverstripe Shopify.
+
 Copy the following key to the corresponding variable in your config:
 
 * Storefront access token > `storefront_access_token`
+
+### Basic configuration
+
+```yaml
+Dynamic\Shopify\Client\ShopifyClient:
+  api_key: 'YOUR_API_KEY'
+  api_password: 'YOUR_API_PASSWORD'
+  shared_secret: 'YOUR_API_SHARED_SECRET'
+  storefront_access_token: 'YOUR_ACCESS_TOKEN' # for buy button
+  shopify_domain: 'YOUR_SHOPIFY_DOMAIN' # mydomain.myshopify.com
+  custom_domain: 'YOUR_CUSTOM_DOMAIN' # optional - checkout.example.com
+
+```
+
+### Using Multipass
+
+```yaml
+Dynamic\Shopify\Client\ShopifyMultipass:
+  multipass_secret: 'YOUR_MULTIPASS_SECRET'
+```  
+
 
 ### Importing products
 
@@ -115,13 +120,17 @@ vendor/bin/sake dev/tasks/ShopifyImportTask
 
 or by running the task in the browser at `/dev/tasks/ShopifyImportTask`
 
+## Usage
+
 ### CMS
 
 Products and collections are created as pages in the CMS. Products that belong to collections are automatically set as a child page of that collection in the site tree. If a product belongs to multiple collections, the ShopifyProduct page is created under the first listed collection, and subsequent collections will list a VirtualPage of the product.
 
-Shopify related pages are set as draft or published based on the status set in Shopify. For products, if the product is set to Active in Shopify, it will be published in Silverstripe.
+All products and collections that are available in the private app sales channel will be imported. 
 
-The module also uses CatalogPageAdmin to manage Shopify records via a ModelAdmin.
+Shopify related pages are set as draft or published based on the status set in Shopify. For products, if the product is set to Active in Shopify, it will be published in Silverstripe. 
+
+The module creates a CatalogPageAdmin to manage Shopify records via a ModelAdmin, rather than only in the site tree.
 
 The ShopifyProduct page also implements product schema from schema.org. This provides more information to be displayed in search results for google and other search engines. 
 

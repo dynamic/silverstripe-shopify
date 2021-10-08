@@ -3,7 +3,7 @@
 A Shopify Store module for Silverstripe.
 
 ![CI](https://github.com/dynamic/silverstripe-shopify/workflows/CI/badge.svg)
-[![Build Status](https://travis-ci.com/dynamic/silverstripe-shopify.svg?token=hFT1sXd4nNmguE972zHN&branch=master)](https://travis-ci.com/dynamic/silverstripe-shopify)
+[![Build Status](https://app.travis-ci.com/dynamic/silverstripe-shopify.svg?branch=master)](https://app.travis-ci.com/dynamic/silverstripe-shopify)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/dynamic/silverstripe-shopify/badges/quality-score.png?b=master&s=6602bc588bf7da4a15e9ae4e061c92781c87caf5)](https://scrutinizer-ci.com/g/dynamic/silverstripe-shopify/?branch=master)
 [![Build Status](https://scrutinizer-ci.com/g/dynamic/silverstripe-shopify/badges/build.png?b=master&s=d0c33738b6be129105fa8f507591359fcf4f40ae)](https://scrutinizer-ci.com/g/dynamic/silverstripe-shopify/build-status/master)
 [![codecov](https://codecov.io/gh/dynamic/silverstripe-shopify/branch/master/graph/badge.svg?token=8qD1GBbxzV)](https://codecov.io/gh/dynamic/silverstripe-shopify)
@@ -70,7 +70,7 @@ Copy the following keys to the correspoding variables in your config:
 
 #### Storefront API
 
-In the Storefront API section, check 
+In the Storefront API section, check
 
 * `Allow this app to access your storefront data using the Storefront API`
 
@@ -107,7 +107,7 @@ Dynamic\Shopify\Client\ShopifyClient:
 ```yaml
 Dynamic\Shopify\Client\ShopifyMultipass:
   multipass_secret: 'YOUR_MULTIPASS_SECRET'
-```  
+```
 
 
 ### Importing products
@@ -126,13 +126,13 @@ or by running the task in the browser at `/dev/tasks/ShopifyImportTask`
 
 Products and collections are created as pages in the CMS. Products that belong to collections are automatically set as a child page of that collection in the site tree. If a product belongs to multiple collections, the ShopifyProduct page is created under the first listed collection, and subsequent collections will list a VirtualPage of the product.
 
-All products and collections that are available in the private app sales channel will be imported. 
+All products and collections that are available in the private app sales channel will be imported.
 
-Shopify related pages are set as draft or published based on the status set in Shopify. For products, if the product is set to Active in Shopify, it will be published in Silverstripe. 
+Shopify related pages are set as draft or published based on the status set in Shopify. For products, if the product is set to Active in Shopify, it will be published in Silverstripe.
 
 The module creates a CatalogPageAdmin to manage Shopify records via a ModelAdmin, rather than only in the site tree.
 
-The ShopifyProduct page also implements product schema from schema.org. This provides more information to be displayed in search results for google and other search engines. 
+The ShopifyProduct page also implements product schema from schema.org. This provides more information to be displayed in search results for google and other search engines.
 
 ## Theme
 

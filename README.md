@@ -17,8 +17,11 @@ A Shopify Store module for Silverstripe.
 ## Requirements
 
 * silverstripe/recipe-cms ^4.5
-* guzzlehttp/guzzle ^7.2
+* guzzlehttp/guzzle ^6.3
 * littlegiant/silverstripe-catalogmanager ^5.2
+* symbiote/silverstripe-gridfieldextensions ^3.0
+* osiset/basic-shopify-api ^10.0
+* bramdeleeuw/silverstripe-schema ^2.0
 
 ## Installation
 
@@ -30,21 +33,131 @@ composer require dynamic/silverstripe-shopify
 
 See [License](license.md)
 
-## Example configuration
+## Overview
+
+Silverstripe Shopify allows you to create a headless Shopify store using Silverstripe CMS. Products and collections are imported from Shopify, and created as pages in the CMS. The Shopify Buy Button is used to purchase products via the Shopify cart and checkout.
+
+## Setup
+
+### Create a private app
+
+First, ensure that [private apps are enabled](https://help.shopify.com/en/manual/apps/private-apps) in your Shopify Store (this is false by default).
+
+In your Shopify Admin, click `Apps` from the left column navigation. Once the page loads, scroll to the bottom and click on the link in the following line:
+
+`Working with a developer on your shop? Manage private apps`
+
+If no private apps exist, click `Create new private app`. Otherwise, click on the link to the existing private app you'd like to use for your Silverstripe website.
+
+### Obtaining API Keys and Setting Permissions
+
+#### Admin API
+
+In the Admin API section, set the following permissions to `Read Access`
+
+* Customers
+* Orders
+* Product Listings
+* Products
+
+All other permissions are optional and are not required for Silverstripe Shopify.
+
+Copy the following keys to the correspoding variables in your config:
+
+* API key > `api_key`
+* Password > `api_password`
+* Shared Secret > `shared_secret`
+
+#### Storefront API
+
+In the Storefront API section, check 
+
+* `Allow this app to access your storefront data using the Storefront API`
+
+Check the following permission boxes to enable the access required by Silverstripe Shopify:
+
+* `Read products, variants and collections`
+* `Read product tags`
+* `Read inventory of products and their variants`
+* `Read and modify customer details`
+* `Read customer tags`
+* `Read and modify checkouts`
+
+All other permissions are optional and are not required for Silverstripe Shopify.
+
+Copy the following key to the corresponding variable in your config:
+
+* Storefront access token > `storefront_access_token`
+
+### Basic configuration
 
 ```yaml
-
 Dynamic\Shopify\Client\ShopifyClient:
   api_key: 'YOUR_API_KEY'
   api_password: 'YOUR_API_PASSWORD'
+  shared_secret: 'YOUR_API_SHARED_SECRET'
   storefront_access_token: 'YOUR_ACCESS_TOKEN' # for buy button
   shopify_domain: 'YOUR_SHOPIFY_DOMAIN' # mydomain.myshopify.com
-  custom_domain: 'YOUR_CUSTOM_DOMAIN' # checkout.example.com
-  shared_secret: 'YOUR_API_SHARED_SECRET'
+  custom_domain: 'YOUR_CUSTOM_DOMAIN' # optional - checkout.example.com
 
 ```
 
-## Product impression tracking
+### Using Multipass
+
+```yaml
+Dynamic\Shopify\Client\ShopifyMultipass:
+  multipass_secret: 'YOUR_MULTIPASS_SECRET'
+```  
+
+
+### Importing products
+
+Once the basic configuration above is setup, you can import Shopify products and collections via CLI using the ShopifyImportTask:
+
+```yaml
+vendor/bin/sake dev/tasks/ShopifyImportTask
+```
+
+or by running the task in the browser at `/dev/tasks/ShopifyImportTask`
+
+## Usage
+
+### CMS
+
+Products and collections are created as pages in the CMS. Products that belong to collections are automatically set as a child page of that collection in the site tree. If a product belongs to multiple collections, the ShopifyProduct page is created under the first listed collection, and subsequent collections will list a VirtualPage of the product.
+
+All products and collections that are available in the private app sales channel will be imported. 
+
+Shopify related pages are set as draft or published based on the status set in Shopify. For products, if the product is set to Active in Shopify, it will be published in Silverstripe. 
+
+The module creates a CatalogPageAdmin to manage Shopify records via a ModelAdmin, rather than only in the site tree.
+
+The ShopifyProduct page also implements product schema from schema.org. This provides more information to be displayed in search results for google and other search engines. 
+
+## Theme
+
+### Cart Include
+
+In your top-level Page.ss template, include the following just before the `</body>` tag:
+
+```
+<% include Cart %>
+```
+
+### Display Buy Button
+
+Out of the box, there are 3 includes to display different variations of the Shopify Buy Button:
+
+* BuyButton - just a simple add to cart button with no other product info
+* BuyForm - a typical add to cart form, ideal for a ShopifyProduct page
+* BuyOverlay - an add to cart button that opens an overlay containing product info from Shopify
+
+To display the Buy Button, just include one of the files above in your template.
+
+
+## Advanced
+
+### Product impression tracking
 Product impressions can be tracked by adding data attributes to html tags rendered with products.
 `data-sku` is the only required data attribute, but `data-title`, `data-category`, and `data-vendor` can also be added.
 

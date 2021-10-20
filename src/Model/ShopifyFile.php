@@ -248,9 +248,6 @@ class ShopifyFile extends DataObject
 
         if ($file->isChanged()) {
             $file->write();
-            if ($file->isPublished()) {
-                $file->publishSingle();
-            }
         }
         return $file;
     }

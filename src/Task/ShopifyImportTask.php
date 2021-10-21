@@ -17,6 +17,9 @@ use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\ValidationException;
+use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 
 /**
  * Class ShopifyImportTask
@@ -50,6 +53,11 @@ class ShopifyImportTask extends BuildTask
     protected $enabled = true;
 
     /**
+     * @var null
+     */
+    private $previous_user = null;
+
+    /**
      * @param \SilverStripe\Control\HTTPRequest $request
      * @throws \SilverStripe\ORM\ValidationException
      */
@@ -67,6 +75,8 @@ class ShopifyImportTask extends BuildTask
             exit($e->getMessage());
         }
 
+        $this->changeToTaskUser();
+
         self::log("IMPORT COLLECTIONS", self::NOTICE);
         $this->importCollections($client);
 
@@ -76,10 +86,47 @@ class ShopifyImportTask extends BuildTask
         self::log("ARRANGE SITEMAP", self::NOTICE);
         $this->arrangeSiteMap($client);
 
+        $this->changeToPreviousUser();
+
         if (!Director::is_cli()) {
             echo "</pre>";
         }
         exit('Done');
+    }
+
+    /**
+     * @return DataObject|Member|null
+     * @throws ValidationException
+     */
+    protected function findOrCreateShopifyTaskUser()
+    {
+        if (!$member = Member::get()->filter('Email', 'shopifytask')->first()) {
+            $member = Member::create();
+            $member->FirstName = 'Shopify';
+            $member->Surname = 'Task';
+            $member->Email = 'shopifytask';
+            $member->write();
+        }
+
+        return $member;
+    }
+
+    /**
+     *
+     */
+    protected function changeToTaskUser()
+    {
+        $this->previous_user = Security::getCurrentUser();
+        Security::setCurrentUser($this->findOrCreateShopifyTaskUser());
+    }
+
+    /**
+     *
+     */
+    protected function changeToPreviousUser()
+    {
+        Security::setCurrentUser($this->previous_user);
+        $this->previous_user = null;
     }
 
     /**

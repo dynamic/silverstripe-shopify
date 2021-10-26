@@ -1,10 +1,10 @@
+<% if $Image %>
 <div class="image">
-    <% if $Image %>
-        <a href="$Link"><img src="$Image.PreviewSrc" alt="$Image.Title.XML" class="img-fluid"></a>
-    <% end_if %>
+    <a href="$Link" title="Go to the $MenuTitle.XML page"><img src="$Image.PreviewSrc" alt="$Image.Title.XML" class="img-fluid"></a>
 </div>
+<% end_if %>
 
-<h3>$Title</h3>
+<h2>$Title</h2>
 
 <div class="button-holder">
     <% include BuyOverlay %>

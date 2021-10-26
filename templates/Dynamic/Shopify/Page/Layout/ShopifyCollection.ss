@@ -4,7 +4,7 @@
     <div class="row">
         <% if $ProductList %>
             <% loop $ProductList %>
-            <div class="col-md-3 product inner">
+            <div class="col-md-3">
                 <% if $ClassName.ShortName == VirtualPage %>
                     <% with $ContentSource %>
                         <% include ShopifyProductSummary Link=$Up.Link %>
@@ -15,8 +15,9 @@
             </div>
             <% end_loop %>
         <% else %>
-            <p>Sorry, there are currently no products. Check back soon!</p>
+            <div class="col-md-12">
+                <p>Sorry, there are currently no products. Check back soon!</p>
+            </div>
         <% end_if %>
     </div>
-
 </div>

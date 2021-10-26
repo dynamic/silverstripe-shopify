@@ -1,8 +1,8 @@
 <% if $Files %>
-    <div id="product-images-{$ShopifyID}" class="carousel" data-ride="carousel">
+    <div id="product-{$ID}-images" class="carousel" data-ride="carousel">
         <ul class="carousel-indicators">
             <% loop $Files.Sort('SortOrder') %>
-            <li data-target="#product-images-{$ShopifyID}" data-slide-to="$Pos(0)"<% if $First %> class="active"<% end_if %>></li>
+            <li data-target="#product-{$Up.Up.ID}-images" data-slide-to="$Pos(0)"<% if $First %> class="active"<% end_if %>></li>
             <% end_loop %>
         </ul>
         <div class="carousel-inner">
@@ -12,11 +12,13 @@
                 </div>
             <% end_loop %>
         </div>
-        <a class="carousel-control-prev" href="#product-images-{$ShopifyID}" data-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
+        <a class="carousel-control-prev" href="#product-{$ID}-images" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
         </a>
-        <a class="carousel-control-next" href="#product-images-{$ShopifyID}" data-slide="next">
-            <span class="carousel-control-next-icon"></span>
+        <a class="carousel-control-next" href="#product-{$ID}-images" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
         </a>
     </div>
 <% end_if %>

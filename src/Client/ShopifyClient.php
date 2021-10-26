@@ -36,7 +36,7 @@ class ShopifyClient
      *
      * @config string
      */
-    private static $api_version = '2020-04';
+    private static $api_version = '2021-01';
 
     /**
      * @config null|string
@@ -119,7 +119,7 @@ class ShopifyClient
         }
 
         $options = new Options();
-        $options->setVersion('2021-01');//static::config()->get('api_version')
+        $options->setVersion(static::config()->get('api_version'));
         $options->setApiPassword($password);
         $options->setType(true);
 

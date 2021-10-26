@@ -13,7 +13,10 @@ trait OffsetValidator
      */
     public static function hasData($response)
     {
-        return $response && array_key_exists('body', $response) && $response['body']->offsetExists('data');
+        return $response &&
+            array_key_exists('body', $response) &&
+            $response['body'] &&
+            $response['body']->offsetExists('data');
     }
 
     /**

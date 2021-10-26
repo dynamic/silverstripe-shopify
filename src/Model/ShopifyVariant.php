@@ -142,10 +142,6 @@ class ShopifyVariant extends DataObject
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $variant, $shopifyVariant);
 
-        if ($variant->isChanged()) {
-            $variant->write();
-        }
-
         return $variant;
     }
 

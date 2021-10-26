@@ -176,16 +176,33 @@ class ShopifyFile extends DataObject
      * Creates a new Shopify Image from the given data
      *
      * @param $shopifyFile
+     * @param ShopifyProduct|ShopifyVariant|null $product
+     * @param int $sort
      * @return ShopifyFile
      * @throws \SilverStripe\ORM\ValidationException
      */
-    public static function findOrMakeFromShopifyData($shopifyFile)
+    public static function findOrMakeFromShopifyData($shopifyFile, $parent = null, $sort = 0)
     {
         if (!$file = self::getByShopifyID($shopifyFile->id)) {
             $file = self::create();
         }
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $file, $shopifyFile);
+
+        if ($parent) {
+            if ($parent instanceof ShopifyProduct) {
+                $file->ProductID = $parent->ID;
+            } elseif ($parent instanceof ShopifyVariant) {
+                $file->VariantID = $parent->ID;
+            } elseif($parent instanceof ShopifyCollection) {
+                $file->CollectionID = $parent->ID;
+            }
+        }
+
+        if ($sort) {
+            $file->SortOrder = $sort;
+        }
+
         if (!$file->isInDB()) {
             $file->write();
         }
@@ -248,9 +265,6 @@ class ShopifyFile extends DataObject
 
         if ($file->isChanged()) {
             $file->write();
-            if ($file->isPublished()) {
-                $file->publishSingle();
-            }
         }
         return $file;
     }

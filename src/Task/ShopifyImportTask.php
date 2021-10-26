@@ -77,7 +77,7 @@ class ShopifyImportTask extends BuildTask
         }
 
         self::log("IMPORT COLLECTIONS", self::NOTICE);
-        $this->importCollections($client);
+        //$this->importCollections($client);
 
         self::log("IMPORT PRODUCTS", self::NOTICE);
         $this->importProducts($client);
@@ -173,7 +173,7 @@ class ShopifyImportTask extends BuildTask
 
         // Set current publish status for collection
         if ($collection->CollectionActive && !$collection->isLiveVersion()) {
-            $collection->publishRecursive();
+            $collection->publishSingle();
             self::log(
                 "[{$collection->ShopifyID}] Published collection {$collection->Title}",
                 self::SUCCESS
@@ -210,11 +210,7 @@ class ShopifyImportTask extends BuildTask
             return;
         }
 
-        /** @var ShopifyFile $file */
-        if ($file = $this->importObject(ShopifyFile::class, $data->collection->image)) {
-            $file->CollectionID = $collection->ID;
-            $file->write();
-        } else {
+        if (!$this->importObject(ShopifyFile::class, $data->collection->image, [$collection])) {
             self::log(
                 "[{$shopifyFile->node->id}] Could not create file",
                 self::ERROR
@@ -262,6 +258,7 @@ class ShopifyImportTask extends BuildTask
             );
             $this->importProducts($client, $lastId, $keepProducts);
         } else {
+            self::log('cleaning up products');
             // Cleanup old products
             foreach (ShopifyProduct::get()->exclude(['ID' => $keepProducts]) as $product) {
                 $productShopifyId = $product->ShopifyID;
@@ -305,7 +302,7 @@ class ShopifyImportTask extends BuildTask
 
         // Set current publish status for product
         if ($product->ProductActive && !$product->isLiveVersion()) {
-            $product->publishRecursive();
+            $product->publishSingle();
             self::log(
                 "[{$product->ShopifyID}] Published product {$product->Title}",
                 self::SUCCESS
@@ -403,11 +400,7 @@ class ShopifyImportTask extends BuildTask
             return;
         }
 
-        /** @var ShopifyFile $file */
-        if ($file = $this->importObject(ShopifyFile::class, $shopifyFile->node)) {
-            $file->VariantID = $product->ID;
-            $file->write();
-        } else {
+        if (!$this->importObject(ShopifyFile::class, $shopifyFile->node, [$product])) {
             self::log(
                 "[{$shopifyFile->node->id}] Could not create file",
                 self::ERROR
@@ -444,8 +437,7 @@ class ShopifyImportTask extends BuildTask
         foreach ($this->yieldSingle($data->product->media->edges) as $shopifyFile) {
             $shopifyFile->node->offsetSet('position', $position);
             /** @var ShopifyFile $file */
-            if ($file = $this->importObject(ShopifyFile::class, $shopifyFile->node)) {
-                $file->SortOrder = $position;
+            if ($file = $this->importObject(ShopifyFile::class, $shopifyFile->node, [$product, $position])) {
                 $keepFiles[] = $file->ID;
                 $product->Files()->add($file);
                 $lastId = $shopifyFile->cursor;
@@ -623,14 +615,15 @@ class ShopifyImportTask extends BuildTask
     /**
      * @param string $class
      * @param array|ResponseAccess $shopifyData
+     * @param array $extraData
      * @return null|DataObject
      */
-    public function importObject($class, $shopifyData)
+    public function importObject($class, $shopifyData, $extraData = [])
     {
         $object = null;
         $shopifyData->id = self::parseShopifyID($shopifyData->id);
         try {
-            $object = $class::findOrMakeFromShopifyData($shopifyData);
+            $object = $class::findOrMakeFromShopifyData($shopifyData, ...$extraData);
             self::log("[{$object->ShopifyID}] Created {$class} {$object->Title}", self::SUCCESS);
         } catch (\Exception $e) {
             self::log($e->getMessage(), self::ERROR);

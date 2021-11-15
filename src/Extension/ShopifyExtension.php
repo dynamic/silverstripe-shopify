@@ -17,12 +17,23 @@ use SilverStripe\View\Requirements;
  */
 class ShopifyExtension extends Extension
 {
+
+    /**
+     * @var int
+     */
+    private static $showNote = 1;
+
+    /**
+     * @var int
+     */
+    private static $noteLimit = 10;
+
     /**
      * @return DBField
      */
     public function getCartOptions()
     {
-        $configValue = Convert::array2json([
+        $config = [
             'cart' => [
                 'text' => [
                     'title' => _t('Shopify.CartTitle', 'Cart'),
@@ -34,11 +45,16 @@ class ShopifyExtension extends Extension
                 ],
                 'popup' => 0,
                 'contents' => [
-                    'note' => 1
+                    'note' => $this->owner->config()->get('showNote'),
                 ]
             ],
-        ]);
+        ];
 
+        if ($limit = $this->owner->config()->get('noteLimit')) {
+            $config['cart']['templates']['footer'] = 'ZZZ';
+        }
+
+        $configValue = Convert::array2json($config);
         return DBField::create_field(DBHTMLText::class, "$configValue");
     }
 

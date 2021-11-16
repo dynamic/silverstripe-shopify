@@ -26,7 +26,7 @@ class ShopifyExtension extends Extension
     /**
      * @var int
      */
-    private static $noteLimit = 10;
+    private static $noteLimit;
 
     /**
      * @return DBField

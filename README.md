@@ -144,6 +144,24 @@ In your top-level Page.ss template, include the following just before the `</bod
 <% include Cart %>
 ```
 
+#### Cart Configuration Options
+
+To disable cart notes:
+
+```yaml
+PageController:
+  showNote: false
+```
+
+Setting notes character limit (when notes is enabled):
+
+```yaml
+PageController:
+  noteLimit: 123
+```
+
+**Note:** For specific configuration by page type, you can set the `showNote` and `noteLimit` values per controller class.
+
 ### Display Buy Button
 
 Out of the box, there are 3 includes to display different variations of the Shopify Buy Button:

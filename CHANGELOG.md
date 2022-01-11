@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/dynamic/silverstripe-shopify/tree/1.1.0) (2022-01-10)
+
+[Full Changelog](https://github.com/dynamic/silverstripe-shopify/compare/1.0.0...1.1.0)
+
+**Merged pull requests:**
+
+- Added config for turning off cart note [\#129](https://github.com/dynamic/silverstripe-shopify/pull/129) ([mak001](https://github.com/mak001))
+
 ## [1.0.0](https://github.com/dynamic/silverstripe-shopify/tree/1.0.0) (2021-10-27)
 
 [Full Changelog](https://github.com/dynamic/silverstripe-shopify/compare/1.0.0-alpha1...1.0.0)
@@ -16,9 +24,6 @@
 
 **Closed issues:**
 
-- FEATURE API - update to more recent version [\#113](https://github.com/dynamic/silverstripe-shopify/issues/113)
-- BUG ShopifyImportTask - task seems to error if no Collections exist \(or are in the API sales channel\) [\#94](https://github.com/dynamic/silverstripe-shopify/issues/94)
-- FEATURE - Add user specifically for shopify changes [\#88](https://github.com/dynamic/silverstripe-shopify/issues/88)
 - BUG ShopifyImportTask - newly imported products are published, but $owns \(images\) are not [\#78](https://github.com/dynamic/silverstripe-shopify/issues/78)
 - BUG ShopifyImportTask - publish Virtual pages if product is set as active [\#68](https://github.com/dynamic/silverstripe-shopify/issues/68)
 - FEATURE - AJAX-ify order history [\#64](https://github.com/dynamic/silverstripe-shopify/issues/64)
@@ -30,6 +35,9 @@
 - FEATURE Order History [\#43](https://github.com/dynamic/silverstripe-shopify/issues/43)
 - FEATURE Shopify Data Sync [\#41](https://github.com/dynamic/silverstripe-shopify/issues/41)
 - FEATURE Shopify Admin API PHP Library to integrate [\#40](https://github.com/dynamic/silverstripe-shopify/issues/40)
+- FEATURE API - update to more recent version [\#113](https://github.com/dynamic/silverstripe-shopify/issues/113)
+- BUG ShopifyImportTask - task seems to error if no Collections exist \(or are in the API sales channel\) [\#94](https://github.com/dynamic/silverstripe-shopify/issues/94)
+- FEATURE - Add user specifically for shopify changes [\#88](https://github.com/dynamic/silverstripe-shopify/issues/88)
 
 **Merged pull requests:**
 

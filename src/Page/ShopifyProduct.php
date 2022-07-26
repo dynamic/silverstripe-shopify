@@ -316,6 +316,10 @@ class ShopifyProduct extends \Page
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
                     'outOfStock' => _t('Shopify.ProductOutOfStock', 'Out of stock'),
                     'unavailable' => _t('Shopify.ProductUnavailable', 'Unavailable'),
+                    'unitPriceAccessibilityLabel' => _t('Shopify.UnitPriceAccessibilityLabel', 'Unit price'),
+                    'unitPriceAccessibilitySeparator' => _t('Shopify.UnitPriceAccessibilitySeparator', 'per'),
+                    'regularPriceAccessibilityLabel' => _t('Shopify.RegularPriceAccessibilityLabel', 'Regular price'),
+                    'salePriceAccessibilityLabel' => _t('Shopify.SalePriceAccessibilityLabel', 'Sale price'),
                 ],
             ],
         ])));
@@ -334,6 +338,10 @@ class ShopifyProduct extends \Page
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
                     'outOfStock' => _t('Shopify.ProductOutOfStock', 'Out of stock'),
                     'unavailable' => _t('Shopify.ProductUnavailable', 'Unavailable'),
+                    'unitPriceAccessibilityLabel' => _t('Shopify.UnitPriceAccessibilityLabel', 'Unit price'),
+                    'unitPriceAccessibilitySeparator' => _t('Shopify.UnitPriceAccessibilitySeparator', 'per'),
+                    'regularPriceAccessibilityLabel' => _t('Shopify.RegularPriceAccessibilityLabel', 'Regular price'),
+                    'salePriceAccessibilityLabel' => _t('Shopify.SalePriceAccessibilityLabel', 'Sale price'),
                 ],
             ],
         ])));
@@ -350,6 +358,12 @@ class ShopifyProduct extends \Page
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
+                    'outOfStock' => _t('Shopify.ProductOutOfStock', 'Out of stock'),
+                    'unavailable' => _t('Shopify.ProductUnavailable', 'Unavailable'),
+                    'unitPriceAccessibilityLabel' => _t('Shopify.UnitPriceAccessibilityLabel', 'Unit price'),
+                    'unitPriceAccessibilitySeparator' => _t('Shopify.UnitPriceAccessibilitySeparator', 'per'),
+                    'regularPriceAccessibilityLabel' => _t('Shopify.RegularPriceAccessibilityLabel', 'Regular price'),
+                    'salePriceAccessibilityLabel' => _t('Shopify.SalePriceAccessibilityLabel', 'Sale price'),
                 ],
             ],
         ])));

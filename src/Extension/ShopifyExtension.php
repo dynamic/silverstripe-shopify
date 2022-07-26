@@ -42,6 +42,8 @@ class ShopifyExtension extends Extension
                     'total' => _t('Shopify.CartTotal', 'Subtotal'),
                     'currency' => ShopifyProduct::config()->get('currency'),
                     'notice' => _t('Shopify.CartNotice', 'Shipping and discount codes are added at checkout.'),
+                    'noteDescription' => _t('Shopify.NoteDescription', 'Special instructions for seller'),
+                    'closeAccessibilityLabe' => _t('Shopify.CloseAccessibilityLabe',  'Close cart'),
                 ],
                 'popup' => 0,
                 'contents' => [

@@ -17,11 +17,10 @@ A Shopify Store module for Silverstripe.
 ## Requirements
 
 * silverstripe/recipe-cms ^4.5
-* guzzlehttp/guzzle ^6.3
-* littlegiant/silverstripe-catalogmanager ^5.2
-* symbiote/silverstripe-gridfieldextensions ^3.0
-* osiset/basic-shopify-api ^10.0
 * bramdeleeuw/silverstripe-schema ^2.0
+* littlegiant/silverstripe-catalogmanager ^5.2
+* osiset/basic-shopify-api ^10.0
+* symbiote/silverstripe-gridfieldextensions ^3.0
 
 ## Installation
 

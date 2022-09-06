@@ -43,7 +43,7 @@ class ShopifyExtension extends Extension
                     'currency' => ShopifyProduct::config()->get('currency'),
                     'notice' => _t('Shopify.CartNotice', 'Shipping and discount codes are added at checkout.'),
                     'noteDescription' => _t('Shopify.NoteDescription', 'Special instructions for seller'),
-                    'closeAccessibilityLabe' => _t('Shopify.CloseAccessibilityLabe',  'Close cart'),
+                    'closeAccessibilityLabe' => _t('Shopify.CloseAccessibilityLabe', 'Close cart'),
                 ],
                 'popup' => 0,
                 'contents' => [

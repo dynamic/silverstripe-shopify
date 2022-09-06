@@ -28,6 +28,8 @@ A Shopify Store module for Silverstripe.
 composer require dynamic/silverstripe-shopify
 ```
 
+note - due to an issue with v10.0.6 of `osiset/basic-shopify-api`, we recommend requiring version 10.0.5 of `osiset/basic-shopify-api` if you're running PHP 7.
+
 ## License
 
 See [License](license.md)

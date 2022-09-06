@@ -310,7 +310,7 @@ class ShopifyProduct extends \Page
      */
     public function getButtonOptions()
     {
-        $configValue = $this->prepareConfigString(json_encode(array_merge_recursive(self::config()->get('button_options'), [
+        $buttonOptions = array_merge_recursive(self::config()->get('button_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
@@ -322,7 +322,9 @@ class ShopifyProduct extends \Page
                     'salePriceAccessibilityLabel' => _t('Shopify.SalePriceAccessibilityLabel', 'Sale price'),
                 ],
             ],
-        ])));
+        ]);
+        $this->extend('updateButtonOptions', $buttonOptions);
+        $configValue = $this->prepareConfigString(json_encode($buttonOptions));
 
         return DBField::create_field(DBHTMLText::class, "$configValue");
     }
@@ -332,7 +334,7 @@ class ShopifyProduct extends \Page
      */
     public function getFormOptions()
     {
-        $configValue = $this->prepareConfigString(json_encode(array_merge_recursive(self::config()->get('form_options'), [
+        $formOptions = array_merge_recursive(self::config()->get('form_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
@@ -344,7 +346,9 @@ class ShopifyProduct extends \Page
                     'salePriceAccessibilityLabel' => _t('Shopify.SalePriceAccessibilityLabel', 'Sale price'),
                 ],
             ],
-        ])));
+        ]);
+        $this->extend('updateFormOptions', $formOptions);
+        $configValue = $this->prepareConfigString(json_encode($formOptions));
 
         return DBField::create_field(DBHTMLText::class, "$configValue");
     }
@@ -354,7 +358,7 @@ class ShopifyProduct extends \Page
      */
     public function getOverlayOptions()
     {
-        $configValue = $this->prepareConfigString(json_encode(array_merge_recursive(self::config()->get('overlay_options'), [
+        $overlayOptions = array_merge_recursive(self::config()->get('overlay_options'), [
             'product' => [
                 'text' => [
                     'button' => _t('Shopify.ProductButton', 'Add to cart'),
@@ -366,7 +370,9 @@ class ShopifyProduct extends \Page
                     'salePriceAccessibilityLabel' => _t('Shopify.SalePriceAccessibilityLabel', 'Sale price'),
                 ],
             ],
-        ])));
+        ]);
+        $this->extend('updateOverlayOptions', $overlayOptions);
+        $configValue = $this->prepareConfigString(json_encode($overlayOptions));
 
         return DBField::create_field(DBHTMLText::class, "$configValue");
     }

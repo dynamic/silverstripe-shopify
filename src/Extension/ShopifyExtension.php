@@ -4,7 +4,6 @@ namespace Dynamic\Shopify\Extension;
 
 use Dynamic\Shopify\Client\ShopifyClient;
 use Dynamic\Shopify\Page\ShopifyProduct;
-use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extension;
 use SilverStripe\ORM\FieldType\DBCurrency;
 use SilverStripe\ORM\FieldType\DBField;
@@ -80,9 +79,9 @@ class ShopifyExtension extends Extension
             </div>
            {{/data.isEmpty}}';
         }
-
-        $configValue = Convert::array2json($config);
-        return DBField::create_field(DBHTMLText::class, "$configValue");
+        
+        $this->owner->extend('updateCartOptions', $config);
+        return DBField::create_field(DBHTMLText::class, json_encode($config));
     }
 
     /**

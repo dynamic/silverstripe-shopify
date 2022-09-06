@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/dynamic/silverstripe-shopify/tree/1.2.0) (2022-09-06)
+
+
+## What's Changed
+* Added more text options for buy button options by @mak001 in https://github.com/dynamic/silverstripe-shopify/pull/132
+* COMPOSER remove/update guzzle requirements by @jsirish in https://github.com/dynamic/silverstripe-shopify/pull/134
+* README credits copy by @jsirish in https://github.com/dynamic/silverstripe-shopify/pull/135
+* README note on PHP7 compatibility by @jsirish in https://github.com/dynamic/silverstripe-shopify/pull/136
+* CI php versions for tests, include PHP 8.0 and 8.1 by @jsirish in https://github.com/dynamic/silverstripe-shopify/pull/137
+
+
+**Full Changelog**: https://github.com/dynamic/silverstripe-shopify/compare/1.1.0...1.2.0
+
 ## [1.1.0](https://github.com/dynamic/silverstripe-shopify/tree/1.1.0) (2022-01-10)
 
 [Full Changelog](https://github.com/dynamic/silverstripe-shopify/compare/1.0.0...1.1.0)

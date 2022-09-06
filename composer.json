@@ -25,6 +25,12 @@
             "Dynamic\\Shopify\\Test\\": "tests/"
         }
     },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        },
+        "process-timeout": 600
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "1.x-dev"

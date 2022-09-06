@@ -187,6 +187,9 @@ Product impressions can be tracked by adding data attributes to html tags render
 
  *  [Dynamic](http://www.dynamicagency.com) (<dev@dynamicagency.com>)
 
+## Credits
+Inspired by previous work done by [xddesigners](https://github.com/xddesigners).
+
 ## Bugtracker
 
 Bugs are tracked in the issues section of this repository. Before submitting an issue please read over

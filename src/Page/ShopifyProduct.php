@@ -439,13 +439,6 @@ class ShopifyProduct extends \Page
         $map = self::config()->get('data_map');
         ShopifyImportTask::loop_map($map, $product, $shopifyProduct);
 
-        if ($product->isChanged()) {
-            $product->write();
-            if ($product->isPublished()) {
-                $product->publishSingle();
-            }
-        }
-
         return $product;
     }
 

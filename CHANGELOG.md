@@ -1,9 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/dynamic/silverstripe-shopify/tree/1.2.1) (2023-05-15)
+* Added extension points for product and cart configs by @mak001 in https://github.com/dynamic/silverstripe-shopify/pull/138
+
+**Full Changelog**: https://github.com/dynamic/silverstripe-shopify/compare/1.2.0...1.2.1
+
 ## [1.2.0](https://github.com/dynamic/silverstripe-shopify/tree/1.2.0) (2022-09-06)
 
-
-## What's Changed
 * Added more text options for buy button options by @mak001 in https://github.com/dynamic/silverstripe-shopify/pull/132
 * COMPOSER remove/update guzzle requirements by @jsirish in https://github.com/dynamic/silverstripe-shopify/pull/134
 * README credits copy by @jsirish in https://github.com/dynamic/silverstripe-shopify/pull/135

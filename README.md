@@ -3,9 +3,6 @@
 A Shopify Store module for Silverstripe.
 
 ![CI](https://github.com/dynamic/silverstripe-shopify/workflows/CI/badge.svg)
-[![Build Status](https://app.travis-ci.com/dynamic/silverstripe-shopify.svg?branch=master)](https://app.travis-ci.com/dynamic/silverstripe-shopify)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/dynamic/silverstripe-shopify/badges/quality-score.png?b=master&s=6602bc588bf7da4a15e9ae4e061c92781c87caf5)](https://scrutinizer-ci.com/g/dynamic/silverstripe-shopify/?branch=master)
-[![Build Status](https://scrutinizer-ci.com/g/dynamic/silverstripe-shopify/badges/build.png?b=master&s=d0c33738b6be129105fa8f507591359fcf4f40ae)](https://scrutinizer-ci.com/g/dynamic/silverstripe-shopify/build-status/master)
 [![codecov](https://codecov.io/gh/dynamic/silverstripe-shopify/branch/master/graph/badge.svg?token=8qD1GBbxzV)](https://codecov.io/gh/dynamic/silverstripe-shopify)
 
 [![Latest Stable Version](https://poser.pugx.org/dynamic/silverstripe-shopify/v/stable)](https://packagist.org/packages/dynamic/silverstripe-shopify)
@@ -16,7 +13,7 @@ A Shopify Store module for Silverstripe.
 
 ## Requirements
 
-* silverstripe/recipe-cms ^4.5
+* silverstripe/recipe-cms ^4.11
 * bramdeleeuw/silverstripe-schema ^2.0
 * littlegiant/silverstripe-catalogmanager ^5.2
 * osiset/basic-shopify-api ^10.0
@@ -163,16 +160,64 @@ PageController:
 
 **Note:** For specific configuration by page type, you can set the `showNote` and `noteLimit` values per controller class.
 
+You can also override the default cart settings via an Extension Hook `updateCartOptions` in the `getCartOptions()` function in `ShopifyExtension.php`. 
+
+```
+public function updateCartOptions(&$config)
+{
+    $config['cart'] = [
+        'popup' => 1,
+    ];
+}
+```
+
 ### Display Buy Button
 
 Out of the box, there are 3 includes to display different variations of the Shopify Buy Button:
 
-* BuyButton - just a simple add to cart button with no other product info
-* BuyForm - a typical add to cart form, ideal for a ShopifyProduct page
-* BuyOverlay - an add to cart button that opens an overlay containing product info from Shopify
+* `BuyButton` - just a simple add to cart button with no other product info
+* `BuyForm` - a typical add to cart form, ideal for a ShopifyProduct page
+* `BuyOverlay` - an add to cart button that opens an overlay containing product info from Shopify
 
 To display the Buy Button, just include one of the files above in your template.
 
+#### Buy Button Configuration Options
+
+The default settings for buy buttons in the module disables the iframe option, and strips out most of the buy button content and stylings. The includes above are instead intended to be used with the images and title imported from Shopify into the database, and with iframes disabled it enables complete control over the style of the buy button. 
+
+However, you can override the default settings for each Buy Button type above via Extension Hooks in `ShopifyProduct.php`.
+
+* `getButtonOptions()` has `updateButtonOptions(&$buttonOptions)`
+* `getFormOptions()` has `updateFormOptions(&$formOptions)`
+* `getOverlayOptions()` has `updateOverlayOptions(&$overlayOptions)`
+
+```
+public function updateButtonOptions(&$buttonOptions)
+{
+    $buttonOptions['product'] = [
+        'iframe' => true,
+        'contents' => [
+            'title' => true,
+            'variantTitle' => false,
+            'price' => true,
+            'description' => true,
+            'quantity' => false,
+            'img' => true,
+        ],
+        'width' => '100%',
+        'styles' => [
+            'button' => [
+                'color' => '#ffffff',
+                'background-color' => '#279989',
+                ':hover' => [
+                    'color' => '#ffffff',
+                    'background-color' => '#C5E86C',
+                ],
+            ],
+        ]
+    ];
+}
+```
 
 ## Advanced
 

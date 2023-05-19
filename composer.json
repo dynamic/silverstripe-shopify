@@ -22,7 +22,7 @@
         "bramdeleeuw/silverstripe-schema": "^2.0",
         "littlegiant/silverstripe-catalogmanager": "^5.2",
         "osiset/basic-shopify-api": "^10.0",
-        "silverstripe/recipe-cms": "^4.5",
+        "silverstripe/recipe-cms": "^4.11",
         "symbiote/silverstripe-gridfieldextensions": "^3.0"
     },
     "require-dev": {

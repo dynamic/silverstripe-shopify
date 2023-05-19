@@ -19,7 +19,7 @@
     ],
     "require": {
         "php": ">=7.4 || >=8.0",
-        "bramdeleeuw/silverstripe-schema": "^2.0",
+        "bramdeleeuw/silverstripe-schema": "^2.0.1",
         "littlegiant/silverstripe-catalogmanager": "^5.2",
         "osiset/basic-shopify-api": "^10.0",
         "silverstripe/recipe-cms": "^4.11",

@@ -75,13 +75,11 @@ class ElementProducts extends BaseElement
             $fields->dataFieldByName('Content')
                 ->setRows(10);
 
-            $fields->insertBefore(
-                'Content',
-                $fields->dataFieldByName('Limit')
-            );
-
             if ($this->ID) {
                 $products = $fields->dataFieldByName('Products');
+                $fields->removeByName([
+                    'Products'
+                ]);
                 $config = $products->getConfig();
                 $config
                     ->removeComponentsByType([
@@ -92,6 +90,15 @@ class ElementProducts extends BaseElement
                         new GridFieldAddExistingSearchButton(),
                         new GridFieldOrderableRows('ElementSortOrder')
                     ]);
+                $fields->addFieldToTab('Root.Main', $products);
+
+                $fields->insertBefore(
+                    'Products',
+                    $fields->dataFieldByName('Limit')
+                        ->setDescription('Total number of products to display. If selected products are less 
+                            than the limit, the remaining products will be randomly selected from the entire 
+                            product list. Set to 0 to display all selected products.')
+                );
             }
         });
 

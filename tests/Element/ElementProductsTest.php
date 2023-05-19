@@ -4,7 +4,6 @@ namespace Dynamic\Shopify\Test\Element;
 
 use DNADesign\Elemental\Models\BaseElement;
 use Dynamic\Shopify\Element\ElementProducts;
-use Dynamic\Shopify\Page\ShopifyProduct;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
 

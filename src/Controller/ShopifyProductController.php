@@ -19,9 +19,15 @@ class ShopifyProductController extends \PageController
     public function init()
     {
         $price = number_format($this->getPrice()->getValue(), 2);
-        $name = str_replace('\'', '\\\'', $this->Title);
-        $vendor = str_replace('\'', '\\\'', $this->Vendor);
-        $category = str_replace('\'', '\\\'', $this->Parent()->Title);
+        $name = $this->Title
+            ? str_replace('\'', '\\\'', $this->Title)
+            : $this->Title;
+        $vendor = $this->Vendor
+            ? str_replace('\'', '\\\'', $this->Vendor)
+            : $this->Vendor;
+        $category = $this->Parent()->Title
+            ? str_replace('\'', '\\\'', $this->Parent()->Title)
+            : $this->Parent()->Title;
         Requirements::customScript("
             (function () {
                 window.dataLayer = window.dataLayer || [];

@@ -30,6 +30,7 @@ class ShopifyFileSource extends DataObject
      * @var string[]
      */
     private static $db = [
+        'Title' => 'Varchar(255)',
         'Format' => 'Varchar(255)',
         'MimeType' => 'Varchar(255)',
         'URL' => 'Varchar(255)',
@@ -50,6 +51,7 @@ class ShopifyFileSource extends DataObject
      */
     private static $summary_fields = [
         'ID',
+        'Title',
         'Format',
         'MimeType',
         'Width',

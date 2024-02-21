@@ -8,7 +8,7 @@
         <div class="carousel-inner">
             <% loop $Files.Sort('SortOrder') %>
                 <div class="carousel-item <% if $First %>active<% end_if %>">
-                    <img class="d-block w-100" src="$URL" alt="$Title">
+                    <img class="d-block w-100" src="$URL" alt="$AltTitle">
                 </div>
             <% end_loop %>
         </div>

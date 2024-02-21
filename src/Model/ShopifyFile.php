@@ -173,6 +173,14 @@ class ShopifyFile extends DataObject
     }
 
     /**
+     * @return string
+     */
+    public function getAltTitle(): string
+    {
+        return $this->OriginalSource()->Title ?? $this->Product()->Title;
+    }
+
+    /**
      * Creates a new Shopify Image from the given data
      *
      * @param $shopifyFile
@@ -196,12 +204,14 @@ class ShopifyFile extends DataObject
             $originalSource->URL = $shopifyFile->originalSrc;
             $originalSource->Width = $shopifyFile->width;
             $originalSource->Height = $shopifyFile->height;
+            $originalSource->Title = $shopifyFile->altText;
             $file->Type = static::IMAGE;
         } else {
             if ($shopifyFile->mediaContentType === static::IMAGE) {
                 $originalSource->URL = $shopifyFile->image->originalSrc;
                 $originalSource->Width = $shopifyFile->image->width;
                 $originalSource->Height = $shopifyFile->image->height;
+                $originalSource->Title = $shopifyFile->image->altText;
             } elseif ($shopifyFile->mediaContentType === static::EXTERNAL_VIDEO) {
                 $originalSource->URL = $shopifyFile->embeddedUrl;
             } else { // Video & 3d model

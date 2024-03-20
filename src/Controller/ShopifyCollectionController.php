@@ -5,6 +5,13 @@ namespace Dynamic\Shopify\Page;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\ORM\PaginatedList;
 
+/**
+ * Class \Dynamic\Shopify\Page\ShopifyCollectionController
+ *
+ * @property ShopifyCollection $dataRecord
+ * @method ShopifyCollection data()
+ * @mixin ShopifyCollection
+ */
 class ShopifyCollectionController extends \PageController
 {
     /**

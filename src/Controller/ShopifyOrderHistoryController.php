@@ -14,7 +14,10 @@ use SilverStripe\View\ArrayData;
 
 /**
  * Class ShopifyOrderHistoryController
- * @package Dynamic\Shopify\Controller
+ *
+ * @property ShopifyOrderHistory $dataRecord
+ * @method ShopifyOrderHistory data()
+ * @mixin ShopifyOrderHistory
  */
 class ShopifyOrderHistoryController extends \PageController
 {

@@ -10,7 +10,7 @@ use SilverStripe\Security\Security;
 
 /**
  * Class ShopifyMultipassController
- * @package Dynamic\Shopify\Controller
+ *
  */
 class ShopifyMultipassController extends Controller
 {

@@ -12,20 +12,18 @@ use SilverStripe\ORM\FieldType\DBCurrency;
 
 /**
  * Class ShopifyVariant
- * @package Dynamic\Shopify\Model
  *
- * @property string Title
- * @property string ShopifyID
- * @property string SKU
- * @property DBCurrency Price
- * @property DBCurrency CompareAtPrice
- * @property int SortOrder
- * @property int Inventory
- *
- * @property int ProductID
- * @method ShopifyProduct Product
- * @property int FileID
- * @method File File
+ * @property string $Title
+ * @property string $ShopifyID
+ * @property string $SKU
+ * @property float $Price
+ * @property float $CompareAtPrice
+ * @property int $SortOrder
+ * @property int $Inventory
+ * @property int $ProductID
+ * @property int $FileID
+ * @method ShopifyProduct Product()
+ * @method ShopifyFile File()
  */
 class ShopifyVariant extends DataObject
 {

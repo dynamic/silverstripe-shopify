@@ -24,15 +24,20 @@ use SilverStripe\View\Requirements;
 
 /**
  * Class ShopifyProduct
- * @package Dynamic\Shopify\Page
  *
- * @property string ShopifyID
- * @property string Vendor
- * @property string ProductType
- * @property boolean ProductActive
- *
- * @method HasManyList|ShopifyVariant[] Variants()
- * @method HasManyList|ShopifyFile[] Files
+ * @property string $ShopifyID
+ * @property string $Vendor
+ * @property string $ProductType
+ * @property bool $ProductActive
+ * @property int $TopPageID
+ * @property int $ElementalAreaID
+ * @method Page TopPage()
+ * @method ElementalArea ElementalArea()
+ * @method DataList|ShopifyVariant[] Variants()
+ * @method DataList|ShopifyFile[] Files()
+ * @mixin ElementalPageExtension
+ * @mixin ShopifyProductExtension
+ * @mixin CatalogPageExtension
  */
 class ShopifyProduct extends \Page
 {

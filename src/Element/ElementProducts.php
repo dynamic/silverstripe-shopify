@@ -21,7 +21,10 @@ if (!class_exists(BaseElement::class)) {
 
 /**
  * Class ElementProducts
- * @package Dynamic\Shopify\Element
+ *
+ * @property string $Content
+ * @property int $Limit
+ * @method ManyManyList|ShopifyProduct[] Products()
  */
 class ElementProducts extends BaseElement
 {

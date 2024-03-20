@@ -6,16 +6,14 @@ use SilverStripe\ORM\DataObject;
 
 /**
  * Class ShopifyFileSource
- * @package Dynamic\Shopify\Model
  *
- * @property string Format
- * @property string MimeType
- * @property string URL
- * @property int Width
- * @property int Height
- *
- * @property int FileID
- * @method ShopifyFile File
+ * @property string $Format
+ * @property string $MimeType
+ * @property string $URL
+ * @property int $Width
+ * @property int $Height
+ * @property int $FileID
+ * @method ShopifyFile File()
  */
 class ShopifyFileSource extends DataObject
 {

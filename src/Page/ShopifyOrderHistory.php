@@ -6,7 +6,7 @@ use Dynamic\Shopify\Controller\ShopifyOrderHistoryController;
 
 /**
  * Class ShopifyOrderHistory
- * @package Dynamic\Shopify\Page
+ *
  */
 class ShopifyOrderHistory extends \Page
 {

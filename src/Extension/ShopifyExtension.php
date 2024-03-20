@@ -12,7 +12,8 @@ use SilverStripe\View\Requirements;
 
 /**
  * Class ShopifyExtension
- * @package Dynamic\Shopify\Extension
+ *
+ * @property PageController|ShopifyExtension $owner
  */
 class ShopifyExtension extends Extension
 {

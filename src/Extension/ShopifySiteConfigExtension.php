@@ -6,9 +6,9 @@ use SilverStripe\ORM\DataExtension;
 
 /**
  * Class ShopifySiteConfigExtension
- * @package Dynamic\Shopify\Extension
  *
- * @property string ShopCurrencyCode
+ * @property SiteConfig|ShopifySiteConfigExtension $owner
+ * @property string $ShopCurrencyCode
  */
 class ShopifySiteConfigExtension extends DataExtension
 {

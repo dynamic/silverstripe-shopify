@@ -24,16 +24,20 @@ use SilverStripe\Security\Security;
 
 /**
  * Class ShopifyCollection
- * @package Dynamic\Shopify\Page
  *
- * @property string ShopifyID
- * @property int ProductsCt
- * @property string SortOrder
- * @property bool CollectionActive
- * @property int ProductsPerPage
- *
- * @property int FileID
- * @method ShopifyFile File
+ * @property string $ShopifyID
+ * @property int $ProductsCt
+ * @property string $SortOrder
+ * @property bool $CollectionActive
+ * @property int $ProductsPerPage
+ * @property int $ElementalAreaID
+ * @property int $HeaderImageID
+ * @property int $FileID
+ * @method ElementalArea ElementalArea()
+ * @method HeaderImage HeaderImage()
+ * @method ShopifyFile File()
+ * @mixin HeaderImageExtension
+ * @mixin ElementalPageExtension
  */
 class ShopifyCollection extends \Page
 {

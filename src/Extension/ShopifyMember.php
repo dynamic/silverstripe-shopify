@@ -9,7 +9,9 @@ use SilverStripe\Security\Member;
 
 /**
  * Class ShopifyMember
- * @package Dynamic\Shopify\Extension
+ *
+ * @property Member|ShopifyMember $owner
+ * @property string $ShopifyID
  */
 class ShopifyMember extends DataExtension
 {

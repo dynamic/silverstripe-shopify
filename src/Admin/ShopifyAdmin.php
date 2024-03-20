@@ -10,7 +10,7 @@ use LittleGiant\CatalogManager\ModelAdmin\CatalogPageAdmin;
 
 /**
  * Class ShopifyAdmin
- * @package Dynamic\Shopify\Admin
+ *
  */
 class ShopifyAdmin extends CatalogPageAdmin
 {

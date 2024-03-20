@@ -15,7 +15,9 @@ use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 
 /**
  * Class RelatedProductsExtension
- * @package Dynamic\Shopify\Extension
+ *
+ * @property RelatedProductsExtension $owner
+ * @method ManyManyList|ShopifyProduct[] RelatedProducts()
  */
 class RelatedProductsExtension extends DataExtension
 {

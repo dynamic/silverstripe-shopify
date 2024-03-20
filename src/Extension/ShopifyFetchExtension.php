@@ -12,7 +12,8 @@ use SilverStripe\Security\Security;
 
 /**
  * Class ShopifyFetchExtension
- * @package Dynamic\Shopify\Extension
+ *
+ * @property LeftAndMain|ShopifyFetchExtension $owner
  */
 class ShopifyFetchExtension extends LeftAndMainExtension
 {

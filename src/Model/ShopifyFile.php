@@ -23,24 +23,21 @@ use SilverStripe\View\HTML;
 
 /**
  * Class ShopifyFile
- * @package Dynamic\Shopify\Model
  *
- * @property string ShopifyID
- * @property string Type
- * @property string PreviewSrc
- * @property int SortOrder
- *
- * @property int ProductID
- * @method ShopifyProduct Product
- * @property int CollectionID
- * @method ShopifyCollection Collection
- * @property int VariantID
- * @method ShopifyVariant Variant
- * @property int OriginalSourceID
- * @method ShopifyFileSource OriginalSource
- *
- * @method HasManyList|ShopifyVariant[] Variants
- * @method HasManyList|ShopifyFileSource[] Sources
+ * @property string $ShopifyID
+ * @property string $Type
+ * @property string $PreviewSrc
+ * @property int $SortOrder
+ * @property int $ProductID
+ * @property int $CollectionID
+ * @property int $VariantID
+ * @property int $OriginalSourceID
+ * @method ShopifyProduct Product()
+ * @method ShopifyCollection Collection()
+ * @method ShopifyVariant Variant()
+ * @method ShopifyFileSource OriginalSource()
+ * @method DataList|ShopifyVariant[] Variants()
+ * @method DataList|ShopifyFileSource[] Sources()
  */
 class ShopifyFile extends DataObject
 {

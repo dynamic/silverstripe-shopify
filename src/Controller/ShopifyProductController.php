@@ -7,8 +7,9 @@ use SilverStripe\View\Requirements;
 
 /**
  * Class ShopifyProductController
- * @package Dynamic\Shopify\Controller
  *
+ * @property ShopifyProduct $dataRecord
+ * @method ShopifyProduct data()
  * @mixin ShopifyProduct
  */
 class ShopifyProductController extends \PageController

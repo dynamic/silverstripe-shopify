@@ -145,7 +145,7 @@ class ShopifyImportTask extends BuildTask
             exit($e->getMessage());
         }
 
-        if (($collections && $collections['body'])) {
+        if (($collections && $collections['body']) && isset($collections['body']->data)) {
             $lastId = $sinceId;
             foreach ($collections['body']->data->collections->edges as $shopifyCollection) {
                 // Create the collection

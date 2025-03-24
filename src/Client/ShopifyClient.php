@@ -9,6 +9,7 @@ use Osiset\BasicShopifyAPI\BasicShopifyAPI;
 use Osiset\BasicShopifyAPI\Options;
 use Osiset\BasicShopifyAPI\ResponseAccess;
 use Osiset\BasicShopifyAPI\Session;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Dev\Debug;
@@ -36,7 +37,7 @@ class ShopifyClient
      *
      * @config string
      */
-    private static $api_version = '2021-01';
+    private static $api_version = '2025-01';
 
     /**
      * @config null|string
@@ -119,7 +120,7 @@ class ShopifyClient
         }
 
         $options = new Options();
-        $options->setVersion(static::config()->get('api_version'));
+        $options->setVersion(Config::inst()->get(static::class, 'api_version'));
         $options->setApiPassword($password);
         $options->setType(true);
 
@@ -322,7 +323,6 @@ query ($limit: Int!, $cursor: String){
                 title
                 handle
                 descriptionHtml
-                productsCount
                 updatedAt
                 sortOrder
                 publishedOnCurrentPublication

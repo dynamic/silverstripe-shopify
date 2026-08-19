@@ -43,6 +43,7 @@ class ShopifyVariant extends DataObject
         'CompareAtPrice' => 'Currency',
         'SortOrder' => 'Int',
         'Inventory' => 'Int',
+        'ShopifyUpdatedAt' => 'Datetime',
     ];
 
     /**
@@ -100,7 +101,7 @@ class ShopifyVariant extends DataObject
         'compareAtPrice'=> 'CompareAtPrice',
         'position' => 'SortOrder',
         'createdAt' => 'Created',
-        'updatedAt' => 'LastEdited',
+        'updatedAt' => 'ShopifyUpdatedAt',
         'inventoryQuantity' => 'Inventory',
     ];
 

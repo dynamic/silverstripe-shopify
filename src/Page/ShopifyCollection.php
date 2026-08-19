@@ -55,6 +55,7 @@ class ShopifyCollection extends \Page
         'SortOrder' => 'Varchar(20)',
         'CollectionActive' => 'Boolean',
         'ProductsPerPage' => 'Int',
+        'ShopifyUpdatedAt' => 'Datetime',
     ];
 
     /**
@@ -67,7 +68,7 @@ class ShopifyCollection extends \Page
         'descriptionHtml' => 'Content',
         'productsCount' => 'ProductsCt',
         'createdAt' => 'Created',
-        'updatedAt' => 'LastEdited',
+        'updatedAt' => 'ShopifyUpdatedAt',
         'sortOrder' => 'SortOrder',
         'publishedOnCurrentPublication' => 'CollectionActive',
     ];

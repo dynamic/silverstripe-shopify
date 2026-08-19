@@ -65,6 +65,7 @@ class ShopifyProduct extends \Page
         'ProductType' => 'Varchar',
         //'Tags' => 'Varchar',
         'ProductActive' => 'Boolean',
+        'ShopifyUpdatedAt' => 'Datetime',
     ];
 
     /**
@@ -141,7 +142,7 @@ class ShopifyProduct extends \Page
         'vendor' => 'Vendor',
         'productType' => 'ProductType',
         'createdAt' => 'Created',
-        'updatedAt' => 'LastEdited',
+        'updatedAt' => 'ShopifyUpdatedAt',
         //'tags' => 'Tags',
         'publishedOnCurrentPublication' => 'ProductActive',
     ];

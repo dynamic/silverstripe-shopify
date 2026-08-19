@@ -30,6 +30,7 @@ use SilverStripe\Security\Security;
  * @property string $SortOrder
  * @property bool $CollectionActive
  * @property int $ProductsPerPage
+ * @property string $ShopifyUpdatedAt
  * @property int $ElementalAreaID
  * @property int $HeaderImageID
  * @property int $FileID

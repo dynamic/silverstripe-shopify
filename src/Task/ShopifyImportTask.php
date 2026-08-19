@@ -17,6 +17,7 @@ use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
@@ -145,7 +146,10 @@ class ShopifyImportTask extends BuildTask
             exit($e->getMessage());
         }
 
-        if (($collections && $collections['body']) && isset($collections['body']->data)) {
+        if (($collections && $collections['body']) && isset($collections['body']->data)
+            && $collections['body']->data->offsetExists('collections')
+            && $collections['body']->data->collections->offsetExists('edges')
+        ) {
             $lastId = $sinceId;
             foreach ($collections['body']->data->collections->edges as $shopifyCollection) {
                 // Create the collection
@@ -604,7 +608,7 @@ class ShopifyImportTask extends BuildTask
                     "[{$sinceId}] Try to import the next page of collections since last cursor",
                     self::NOTICE
                 );
-                $this->generateVirtuals($client, $productId, $lastId, $keepVirtuals);
+                $this->generateVirtuals($client, $product, $lastId, $keepVirtuals);
             } else {
                 // Cleanup old virtuals
                 $virtuals = VirtualPage::get()
@@ -665,7 +669,15 @@ class ShopifyImportTask extends BuildTask
             if (is_array($to) && (is_object($data[$from]) || is_array($data[$from]))) {
                 self::loop_map($to, $object, $data[$from]);
             } elseif (isset($data[$from])) {
-                $object->{$to} = $data[$from];
+                $value = $data[$from];
+                // Normalize date/datetime values (e.g. Shopify's ISO8601 "updatedAt") to the
+                // same internal format they'll be stored in, so a re-imported, unchanged value
+                // compares equal to what's already on the record instead of tripping isChanged()
+                // on every run.
+                if (is_string($to) && ($dbObject = $object->dbObject($to)) && $dbObject instanceof DBDate) {
+                    $value = $dbObject->setValue($value)->getValue();
+                }
+                $object->{$to} = $value;
             }
         }
     }

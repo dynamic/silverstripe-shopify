@@ -29,6 +29,7 @@ use SilverStripe\View\Requirements;
  * @property string $Vendor
  * @property string $ProductType
  * @property bool $ProductActive
+ * @property string $ShopifyUpdatedAt
  * @property int $TopPageID
  * @property int $ElementalAreaID
  * @method Page TopPage()

@@ -20,6 +20,7 @@ use SilverStripe\ORM\FieldType\DBCurrency;
  * @property float $CompareAtPrice
  * @property int $SortOrder
  * @property int $Inventory
+ * @property string $ShopifyUpdatedAt
  * @property int $ProductID
  * @property int $FileID
  * @method ShopifyProduct Product()
@@ -43,6 +44,7 @@ class ShopifyVariant extends DataObject
         'CompareAtPrice' => 'Currency',
         'SortOrder' => 'Int',
         'Inventory' => 'Int',
+        'ShopifyUpdatedAt' => 'Datetime',
     ];
 
     /**
@@ -100,7 +102,7 @@ class ShopifyVariant extends DataObject
         'compareAtPrice'=> 'CompareAtPrice',
         'position' => 'SortOrder',
         'createdAt' => 'Created',
-        'updatedAt' => 'LastEdited',
+        'updatedAt' => 'ShopifyUpdatedAt',
         'inventoryQuantity' => 'Inventory',
     ];
 

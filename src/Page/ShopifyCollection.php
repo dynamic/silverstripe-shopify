@@ -30,6 +30,7 @@ use SilverStripe\Security\Security;
  * @property string $SortOrder
  * @property bool $CollectionActive
  * @property int $ProductsPerPage
+ * @property string $ShopifyUpdatedAt
  * @property int $ElementalAreaID
  * @property int $HeaderImageID
  * @property int $FileID
@@ -55,6 +56,7 @@ class ShopifyCollection extends \Page
         'SortOrder' => 'Varchar(20)',
         'CollectionActive' => 'Boolean',
         'ProductsPerPage' => 'Int',
+        'ShopifyUpdatedAt' => 'Datetime',
     ];
 
     /**
@@ -67,7 +69,7 @@ class ShopifyCollection extends \Page
         'descriptionHtml' => 'Content',
         'productsCount' => 'ProductsCt',
         'createdAt' => 'Created',
-        'updatedAt' => 'LastEdited',
+        'updatedAt' => 'ShopifyUpdatedAt',
         'sortOrder' => 'SortOrder',
         'publishedOnCurrentPublication' => 'CollectionActive',
     ];

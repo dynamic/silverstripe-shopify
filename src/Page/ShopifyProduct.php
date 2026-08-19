@@ -29,6 +29,7 @@ use SilverStripe\View\Requirements;
  * @property string $Vendor
  * @property string $ProductType
  * @property bool $ProductActive
+ * @property string $ShopifyUpdatedAt
  * @property int $TopPageID
  * @property int $ElementalAreaID
  * @method Page TopPage()
@@ -65,6 +66,7 @@ class ShopifyProduct extends \Page
         'ProductType' => 'Varchar',
         //'Tags' => 'Varchar',
         'ProductActive' => 'Boolean',
+        'ShopifyUpdatedAt' => 'Datetime',
     ];
 
     /**
@@ -141,7 +143,7 @@ class ShopifyProduct extends \Page
         'vendor' => 'Vendor',
         'productType' => 'ProductType',
         'createdAt' => 'Created',
-        'updatedAt' => 'LastEdited',
+        'updatedAt' => 'ShopifyUpdatedAt',
         //'tags' => 'Tags',
         'publishedOnCurrentPublication' => 'ProductActive',
     ];
